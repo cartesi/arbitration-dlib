@@ -16,7 +16,7 @@ bobKey = '0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
 aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
 bobAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
 
-describe('Basic TestRPC test', function() {
+describe('Testing basic transfer functions', function() {
   beforeEach(function() {
       //testrpc parameters
       var testrpcParameters = {
