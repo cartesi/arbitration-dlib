@@ -39,11 +39,11 @@ describe('Testing basic contract deployment', function() {
       expect(aliceBalance).to.equal(web3.utils.toWei(100), 'Wrong balance for Alice');
 
       // compile contract
-      const contractSource = fs.readFileSync('contracts/greeter.sol').toString();
+      const contractSource = fs.readFileSync('src/partition.sol').toString();
       const compiledContract = solc.compile(contractSource, 1);
       expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
-      const bytecode = compiledContract.contracts[':greeter'].bytecode;
-      const abi = JSON.parse(compiledContract.contracts[':greeter'].interface);
+      const bytecode = compiledContract.contracts[':partition'].bytecode;
+      const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
 
       // deploy contract with parameter 'Hello!'
       greeterContract = new web3.eth.Contract(abi);
