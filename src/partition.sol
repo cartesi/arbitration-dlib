@@ -26,7 +26,7 @@ contract partition is mortal {
 
   enum state { WaitingQueries, WaitingHashes, ChallengerWon,
                ClaimerWon, DivergenceFound }
-  state currentState;
+  state public currentState;
 
   uint divergenceTime;
 
@@ -108,9 +108,18 @@ contract partition is mortal {
 
   function presentDivergence(uint theDivergenceTime) public {
     require(msg.sender == challenger);
+    require(theDivergenceTime < finalTime);
+    require(timeSubmitted[theDivergenceTime]);
+    require(timeSubmitted[theDivergenceTime + 1]);
     divergenceTime = theDivergenceTime;
     currentState = state.DivergenceFound;
     ChallengeEnded(currentState);
+  }
+
+  function getDivergence() public view returns (uint retunedDivergenceTime, bytes32 hashBefore,
+                                           bytes32 hashAfter) {
+    require(currentState == state.DivergenceFound);
+    return(divergenceTime, timeHash[divergenceTime], timeHash[divergenceTime + 1]);
   }
 }
 
