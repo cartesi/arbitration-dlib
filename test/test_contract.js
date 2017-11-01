@@ -11,7 +11,17 @@ coMocha(mocha)
 var TestRPC = require("ethereumjs-testrpc");
 
 aliceKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
+bobKey = '0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
+
 aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
+bobAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
+
+// compile contract
+const contractSource = fs.readFileSync('src/partition.sol').toString();
+const compiledContract = solc.compile(contractSource, 1);
+expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
+const bytecode = compiledContract.contracts[':partition'].bytecode;
+const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
 
 describe('Testing basic contract deployment', function() {
   beforeEach(function() {
@@ -19,7 +29,9 @@ describe('Testing basic contract deployment', function() {
       var testrpcParameters = {
           "accounts":
           [   { "balance": 100000000000000000000,
-                "secretKey": aliceKey }
+                "secretKey": aliceKey },
+              { "balance": 100000000000000000000,
+                "secretKey": bobKey }
           ],
           //"debug": true
       }
@@ -28,65 +40,65 @@ describe('Testing basic contract deployment', function() {
       //web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
   });
 
-  it('Deploy and interact with contract', function*() {
+  it('Verify mistake from Bob', function*() {
       this.timeout(10000)
 
-      // get alice account and balance
-      accountList = yield web3.eth.getAccounts()
-      accountList = accountList.map(function(x){ return x.toLowerCase() })
-      expect(accountList).to.include(aliceAddr, 'Alice not there');
-      aliceBalance = yield web3.eth.getBalance(aliceAddr)
-      expect(aliceBalance).to.equal(web3.utils.toWei(100), 'Wrong balance for Alice');
+      // prepare contest
+      initialHash = web3.utils.sha3('start');
+      aliceFinalHash = initialHash;
+      bobFinalHash = initialHash;
 
-      // compile contract
-      const contractSource = fs.readFileSync('src/partition.sol').toString();
-      const compiledContract = solc.compile(contractSource, 1);
-      expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
-      const bytecode = compiledContract.contracts[':partition'].bytecode;
-      const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
+      aliceHistory = [];
+      bobHistory = [];
 
-      // deploy contract with parameter 'Hello!'
-      greeterContract = new web3.eth.Contract(abi);
-      encodedABI = greeterContract.deploy({
-          data: bytecode,
-          arguments: ['Hello!']
-      }).encodeABI()
-      receipt = yield web3.eth.sendTransaction({
-          from: aliceAddr,
-          data: encodedABI,
-          gas: 1500000
-      });
-      greeterContract.options.address = receipt.contractAddress;
+      lastAggreement = 1000;
+      finalTime = 2000
+
+      for (i = 0; i <= 2000; i++) {
+          aliceHistory.push(aliceFinalHash);
+          bobHistory.push(bobFinalHash);
+          aliceFinalHash = web3.utils.sha3(aliceFinalHash);
+          bobFinalHash = web3.utils.sha3(bobFinalHash);
+          // introduce bob mistake
+          if (i == 1001) { bobFinalHash = web3.utils.sha3('mistake'); }
+      }
+
+      // deploy contract for challenge
+      partitionContract = new web3.eth.Contract(abi);
 
       // This alternative method gives you the receipt in an event
-      // greeterContract = yield greeterContract.deploy({
-      //     data: bytecode,
-      //     arguments: ['Hello!']
-      // }).send({
-      //     from: aliceAddr,
-      //     gas: 1500000
-      // }).on('receipt', console.log);
+      partitionContract = yield partitionContract.deploy({
+          data: bytecode,
+          arguments: [aliceAddr, bobAddr, finalTime, 3, initialHash, bobFinalHash, 10, 3600]
+      }).send({
+          from: aliceAddr,
+          gas: 1500000
+      }).on('receipt');
 
       // check contract owner (every public variable has getter method)
-      response = yield greeterContract.methods.owner().call({
+      response = yield partitionContract.methods.owner().call({
           from: aliceAddr,
       });
       expect(response.toLowerCase()).to.equal(aliceAddr);
 
-      // check ballance after transaction
-      gasPrice = yield web3.eth.getGasPrice();
-      aliceBalance = yield web3.eth.getBalance(aliceAddr)
-      expect(+aliceBalance + receipt.gasUsed * gasPrice)
-          .to.equal(+web3.utils.toWei(100), 'Wrong remaining balance for Alice');
+      while (true) {
+          currentState = yield partitionContract.methods
+              .currentState().call({ from: aliceAddr });
+          console.log(currentState);
+          expect(currentState).to.equal('0');
+
+
+      }
+
 
       // check original greeting with call (no transaction)
-      originalGreeting = yield greeterContract.methods.greet().call({
+      originalGreeting = yield partitionContract.methods.greet().call({
           from: aliceAddr,
       });
       expect(originalGreeting).to.equal('Hello!', 'Original greeting does not match.');
 
       // change greeting with send
-      response = yield greeterContract.methods.change('Hi there!')
+      response = yield partitionContract.methods.change('Hi there!')
           .send({
               from: aliceAddr,
               gas: 1500000
@@ -96,14 +108,14 @@ describe('Testing basic contract deployment', function() {
       expect(returnValues.newGreeting).to.equal('Hi there!', 'Wrong new greeting');
 
       // check original greeting (with call)
-      originalGreeting = yield greeterContract.methods.greet().call({
+      originalGreeting = yield partitionContract.methods.greet().call({
           from: aliceAddr,
       });
       expect(originalGreeting)
           .to.equal('Hi there!', 'Original greeting does not match.');
 
       // kill contract
-      response = yield greeterContract.methods.kill()
+      response = yield partitionContract.methods.kill()
           .send({
               from: aliceAddr,
               gas: 1500000
