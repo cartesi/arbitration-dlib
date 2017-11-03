@@ -23,7 +23,7 @@ expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
 const bytecode = compiledContract.contracts[':partition'].bytecode;
 const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
 
-describe('Testing basic contract deployment', function() {
+describe('Testing partition contract', function() {
   beforeEach(function() {
       //testrpc parameters
       var testrpcParameters = {
@@ -43,6 +43,8 @@ describe('Testing basic contract deployment', function() {
   it('Verify mistake from Bob', function*() {
       this.timeout(10000)
 
+      console.log('aaa')
+
       // prepare contest
       initialHash = web3.utils.sha3('start');
       aliceFinalHash = initialHash;
@@ -51,8 +53,8 @@ describe('Testing basic contract deployment', function() {
       aliceHistory = [];
       bobHistory = [];
 
-      lastAggreement = 1000;
       finalTime = 2000
+      lastAggreement = Math.floor((Math.random() * 2000 - 1) + 1); ;
 
       for (i = 0; i <= 2000; i++) {
           aliceHistory.push(aliceFinalHash);
@@ -60,21 +62,23 @@ describe('Testing basic contract deployment', function() {
           aliceFinalHash = web3.utils.sha3(aliceFinalHash);
           bobFinalHash = web3.utils.sha3(bobFinalHash);
           // introduce bob mistake
-          if (i == 1001) { bobFinalHash = web3.utils.sha3('mistake'); }
+          if (i == lastAggreement + 1)
+            { bobFinalHash = web3.utils.sha3('mistake'); }
       }
-
+      console.log('aaa')
       // deploy contract for challenge
       partitionContract = new web3.eth.Contract(abi);
 
       // This alternative method gives you the receipt in an event
       partitionContract = yield partitionContract.deploy({
           data: bytecode,
-          arguments: [aliceAddr, bobAddr, finalTime, 3, initialHash, bobFinalHash, 10, 3600]
+          arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
+                      finalTime, 4, 10, 3600]
       }).send({
           from: aliceAddr,
           gas: 1500000
       }).on('receipt');
-
+      console.log('aaa')
       // check contract owner (every public variable has getter method)
       response = yield partitionContract.methods.owner().call({
           from: aliceAddr,
