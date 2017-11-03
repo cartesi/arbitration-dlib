@@ -18,14 +18,26 @@ bobAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
 
 // compile contract
 const contractSource = fs.readFileSync('src/partition.sol').toString();
+
+// using solc package for node
 const compiledContract = solc.compile(contractSource, 1);
 expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
 const bytecode = compiledContract.contracts[':partition'].bytecode;
 const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
 
+// using solc from the command line
+// const { exec } = require('child_process');
+// exec('/home/cortex/solidity/build/solc/solc -o /home/cortex/project/contracts --abi --bin /home/cortex/contracts/src/partition.sol', (err, stdout, stderr) => {
+//     if (err) { console.log('Error compiling contract'); return; }
+//     console.log(`stdout: ${stdout}`);
+//     console.log(`stderr: ${stderr}`);
+// });
+// const bytecode = fs.readFileSync('src/partition.bin').toString();
+// const abi = JSON.parse(fs.readFileSync('src/partition.abi').toString());
+
 describe('Testing partition contract', function() {
   beforeEach(function() {
-      //testrpc parameters
+      // testrpc
       var testrpcParameters = {
           "accounts":
           [   { "balance": 100000000000000000000,
@@ -35,15 +47,14 @@ describe('Testing partition contract', function() {
           ],
           //"debug": true
       }
-
       web3 = new Web3(TestRPC.provider(testrpcParameters));
-      //web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+      // another option is using any node serving in port 8545
+      // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
   });
 
   it('Verify mistake from Bob', function*() {
       this.timeout(10000)
-
-      console.log('aaa')
 
       // prepare contest
       initialHash = web3.utils.sha3('start');
@@ -65,10 +76,10 @@ describe('Testing partition contract', function() {
           if (i == lastAggreement + 1)
             { bobFinalHash = web3.utils.sha3('mistake'); }
       }
-      console.log('aaa')
       // deploy contract for challenge
       partitionContract = new web3.eth.Contract(abi);
 
+      console.log(bytecode)
       // This alternative method gives you the receipt in an event
       partitionContract = yield partitionContract.deploy({
           data: bytecode,
