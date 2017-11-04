@@ -66,7 +66,6 @@ describe('Testing partition contract', function() {
 
     finalTime = 50000;
     querySize = 7;
-    maxNumberQueries = 30;
     roundDuration = 3600;
     lastAggreement = Math.floor((Math.random() * finalTime - 1) + 1);
 
@@ -86,7 +85,7 @@ describe('Testing partition contract', function() {
     partitionContract = yield partitionContract.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
-                  finalTime, querySize, maxNumberQueries, roundDuration]
+                  finalTime, querySize, roundDuration]
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 

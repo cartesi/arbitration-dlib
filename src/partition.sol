@@ -10,22 +10,19 @@ contract mortal {
 contract partition is mortal {
   address public challenger;
   address public claimer;
-  uint public finalTime; // the hashes are between 0 and finalTime (inclusive)
+  uint public finalTime; // hashes provided between 0 and finalTime (inclusive)
 
-  mapping(uint => bool) public timeSubmitted; // marks a time as queried
-  mapping(uint => bytes32) public timeHash; // hashes signed by claimer
+  mapping(uint => bool) public timeSubmitted; // marks a time as submitted
+  mapping(uint => bytes32) public timeHash; // hashes are signed by claimer
 
   uint public querySize;
   uint[] public queryArray;
 
-  uint public maxNumberOfQueries;
-  uint public numberOfQueriesMade;
-
   uint public timeOfLastMove;
   uint public roundDuration;
 
-  enum state { WaitingQuery, WaitingHashes, ChallengerWon,
-               ClaimerWon, DivergenceFound }
+  enum state { WaitingQuery, WaitingHashes,
+               ChallengerWon, ClaimerWon, DivergenceFound }
   state public currentState;
 
   uint private divergenceTime;
@@ -36,23 +33,10 @@ contract partition is mortal {
   event DivergenceFound(uint timeOfDivergence, bytes32 hashAtDivergenceTime,
                         bytes32 hashRigthAfterDivergenceTime);
 
-  //event BoolDebug(bool bla);
-
-  // initialHash and finalHash have been given by claimer
-  //function partition(address theChallenger, address theClaimer,
-  //                   uint theFinalTime) public {
-  //  require(theChallenger != theClaimer);
-  //  challenger = theChallenger;
-  //  claimer = theClaimer;
-  //  require(theFinalTime > 0);
-  //  finalTime = theFinalTime;
-  //
-  //}
-  //function partition() public {  };
   function partition(address theChallenger, address theClaimer,
-                     bytes32 theInitialHash, bytes32 theFinalHash,
+                     bytes32 theInitialHash, bytes32 theClaimerFinalHash,
                      uint theFinalTime, uint theQuerySize,
-                     uint theMaxNumberOfQueries, uint theRoundDuration) public {
+                     uint theRoundDuration) public {
     require(theChallenger != theClaimer);
     challenger = theChallenger;
     claimer = theClaimer;
@@ -62,31 +46,30 @@ contract partition is mortal {
     timeSubmitted[0] = true;
     timeSubmitted[finalTime] = true;
     timeHash[0] = theInitialHash;
-    timeHash[finalTime] = theFinalHash;
+    timeHash[finalTime] = theClaimerFinalHash;
 
     require(theQuerySize > 2);
     querySize = theQuerySize;
     for (uint i = 0; i < querySize; i++) { queryArray.push(0); }
+
     // slice the interval, placing the separators in queryArray
     slice(0, finalTime);
 
-    maxNumberOfQueries = theMaxNumberOfQueries;
-    numberOfQueriesMade = 0;
-
-    timeOfLastMove = now;
     roundDuration = theRoundDuration;
+    timeOfLastMove = now;
 
     currentState = state.WaitingHashes;
+    QueryPosted(queryArray);
   }
 
-  // split an interval using (querySize) points queryArray
+  // split an interval using (querySize) points (placed in queryArray)
   // leftPoint rightPoint are always the first and last points in queryArray.
   function slice(uint leftPoint, uint rightPoint) internal {
     require(rightPoint > leftPoint);
-    uint intervalLength = rightPoint - leftPoint;
     uint i;
+    uint intervalLength = rightPoint - leftPoint;
     // if intervalLength is not big enough to allow us jump sizes larger then
-    // one, we go step by step. we will finish in one or two further slices
+    // one, we go step by step
     if (intervalLength < 2 * (querySize - 1)) {
       for (i = 0; i < querySize - 1; i++) {
         if (leftPoint + i < rightPoint)
@@ -97,30 +80,13 @@ contract partition is mortal {
     } else {
       // otherwise: intervalLength = (querySize - 1) * divisionLength + j
       // with divisionLength >= 1 and j in {0, ..., querySize - 2}. in this
-      // case the maximum slice size drops to a proportion of intervalLength
+      // case the size of maximum slice drops to a proportion of intervalLength
       uint divisionLength = intervalLength / (querySize - 1);
       for (i = 0; i < querySize - 1; i++) {
         queryArray[i] = leftPoint + i * divisionLength;
       }
     }
     queryArray[querySize - 1] = rightPoint;
-  }
-
-  function makeQuery(uint queryPiece, uint leftPoint, uint rightPoint) public {
-    require(msg.sender == challenger);
-    require(currentState == state.WaitingQuery);
-    require(numberOfQueriesMade < maxNumberOfQueries);
-    require(queryPiece < querySize - 1);
-    // make sure the challenger knows the previous query
-    require(leftPoint == queryArray[queryPiece]);
-    require(rightPoint == queryArray[queryPiece + 1]);
-    // no unitary queries. in that case, present divergence instead
-    require(rightPoint - leftPoint > 1);
-    slice(leftPoint, rightPoint);
-    numberOfQueriesMade++;
-    currentState = state.WaitingHashes;
-    timeOfLastMove = now;
-    QueryPosted(queryArray);
   }
 
   function replyQuery(uint[] postedTimes, bytes32[] postedHashes) public {
@@ -140,6 +106,22 @@ contract partition is mortal {
     currentState = state.WaitingQuery;
     timeOfLastMove = now;
     HashesPosted(postedTimes, postedHashes);
+  }
+
+  function makeQuery(uint queryPiece, uint leftPoint, uint rightPoint) public {
+    require(msg.sender == challenger);
+    require(currentState == state.WaitingQuery);
+    require(queryPiece < querySize - 1);
+    // make sure the challenger knows the previous query
+    require(leftPoint == queryArray[queryPiece]);
+    require(rightPoint == queryArray[queryPiece + 1]);
+    // no unitary queries. in unitary case, present divergence instead.
+    // by avoiding unitary queries one forces the contest to end
+    require(rightPoint - leftPoint > 1);
+    slice(leftPoint, rightPoint);
+    currentState = state.WaitingHashes;
+    timeOfLastMove = now;
+    QueryPosted(queryArray);
   }
 
   function claimVictoryByTime() public {
