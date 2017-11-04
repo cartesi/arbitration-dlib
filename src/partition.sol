@@ -16,7 +16,7 @@ contract partition is mortal {
   mapping(uint => bytes32) public timeHash; // hashes signed by claimer
 
   uint public querySize;
-  uint[] queryArray;
+  uint[] public queryArray;
 
   uint public maxNumberOfQueries;
   uint public numberOfQueriesMade;
@@ -36,12 +36,24 @@ contract partition is mortal {
   event DivergenceFound(uint timeOfDivergence, bytes32 hashAtDivergenceTime,
                         bytes32 hashRigthAfterDivergenceTime);
 
+  //event BoolDebug(bool bla);
+
   // initialHash and finalHash have been given by claimer
+  //function partition(address theChallenger, address theClaimer,
+  //                   uint theFinalTime) public {
+  //  require(theChallenger != theClaimer);
+  //  challenger = theChallenger;
+  //  claimer = theClaimer;
+  //  require(theFinalTime > 0);
+  //  finalTime = theFinalTime;
+  //
+  //}
+  //function partition() public {  };
   function partition(address theChallenger, address theClaimer,
                      bytes32 theInitialHash, bytes32 theFinalHash,
                      uint theFinalTime, uint theQuerySize,
                      uint theMaxNumberOfQueries, uint theRoundDuration) public {
-    require(challenger != claimer);
+    require(theChallenger != theClaimer);
     challenger = theChallenger;
     claimer = theClaimer;
     require(theFinalTime > 0);
