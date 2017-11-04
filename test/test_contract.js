@@ -37,104 +37,159 @@ const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
 
 describe('Testing partition contract', function() {
   beforeEach(function() {
-      // testrpc
-      var testrpcParameters = {
-          "accounts":
-          [   { "balance": 100000000000000000000,
-                "secretKey": aliceKey },
-              { "balance": 100000000000000000000,
-                "secretKey": bobKey }
-          ],
-          //"debug": true
-      }
-      web3 = new Web3(TestRPC.provider(testrpcParameters));
+    // testrpc
+    var testrpcParameters = {
+      "accounts":
+      [   { "balance": 100000000000000000000,
+            "secretKey": aliceKey },
+          { "balance": 100000000000000000000,
+            "secretKey": bobKey }
+      ],
+      //"debug": true
+    }
+    web3 = new Web3(TestRPC.provider(testrpcParameters));
 
-      // another option is using any node serving in port 8545
-      // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    // another option is using a node serving in port 8545 with those users
+    // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
   });
 
-  it('Verify mistake from Bob', function*() {
-      this.timeout(10000)
+  it('Find divergence', function*() {
+    this.timeout(15000)
 
-      // prepare contest
-      initialHash = web3.utils.sha3('start');
-      aliceFinalHash = initialHash;
-      bobFinalHash = initialHash;
+    // prepare contest
+    initialHash = web3.utils.sha3('start');
+    aliceFinalHash = initialHash;
+    bobFinalHash = initialHash;
 
-      aliceHistory = [];
-      bobHistory = [];
+    aliceHistory = [];
+    bobHistory = [];
 
-      finalTime = 2000
-      lastAggreement = Math.floor((Math.random() * 2000 - 1) + 1); ;
+    finalTime = 50000;
+    querySize = 7;
+    maxNumberQueries = 30;
+    roundDuration = 3600;
+    lastAggreement = Math.floor((Math.random() * finalTime - 1) + 1);
 
-      for (i = 0; i <= 2000; i++) {
-          aliceHistory.push(aliceFinalHash);
-          bobHistory.push(bobFinalHash);
-          aliceFinalHash = web3.utils.sha3(aliceFinalHash);
-          bobFinalHash = web3.utils.sha3(bobFinalHash);
-          // introduce bob mistake
-          if (i == lastAggreement + 1)
-            { bobFinalHash = web3.utils.sha3('mistake'); }
+    for (i = 0; i <= finalTime; i++) {
+      aliceHistory.push(aliceFinalHash);
+      bobHistory.push(bobFinalHash);
+      aliceFinalHash = web3.utils.sha3(aliceFinalHash);
+      bobFinalHash = web3.utils.sha3(bobFinalHash);
+      // introduce bob mistake
+      if (i == lastAggreement)
+      { bobFinalHash = web3.utils.sha3('mistake'); }
+    }
+    // create contract object
+    partitionContract = new web3.eth.Contract(abi);
+
+    // deploy contract and update object
+    partitionContract = yield partitionContract.deploy({
+      data: bytecode,
+      arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
+                  finalTime, querySize, maxNumberQueries, roundDuration]
+    }).send({ from: aliceAddr, gas: 1500000 })
+      .on('receipt');
+
+    queryArray = [];
+    replyArray = [];
+    for (i = 0; i < querySize; i++) queryArray.push(0);
+    for (i = 0; i < querySize; i++) replyArray.push("");
+
+    while (true) {
+      var i;
+      // check if the state is waiting hashes
+      currentState = yield partitionContract.methods
+        .currentState().call({ from: bobAddr });
+      expect(currentState).to.equal('1');
+
+      // get the query array and prepare response
+      // solidity cannot return dynamic array from function
+      for (i = 0; i < querySize; i++) {
+        queryArray[i] = yield partitionContract.methods
+          .queryArray(i).call({ from: bobAddr });
+        replyArray[i] = bobHistory[queryArray[i]];
       }
-      // deploy contract for challenge
-      partitionContract = new web3.eth.Contract(abi);
+      //console.log(queryArray);
 
-      console.log(bytecode)
-      // This alternative method gives you the receipt in an event
-      partitionContract = yield partitionContract.deploy({
-          data: bytecode,
-          arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
-                      finalTime, 4, 10, 3600]
-      }).send({
-          from: aliceAddr,
-          gas: 1500000
-      }).on('receipt');
-      console.log('aaa')
-      // check contract owner (every public variable has getter method)
-      response = yield partitionContract.methods.owner().call({
-          from: aliceAddr,
-      });
-      expect(response.toLowerCase()).to.equal(aliceAddr);
+      // sending hashes from alice should fail
+      response = yield partitionContract.methods
+        .replyQuery(queryArray, replyArray)
+        .send({ from: aliceAddr, gas: 1500000 })
+        .catch(function(error) {
+          expect(error.message).to.have.string('VM Exception');
+        });
 
-      while (true) {
-          currentState = yield partitionContract.methods
-              .currentState().call({ from: aliceAddr });
-          console.log(currentState);
-          expect(currentState).to.equal('0');
+      // alice claiming victory should fail
+      response = yield partitionContract.methods
+        .claimVictoryByTime()
+        .send({ from: aliceAddr, gas: 1500000 })
+        .catch(function(error) {
+          expect(error.message).to.have.string('VM Exception');
+        });
 
+      // send hashes
+      response = yield partitionContract.methods
+        .replyQuery(queryArray, replyArray)
+        .send({ from: bobAddr, gas: 1500000 })
+        .on('receipt', function(receipt) {
+          expect(receipt.events.HashesPosted).not.to.be.undefined;
+        });
 
+      returnValues = response.events.HashesPosted.returnValues;
+
+      // find first last time of query where there was aggreement
+      var lastConsensualQuery = 0;
+      for (i = 0; i < querySize - 1; i++){
+        if (aliceHistory[returnValues.thePostedTimes[i]]
+            == returnValues.thePostedHashes[i]) {
+          lastConsensualQuery = i;
+        } else {
+          break;
+        }
       }
 
+      // check if the state is waiting query
+      currentState = yield partitionContract.methods
+        .currentState().call({ from: bobAddr });
+      expect(currentState).to.equal('0');
 
-      // check original greeting with call (no transaction)
-      originalGreeting = yield partitionContract.methods.greet().call({
-          from: aliceAddr,
-      });
-      expect(originalGreeting).to.equal('Hello!', 'Original greeting does not match.');
+      // bob claiming victory should fail
+      response = yield partitionContract.methods
+        .claimVictoryByTime()
+        .send({ from: bobAddr, gas: 1500000 })
+        .catch(function(error) {
+          expect(error.message).to.have.string('VM Exception');
+        });
 
-      // change greeting with send
-      response = yield partitionContract.methods.change('Hi there!')
-          .send({
-              from: aliceAddr,
-              gas: 1500000
+      leftPoint = returnValues.thePostedTimes[lastConsensualQuery];
+      rightPoint = returnValues.thePostedTimes[lastConsensualQuery + 1];
+
+      // check if the interval is unitary
+      if (+rightPoint == +leftPoint + 1) {
+        // if the interval is unitary, present divergence
+        response = yield partitionContract.methods
+          .presentDivergence(leftPoint)
+          .send({ from: aliceAddr, gas: 1500000 })
+          .on('receipt', function(receipt) {
+            expect(receipt.events.DivergenceFound).not.to.be.undefined;
           });
-      returnValues = response.events.ChangeGreetingEvent.returnValues;
-      expect(returnValues.oldGreeting).to.equal('Hello!', 'Wrong old greeting');
-      expect(returnValues.newGreeting).to.equal('Hi there!', 'Wrong new greeting');
-
-      // check original greeting (with call)
-      originalGreeting = yield partitionContract.methods.greet().call({
-          from: aliceAddr,
-      });
-      expect(originalGreeting)
-          .to.equal('Hi there!', 'Original greeting does not match.');
-
-      // kill contract
-      response = yield partitionContract.methods.kill()
-          .send({
-              from: aliceAddr,
-              gas: 1500000
+        returnValues = response.events.DivergenceFound.returnValues;
+        expect(+returnValues.timeOfDivergence).to.equal(lastAggreement);
+        break;
+      } else {
+        // send query with last queried time of aggreement
+        response = yield partitionContract.methods
+          .makeQuery(lastConsensualQuery, leftPoint, rightPoint)
+          .send({ from: aliceAddr, gas: 1500000 })
+          .on('receipt', function(receipt) {
+            expect(receipt.events.QueryPosted).not.to.be.undefined;
           });
+      }
+    }
+
+    // kill contract
+    response = yield partitionContract.methods.kill()
+      .send({ from: aliceAddr, gas: 1500000 });
   });
 });
 
