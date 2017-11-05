@@ -1,3 +1,4 @@
+/// @title Partition contract
 pragma solidity ^0.4.0;
 
 contract mortal {
@@ -89,6 +90,9 @@ contract partition is mortal {
     queryArray[querySize - 1] = rightPoint;
   }
 
+  /// @notice Answer the query (only claimer can call it).
+  /// @param postedTimes An array (of size querySize) with the times that have been queried.
+  /// @param postedHashes An array (of size querySize) with the hashes corresponding to the queried times
   function replyQuery(uint[] postedTimes, bytes32[] postedHashes) public {
     require(msg.sender == claimer);
     require(currentState == state.WaitingHashes);
@@ -108,6 +112,10 @@ contract partition is mortal {
     HashesPosted(postedTimes, postedHashes);
   }
 
+  /// @notice Makes a query (only challenger can call it).
+  /// @param queryPiece is the index of queryArray corresponding to the left limit of the next interval to be queried.
+  /// @param leftPoint confirmation of the leftPoint of the interval to be split. Should be an aggreement point.
+  /// @param leftPoint confirmation of the rightPoint of the interval to be split. Should be a disagreement point.
   function makeQuery(uint queryPiece, uint leftPoint, uint rightPoint) public {
     require(msg.sender == challenger);
     require(currentState == state.WaitingQuery);
@@ -124,6 +132,7 @@ contract partition is mortal {
     QueryPosted(queryArray);
   }
 
+  /// @notice Claim victory for opponent timeout.
   function claimVictoryByTime() public {
     if (msg.sender == challenger && currentState == state.WaitingHashes
         && now > timeOfLastMove + roundDuration)
@@ -137,6 +146,8 @@ contract partition is mortal {
       }
   }
 
+  /// @notice Present a precise time of divergence (can only be called by challenger).
+  /// @param theDivergenceTime The time when the divergence happended. It should be a point of aggreement, while theDivergenceTime + 1 should be a point of disagreement (both queried).
   function presentDivergence(uint theDivergenceTime) public {
     require(msg.sender == challenger);
     require(theDivergenceTime < finalTime);
