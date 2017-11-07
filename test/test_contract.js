@@ -37,6 +37,7 @@ const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
 
 describe('Testing partition contract', function() {
   beforeEach(function() {
+    this.timeout(15000)
     // testrpc
     var testrpcParameters = {
       "accounts":
@@ -49,12 +50,15 @@ describe('Testing partition contract', function() {
     }
     web3 = new Web3(TestRPC.provider(testrpcParameters));
 
-    // another option is using a node serving in port 8545 with those users
-    // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-  });
-
-  it('Find divergence', function*() {
-    this.timeout(15000)
+    // promisify jsonRPC direct call
+    sendRPC = function(param){
+      return new Promise(function(resolve, reject){
+        web3.currentProvider.sendAsync(param, function(err, data){
+          if(err !== null) return reject(err);
+          resolve(data);
+        });
+      });
+    }
 
     // prepare contest
     initialHash = web3.utils.sha3('start');
@@ -80,6 +84,13 @@ describe('Testing partition contract', function() {
     }
     // create contract object
     partitionContract = new web3.eth.Contract(abi);
+
+    // another option is using a node serving in port 8545 with those users
+    // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  });
+
+  it('Find divergence', function*() {
+    this.timeout(15000)
 
     // deploy contract and update object
     partitionContract = yield partitionContract.deploy({
@@ -189,6 +200,61 @@ describe('Testing partition contract', function() {
     // kill contract
     response = yield partitionContract.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
+  });
+
+
+  it('Claimer timeout', function*() {
+    this.timeout(15000)
+
+    // deploy contract and update object
+    partitionContract = yield partitionContract.deploy({
+      data: bytecode,
+      arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
+                  finalTime, querySize, roundDuration]
+    }).send({ from: aliceAddr, gas: 1500000 })
+      .on('receipt');
+
+    queryArray = [];
+    replyArray = [];
+    for (i = 0; i < querySize; i++) queryArray.push(0);
+    for (i = 0; i < querySize; i++) replyArray.push("");
+
+    // check if the state is waiting hashes
+    currentState = yield partitionContract.methods
+      .currentState().call({ from: bobAddr });
+    expect(currentState).to.equal('1');
+
+    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+                              params: [3500], id: 0});
+
+    // alice claiming victory should fail
+    response = yield partitionContract.methods
+      .claimVictoryByTime()
+      .send({ from: aliceAddr, gas: 1500000 })
+      .catch(function(error) {
+        expect(error.message).to.have.string('VM Exception');
+      });
+
+    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+                              params: [200], id: 0});
+
+    // alice claiming victory should now work
+    response = yield partitionContract.methods
+      .claimVictoryByTime()
+      .send({ from: aliceAddr, gas: 1500000 });
+    returnValues = response.events.ChallengeEnded.returnValues;
+    console.log(returnValues)
+    expect(+returnValues.theState).to.equal(2);
+
+    // check if the state is waiting query
+    currentState = yield partitionContract.methods
+      .currentState().call({ from: bobAddr });
+    expect(currentState).to.equal('2');
+
+    // kill contract
+    response = yield partitionContract.methods.kill()
+      .send({ from: aliceAddr, gas: 1500000 });
+
   });
 });
 
