@@ -243,7 +243,6 @@ describe('Testing partition contract', function() {
       .claimVictoryByTime()
       .send({ from: aliceAddr, gas: 1500000 });
     returnValues = response.events.ChallengeEnded.returnValues;
-    console.log(returnValues)
     expect(+returnValues.theState).to.equal(2);
 
     // check if the state is waiting query
@@ -255,6 +254,76 @@ describe('Testing partition contract', function() {
     response = yield partitionContract.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
 
+  });
+
+  it('Challenger timeout', function*() {
+    this.timeout(15000)
+
+    // deploy contract and update object
+    partitionContract = yield partitionContract.deploy({
+      data: bytecode,
+      arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
+                  finalTime, querySize, roundDuration]
+    }).send({ from: aliceAddr, gas: 1500000 })
+      .on('receipt');
+
+    queryArray = [];
+    replyArray = [];
+    for (i = 0; i < querySize; i++) queryArray.push(0);
+    for (i = 0; i < querySize; i++) replyArray.push("");
+
+    // check if the state is waiting hashes
+    currentState = yield partitionContract.methods
+      .currentState().call({ from: bobAddr });
+    expect(currentState).to.equal('1');
+
+    // get the query array and prepare response
+    // solidity cannot return dynamic array from function
+    for (i = 0; i < querySize; i++) {
+        queryArray[i] = yield partitionContract.methods
+            .queryArray(i).call({ from: bobAddr });
+        replyArray[i] = bobHistory[queryArray[i]];
+    }
+
+    // send hashes
+    response = yield partitionContract.methods
+        .replyQuery(queryArray, replyArray)
+        .send({ from: bobAddr, gas: 1500000 })
+        .on('receipt', function(receipt) {
+            expect(receipt.events.HashesPosted).not.to.be.undefined;
+        });
+
+    returnValues = response.events.HashesPosted.returnValues;
+
+    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+                              params: [3500], id: 0});
+
+    // bob claiming victory should fail
+    response = yield partitionContract.methods
+      .claimVictoryByTime()
+      .send({ from: bobAddr, gas: 1500000 })
+      .catch(function(error) {
+        expect(error.message).to.have.string('VM Exception');
+      });
+
+    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+                              params: [200], id: 0});
+
+    // bob claiming victory should now work
+    response = yield partitionContract.methods
+      .claimVictoryByTime()
+      .send({ from: bobAddr, gas: 1500000 });
+    returnValues = response.events.ChallengeEnded.returnValues;
+    expect(+returnValues.theState).to.equal(3);
+
+    // check if the state is waiting query
+    currentState = yield partitionContract.methods
+      .currentState().call({ from: bobAddr });
+    expect(currentState).to.equal('3');
+
+    // kill contract
+    response = yield partitionContract.methods.kill()
+      .send({ from: aliceAddr, gas: 1500000 });
   });
 });
 
