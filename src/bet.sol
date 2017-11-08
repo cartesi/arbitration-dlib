@@ -27,7 +27,7 @@ contract bet {
   event WinerFound(state finalState);
 
   function bet(address theChallenger, address theClaimer,
-               uint theFinalTime, uint theRoundDuration) public {
+               uint theFinalTime, uint theRoundDuration) payable public {
     require(theChallenger != theClaimer);
     challenger = theChallenger;
     claimer = theClaimer;
