@@ -9,10 +9,10 @@ contract bet {
 
   bytes32 initialHash;
   bytes32 claimedFinalHash;
-
   uint public finalTime;
-  uint public roundDuration;
+
   uint public timeOfLastMove;
+  uint public roundDuration;
 
   partition partitionContract;
 
@@ -22,7 +22,8 @@ contract bet {
   state public currentState;
 
   event BetStarted(address theChallenger, address theClaimer,
-                   uint theFinalTime, uint theRoundDuration);
+                   bytes32 theInitialHash, uint theFinalTime,
+                   uint theRoundDuration);
   event ClaimPosted(bytes32 theClaimedHash);
   event ChallengePosted(address thePartitionContract);
   event WinerFound(state finalState);
@@ -35,14 +36,14 @@ contract bet {
     require(theFinalTime > 0);
     finalTime = theFinalTime;
 
-    initialHash = block.blockhash(block.number - 1);
-
     roundDuration = theRoundDuration;
     timeOfLastMove = now;
 
+    initialHash = block.blockhash(block.number - 1);
+
     currentState = state.WaitingClaim;
-    BetStarted(theChallenger, theClaimer,
-               theFinalTime, theRoundDuration);
+    BetStarted(challenger, claimer, initialHash,
+               finalTime, roundDuration);
   }
 
   /// @notice Posts a claim (can only be called by claimer)
@@ -53,7 +54,7 @@ contract bet {
     claimedFinalHash = theClaimedFinalHash;
     currentState = state.WaitingChallenge;
     timeOfLastMove = now;
-    ClaimPosted(theClaimedFinalHash);
+    ClaimPosted(claimedFinalHash);
   }
 
   /// @notice Post a challenge to claimed final hash (only challenger can do)
@@ -61,8 +62,8 @@ contract bet {
     require(msg.sender == challenger);
     require(currentState == state.WaitingChallenge);
     partitionContract = new partition(challenger, claimer,
-                                     initialHash, claimedFinalHash,
-                                     finalTime, 10, roundDuration);
+                                      initialHash, claimedFinalHash,
+                                      finalTime, 10, roundDuration);
     currentState = state.WaitingResolution;
     ChallengePosted(partitionContract);
   }
@@ -73,6 +74,13 @@ contract bet {
     // timeout to submit claim
     if (currentState == state.WaitingClaim
         && now > timeOfLastMove + roundDuration) {
+      currentState = state.ChallengerWon;
+      WinerFound(currentState);
+      selfdestruct(challenger);
+    }
+    // even number on dice
+    if (currentState == state.WaitingChallenge
+        && uint(claimedFinalHash) % 2 == 0) {
       currentState = state.ChallengerWon;
       WinerFound(currentState);
       selfdestruct(challenger);
@@ -91,7 +99,7 @@ contract bet {
         .timeHash(partitionContract.divergenceTime());
       bytes32 afterDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime() + 1);
-      if (keccak256(beforeDivergence) != keccak256(afterDivergence)) {
+      if (keccak256(beforeDivergence) != afterDivergence) {
         currentState = state.ChallengerWon;
         WinerFound(currentState);
         selfdestruct(challenger);
@@ -123,7 +131,7 @@ contract bet {
         .timeHash(partitionContract.divergenceTime());
       bytes32 afterDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime() + 1);
-      if (keccak256(beforeDivergence) == keccak256(afterDivergence)) {
+      if (keccak256(beforeDivergence) == afterDivergence) {
         currentState = state.ClaimerWon;
         WinerFound(currentState);
         selfdestruct(claimer);
