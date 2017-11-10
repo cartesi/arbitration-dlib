@@ -1,5 +1,11 @@
 /// @title Partition contract
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.18;
+
+contract timeAware {
+  function getTime() view internal returns (uint) {
+    return now;
+  }
+}
 
 contract mortal {
     address public owner;
@@ -8,7 +14,7 @@ contract mortal {
     function kill() public { if (msg.sender == owner) selfdestruct(owner); }
 }
 
-contract partition is mortal {
+contract partition is mortal, timeAware {
   address public challenger;
   address public claimer;
   uint public finalTime; // hashes provided between 0 and finalTime (inclusive)
@@ -26,7 +32,7 @@ contract partition is mortal {
                ChallengerWon, ClaimerWon, DivergenceFound }
   state public currentState;
 
-  uint private divergenceTime;
+  uint public divergenceTime;
 
   event QueryPosted(uint[] theQueryTimes);
   event HashesPosted(uint[] thePostedTimes, bytes32[] thePostedHashes);
@@ -57,7 +63,7 @@ contract partition is mortal {
     slice(0, finalTime);
 
     roundDuration = theRoundDuration;
-    timeOfLastMove = now;
+    timeOfLastMove = getTime();
 
     currentState = state.WaitingHashes;
     QueryPosted(queryArray);
@@ -108,7 +114,7 @@ contract partition is mortal {
       }
     }
     currentState = state.WaitingQuery;
-    timeOfLastMove = now;
+    timeOfLastMove = getTime();
     HashesPosted(postedTimes, postedHashes);
   }
 
@@ -128,19 +134,19 @@ contract partition is mortal {
     require(rightPoint - leftPoint > 1);
     slice(leftPoint, rightPoint);
     currentState = state.WaitingHashes;
-    timeOfLastMove = now;
+    timeOfLastMove = getTime();
     QueryPosted(queryArray);
   }
 
   /// @notice Claim victory for opponent timeout.
   function claimVictoryByTime() public {
     if (msg.sender == challenger && currentState == state.WaitingHashes
-        && now > timeOfLastMove + roundDuration)
+        && getTime() > timeOfLastMove + roundDuration)
       { currentState = state.ChallengerWon;
         ChallengeEnded(currentState);
       }
     if (msg.sender == claimer && currentState == state.WaitingQuery
-        && now > timeOfLastMove + roundDuration)
+        && getTime() > timeOfLastMove + roundDuration)
       { currentState = state.ClaimerWon;
         ChallengeEnded(currentState);
       }
