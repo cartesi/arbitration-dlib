@@ -1,7 +1,7 @@
 /// @title Betting contract
 pragma solidity ^0.4.0;
 
-import "./partition.sol"
+import "./partition.sol";
 
 contract bet {
   address public challenger;
@@ -12,8 +12,9 @@ contract bet {
 
   uint public finalTime;
   uint public roundDuration;
+  uint public timeOfLastMove;
 
-  address partitionContract;
+  partition partitionContract;
 
   enum state { WaitingClaim, WaitingChallenge, WaitingResolution,
                ChallengerWon, ClaimerWon }
@@ -21,7 +22,7 @@ contract bet {
   state public currentState;
 
   event BetStarted(address theChallenger, address theClaimer,
-                   uint theFinalTime, uint theRoundDuration)
+                   uint theFinalTime, uint theRoundDuration);
   event ClaimPosted(bytes32 theClaimedHash);
   event ChallengePosted(address thePartitionContract);
   event WinerFound(state finalState);
@@ -40,16 +41,16 @@ contract bet {
     timeOfLastMove = now;
 
     currentState = state.WaitingClaim;
-    BetStarted(address theChallenger, address theClaimer,
-               uint theFinalTime, uint theRoundDuration)
+    BetStarted(theChallenger, theClaimer,
+               theFinalTime, theRoundDuration);
   }
 
   /// @notice Posts a claim (can only be called by claimer)
-  /// @param claimedFinalHash the hash that is inteded to be claimed as final
+  /// @param theClaimedFinalHash the hash that is inteded to be claimed as final
   function postClaim(bytes32 theClaimedFinalHash) public {
     require(msg.sender == claimer);
     require(currentState == state.WaitingClaim);
-    claimedFinalHash = theClaimedFinalHash
+    claimedFinalHash = theClaimedFinalHash;
     currentState = state.WaitingChallenge;
     timeOfLastMove = now;
     ClaimPosted(theClaimedFinalHash);
@@ -59,7 +60,7 @@ contract bet {
   function postChallenge() public {
     require(msg.sender == challenger);
     require(currentState == state.WaitingChallenge);
-    prtitionContract = new partition(challenger, claimer,
+    partitionContract = new partition(challenger, claimer,
                                      initialHash, claimedFinalHash,
                                      finalTime, 10, roundDuration);
     currentState = state.WaitingResolution;
@@ -78,19 +79,19 @@ contract bet {
     }
     // challenger won the partition challenge
     if (currentState == state.WaitingResolution
-        && partitionContract.state == partitionContract.state.ChallengerWon) {
+        && partitionContract.currentState() == partition.state.ChallengerWon) {
       currentState = state.ChallengerWon;
       WinerFound(currentState);
       selfdestruct(challenger);
     }
     // partition challenge ended in divergence and challenger won divergence
     if (currentState == state.WaitingResolution
-        && partitionContract.state == partitionContract.state.DivergenceFound) {
+        && partitionContract.currentState() == partition.state.DivergenceFound) {
       bytes32 beforeDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime());
       bytes32 afterDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime() + 1);
-      if (sha3(beforeDivergence) != sha3(afterDivergence)) {
+      if (keccak256(beforeDivergence) != keccak256(afterDivergence)) {
         currentState = state.ChallengerWon;
         WinerFound(currentState);
         selfdestruct(challenger);
@@ -110,19 +111,19 @@ contract bet {
     }
     // claimer won the partition challenge
     if (currentState == state.WaitingResolution
-        && partitionContract.state == partitionContract.state.ClaimerWon) {
+        && partitionContract.currentState() == partition.state.ClaimerWon) {
       currentState = state.ClaimerWon;
       WinerFound(currentState);
       selfdestruct(claimer);
     }
     // partition challenge ended in divergence and claimer won divergence
     if (currentState == state.WaitingResolution
-        && partitionContract.state == partitionContract.state.DivergenceFound) {
+        && partitionContract.currentState() == partition.state.DivergenceFound) {
       bytes32 beforeDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime());
       bytes32 afterDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime() + 1);
-      if (sha3(beforeDivergence) == sha3(afterDivergence)) {
+      if (keccak256(beforeDivergence) == keccak256(afterDivergence)) {
         currentState = state.ClaimerWon;
         WinerFound(currentState);
         selfdestruct(claimer);
