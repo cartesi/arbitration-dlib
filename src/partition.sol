@@ -1,11 +1,7 @@
 /// @title Partition contract
 pragma solidity ^0.4.18;
 
-contract timeAware {
-  function getTime() view internal returns (uint) {
-    return now;
-  }
-}
+import "./timeaware.sol";
 
 contract mortal {
     address public owner;

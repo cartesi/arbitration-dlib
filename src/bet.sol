@@ -2,8 +2,9 @@
 pragma solidity ^0.4.0;
 
 import "./partition.sol";
+import "./timeaware.sol";
 
-contract bet {
+contract bet is timeAware {
   address public challenger;
   address public claimer;
 
@@ -37,7 +38,7 @@ contract bet {
     finalTime = theFinalTime;
 
     roundDuration = theRoundDuration;
-    timeOfLastMove = now;
+    timeOfLastMove = getTime();
 
     initialHash = block.blockhash(block.number - 1);
 
@@ -53,7 +54,7 @@ contract bet {
     require(currentState == state.WaitingClaim);
     claimedFinalHash = theClaimedFinalHash;
     currentState = state.WaitingChallenge;
-    timeOfLastMove = now;
+    timeOfLastMove = getTime();
     ClaimPosted(claimedFinalHash);
   }
 
@@ -73,7 +74,7 @@ contract bet {
     require(msg.sender == challenger);
     // timeout to submit claim
     if (currentState == state.WaitingClaim
-        && now > timeOfLastMove + roundDuration) {
+        && getTime() > timeOfLastMove + roundDuration) {
       currentState = state.ChallengerWon;
       WinerFound(currentState);
       selfdestruct(challenger);
@@ -112,7 +113,7 @@ contract bet {
     require(msg.sender == claimer);
     // timeout to submit challenge
     if (currentState == state.WaitingChallenge
-        && now > timeOfLastMove + roundDuration) {
+        && getTime() > timeOfLastMove + roundDuration) {
       currentState = state.ClaimerWon;
       WinerFound(currentState);
       selfdestruct(claimer);
