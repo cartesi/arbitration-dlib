@@ -119,14 +119,15 @@ contract PartitionTest is DSTest {
       uint rightPoint = partitionContract.queryArray(lastConsensualQuery + 1);
 
       // sees if the interval is unitary
-      if (rightPoint == leftPoint + 1) {
-        // if the interval is unitary, present divergence
+      if (rightPoint != leftPoint + 1) {
+        // if the interval is not unitary, make query with interval
+        alice.makeQuery(partitionContract, lastConsensualQuery,
+                        leftPoint, rightPoint);
+      } else {
+        // otherwise, present divergence
         alice.presentDivergence(partitionContract, leftPoint);
         assertEq(partitionContract.divergenceTime(), lastAggreement);
         break;
-      } else {
-        // otherwise, send query with interval
-        alice.makeQuery(partitionContract, lastConsensualQuery, leftPoint, rightPoint);
       }
     }
   }
