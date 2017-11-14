@@ -52,6 +52,7 @@ contract partition is mortal, timeAware {
     timeHash[finalTime] = theClaimerFinalHash;
 
     require(theQuerySize > 2);
+    require(theQuerySize < 100);
     querySize = theQuerySize;
     for (uint i = 0; i < querySize; i++) { queryArray.push(0); }
 
