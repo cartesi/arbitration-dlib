@@ -12,8 +12,8 @@ contract bet is timeAware {
   address public challenger;
   address public claimer;
 
-  bytes32 initialHash; // consensusual between challenger and claimer
-  bytes32 claimedFinalHash; // could be non-consensual
+  bytes32 public initialHash; // consensusual between challenger and claimer
+  bytes32 public claimedFinalHash; // could be non-consensual
   uint public finalTime;
 
   uint public timeOfLastMove; // last time someone made a move with deadline
@@ -21,7 +21,7 @@ contract bet is timeAware {
 
   uint public challengeCost; // price to start a challenge
 
-  partition partitionContract;
+  partition public partitionContract;
 
   enum state { WaitingClaim, WaitingChallenge, WaitingResolution,
                ChallengerWon, ClaimerWon }
@@ -54,6 +54,10 @@ contract bet is timeAware {
                finalTime, roundDuration);
   }
 
+  function getPartitionCurrentState() view public returns (partition.state) {
+    return partitionContract.currentState();
+  }
+
   /// @notice Posts a claim (can only be called by claimer)
   /// @param theClaimedFinalHash the hash that is claimed to be the final
   function postClaim(bytes32 theClaimedFinalHash) public {
@@ -69,7 +73,8 @@ contract bet is timeAware {
   function postChallenge() public payable {
     require(msg.sender == challenger);
     require(currentState == state.WaitingChallenge);
-    require(msg.value > challengeCost); // one needs to pay to post a challenge
+    //require(msg.value > challengeCost);
+    // one needs to pay to post a challenge
     partitionContract = new partition(challenger, claimer,
                                       initialHash, claimedFinalHash,
                                       finalTime, 10, roundDuration);
@@ -93,12 +98,12 @@ contract bet is timeAware {
     }
     // challenger won the partition challenge (claimer misses deadline there)
     if (currentState == state.WaitingResolution
-        && partitionContract.currentState() == partition.state.ChallengerWon) {
+        && getPartitionCurrentState() == partition.state.ChallengerWon) {
       won = true;
     }
     // partition challenge ended in divergence and challenger won divergence
     if (currentState == state.WaitingResolution
-        && partitionContract.currentState() == partition.state.DivergenceFound) {
+        && getPartitionCurrentState() == partition.state.DivergenceFound) {
       bytes32 beforeDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime());
       bytes32 afterDivergence = partitionContract
@@ -125,12 +130,12 @@ contract bet is timeAware {
     }
     // claimer won the partition challenge
     if (currentState == state.WaitingResolution
-        && partitionContract.currentState() == partition.state.ClaimerWon) {
+        && getPartitionCurrentState() == partition.state.ClaimerWon) {
       won = true;
     }
     // partition challenge ended in divergence and claimer won divergence
     if (currentState == state.WaitingResolution
-        && partitionContract.currentState() == partition.state.DivergenceFound) {
+        && getPartitionCurrentState() == partition.state.DivergenceFound) {
       bytes32 beforeDivergence = partitionContract
         .timeHash(partitionContract.divergenceTime());
       bytes32 afterDivergence = partitionContract
