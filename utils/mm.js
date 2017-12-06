@@ -1,4 +1,6 @@
 const Web3 = require('web3');
+var BigNumber = require('bignumber.js');
+// var Uint64BE = require("int64-buffer").Uint64BE;
 
 web3 = new Web3();
 
@@ -7,69 +9,189 @@ function isEmpty(obj) {
     return Object.keys(obj).length === 0;
 }
 
-// convert char to hex
-function charToHex(value) {
-    var str = value.toString(16);
-    if (str.length == 1) return "0x0" + str;
-    return "0x" + str;
-}
-
-// initialize an array of iterated keccaks of a zero byte
-iteratedZeroHashes = [web3.utils.soliditySha3({type: 'uint8', value: 0})];
-for (i = 0; i < 64; i++) {
-    iteratedZeroHashes.push(web3.utils.sha3(iteratedZeroHashes[i],
-                                            iteratedZeroHashes[i]));
-}
-// console.log(iteratedZeroHashes[64]);
-
-// this fuction receives a hash table memory with some values filled.
-// then it returns the merkel hash of the memory from begin to 2^log2length
-// note that if key is not present, value is assumed to be zero.
-function merkelHash(memory, begin, log2length) {
-    // if memory is empty, use the iterated hashes of zero bytes
-    //console.log(memory, begin, log2length);
-    if (isEmpty(memory)) return iteratedZeroHashes[log2length];
-    // if memory is not empty, return the byte at location begin
-    if (log2length == 0)
-        return web3.utils.soliditySha3({type: 'uint8', value: memory[begin]});
-    // otherwise split the memory in two pieces and use recursion
-    var mem1 = {}
-    var mem2 = {}
-
-    for (var key in memory) {
-        if (memory.hasOwnProperty(key)) {
-            if (key < begin + Math.pow(2, log2length - 1)) {
-                mem1[key] = memory[key];
-            } else {
-                mem2[key] = memory[key];
-            }
-        }
-    }
-    //console.log("split into " + JSON.stringify(mem1) + " for " + begin + ", " + (log2length - 1) +
-    //            " and " + JSON.stringify(mem2) + " for " + (begin + Math.pow(2, log2length - 1)) + ", " + (log2length - 1));
-    return web3.utils.sha3(merkelHash(mem1, begin, log2length - 1) +
-                           merkelHash(mem2, begin + Math.pow(2, log2length - 1),
-                                      log2length - 1));
+function hashWord(word) {
+    return web3.utils.soliditySha3({type: 'uint64', value: word});
 }
 
 class MemoryManager {
 
     constructor() {
-        memoryMap = {};
+        // initialize an array of iterated keccaks of a zero byte
+        this.iteratedZeroHashes = [hashWord(0)];
+        for (var i = 0; i < 61; i++) {
+            this.iteratedZeroHashes.push(web3.utils.sha3(
+                this.iteratedZeroHashes[i] + this.iteratedZeroHashes[i])
+            );
+        }
+        //console.log(this.iteratedZeroHashes);
+        //   memory - a hash table where
+        //     key: memory address (should be word-aligned)
+        //     value: word content at address (assumed zero if not present)
+        this.memoryMap = {};
     }
 
-    getValue(position) {
-        if (position in memoryMap) {
-            return memoryMap[position];
+    getWord(position) {
+        if (BigNumber(position).mod(8) != 0) throw "Position should be word-aligned";
+        if (position in this.memoryMap) {
+            return this.memoryMap[position];
         }
         return 0;
     }
 
     setValue(position, value) {
-        memoryMap[posiiton] = value;
+        if (BigNumber(position).mod(8) != 0) throw "Position should be word-aligned";
+        if (BigNumber(position).lessThan(0)) throw "Setting negative value"
+        if (BigNumber(position).greaterThanOrEqualTo(
+            BigNumber(2).pow(64))) throw "Setting value too large"
+        this.memoryMap[position] = value;
     }
 
+    // function returns the merkel hash of a sub-interval in memory.
+    //   begin - starting address of sub-memory (should be word-aligned)
+    //   log2length - the log 2 of the length (in words) of the sub-interval
+    // recall that if a key is not present, the value is assumed to be zero.
+    subMerkel(memory, begin, log2length) {
+        if (!(begin instanceof BigNumber)) throw "Begin should be big number";
+        // if begin is not an aligned word, throw
+        if (begin.mod(8) != 0) throw "Begin should be word-aligned";
+        // if memory is empty, use the iterated hashes of zero bytes
+        // console.log(memory, begin, log2length);
+        if (isEmpty(memory)) return this.iteratedZeroHashes[log2length];
+        // if memory is not empty, return the byte at location begin
+        if (log2length === 0)
+            if (begin in memory) {
+                return hashWord(memory[begin]);
+            } else {
+                return hashWord(0);
+            }
+        // otherwise split the memory in two pieces and use recursion
+        var mem1 = {}
+        var mem2 = {}
+        // split into two intervals of half the size
+        for (var key in memory) {
+            if (memory.hasOwnProperty(key)) {
+                if (BigNumber(key)
+                    .lessThan(begin.plus(BigNumber(2).pow(log2length + 2)))) {
+                    mem1[key] = memory[key];
+                } else {
+                    mem2[key] = memory[key];
+                }
+            }
+        }
+        // returns the hash of the concatenation
+        // console.log("split: " + JSON.stringify(mem1)
+        //            + " for (" + begin +
+        //            ", " + (begin.plus(BigNumber(2).pow(log2length + 2))) + ")"
+        //            + " and " + JSON.stringify(mem2)
+        //            + " for (" + (begin.plus(BigNumber(2).pow(log2length + 2)))
+        //            + ", " + (begin.plus(BigNumber(2).pow(log2length + 3))) + ")");
+        return web3.utils.sha3(
+            this.subMerkel(mem1, begin, log2length - 1) +
+            this.subMerkel(mem2, begin.plus(BigNumber(2).pow(log2length + 2)),
+                           log2length - 1)
+        );
+    }
+
+    // returns the proof that a certain position contains a certain word
+    // the proof consists of a list with 62 elements:
+    //   0          -> hash of the word at position
+    //   1          -> hash of the sister word
+    //   2 until 61 -> hash of the uncle subtree
+    generateProof(position) {
+        position = BigNumber(position);
+        if (position.mod(8) != 0) throw "Position should be word-aligned";
+        if (BigNumber(position).lessThan(0)) throw "Proving negative position"
+        if (BigNumber(position).greaterThanOrEqualTo(
+            BigNumber(2).pow(64))) throw "Proving position too large"
+
+        //console.log("position " + position);
+        var value = this.getWord(position);
+        //console.log("value " + value);
+        var proof = [hashWord(value)];
+        for (var i = 0; i < 61; i++) {
+            let truncated_deep = position
+                .minus(position.mod(BigNumber(2).pow(i + 4)));
+            let truncated = position
+                .minus(position.mod(BigNumber(2).pow(i + 3)));
+            //console.log("truncated three at " + i + ": " + truncated);
+            //console.log("truncated four  at " + i + ": " + truncated_deep);
+            if (truncated.eq(truncated_deep)) {
+                //console.log("submerkel 1: " + truncated.plus(BigNumber(2).pow(i + 3))
+                //           + ", " + BigNumber(2).pow(i + 3))
+                proof.push(//web3.utils.sha3(
+                    this.subMerkel(this.memoryMap,
+                                   truncated.plus(BigNumber(2).pow(i + 3)), i)
+                );
+            } else {
+                //console.log("submerkel 2: " + truncated
+                //           + ", " + BigNumber(2).pow(i + 3))
+                proof.push(//web3.utils.sha3(
+                    this.subMerkel(this.memoryMap, truncated, i)
+                );
+            }
+        }
+        return proof;
+    }
+
+    // verifies a proof that a certain position contains a certain word
+    //   0 -> hash of the word at position should equal proof[0]
+    //   hashing this inductively with the uncle hash
+    //   should ultimately return the hash of the whole tree
+    verifyProof(position, value, proof) {
+        position = BigNumber(position);
+        if (position.mod(8) != 0) throw "Position should be word-aligned";
+        if (BigNumber(position).lessThan(0)) throw "Verifying negative position"
+        if (BigNumber(position).greaterThanOrEqualTo(
+            BigNumber(2).pow(64))) throw "Verifying position too large"
+        let running_hash = hashWord(value);
+        //console.log("hashWord(value): " + running_hash);
+        //console.log("proof[0]: " + proof[0]);
+        for (var i = 0; i < 61; i++) {
+            let truncated_deep = position
+                .minus(position.mod(BigNumber(2).pow(i + 4)));
+            let truncated = position
+                .minus(position.mod(BigNumber(2).pow(i + 3)));
+            if (truncated.eq(truncated_deep)) {
+                //console.log("case1: " + this.subMerkel(
+                //     this.memoryMap,
+                //    truncated.plus(BigNumber(2).pow(i + 3)), i))
+                running_hash = web3.utils.sha3(
+                    running_hash +
+                    this.subMerkel(this.memoryMap,
+                                   truncated.plus(BigNumber(2).pow(i + 3)), i)
+                )
+            } else {
+                //console.log("case2: " + this.subMerkel(
+                //    this.memoryMap, truncated, i))
+                running_hash = web3.utils.sha3(
+                    this.subMerkel(this.memoryMap, truncated_deep, i) +
+                    running_hash
+                )
+            }
+            if (i < 4) {
+            //console.log("-----------(");
+            //console.log("i: " + i + ", running_hash: " + running_hash);
+            //console.log("i: " + i + ", subtree merkel" +
+            //            this.subMerkel(this.memoryMap, truncated_deep, i + 1));
+            //console.log(")-----------");
+            }
+        }
+        //console.log("sha  0: " + hashWord(0));
+        //console.log("sha  1: " + hashWord(1));
+        //let a = (web3.utils.sha3(hashWord(1) + hashWord(0)));
+        //let b = (web3.utils.sha3(hashWord(0) + hashWord(0)));
+        //console.log("sha 10: " + a);
+        //console.log("sha 00: " + b);
+        //let c = (web3.utils.sha3(b + a));
+        //console.log("sha all " + c);
+        //console.log("running_hash: " + running_hash);
+        //console.log(proof);
+        return (running_hash == this.merkel());
+    }
+
+
+    merkel() { return this.subMerkel(this.memoryMap, BigNumber(0), 61) }
 }
 
-module.exports = { merkelHash: merkelHash };
+module.exports = { MemoryManager: MemoryManager };
 
