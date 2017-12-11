@@ -1,13 +1,13 @@
 const mocha = require('mocha')
 const mm = require('../utils/mm.js')
 //var Uint64BE = require("int64-buffer").Uint64BE;
-var BigNumber = require('bignumber.js');
+const BigNumber = require('bignumber.js');
 
 
-var chai = require("chai");
+const chai = require("chai");
 chai.config.includeStack = true;
-var expect = chai.expect;
-var assert = chai.assert;
+const expect = chai.expect;
+const assert = chai.assert;
 
 describe('Testing memory manager', function() {
     it('Basic tests', function() {
@@ -61,13 +61,6 @@ describe('Testing memory manager', function() {
         myMM.setValue(large, 1);
         proof = myMM.generateProof(large);
         expect(myMM.verifyProof(large, 1, proof)).to.be.true;
-
-        //proof = myMM.generateProof('11111111111111111000');
-        //expect(myMM.verifyProof('11111111111111111000', 0, proof)).to.be.true;
-        //proof = myMM.generateProof(small);
-        //expect(myMM.verifyProof(small, 1, proof)).to.be.true;
-
-
     });
 });
 
