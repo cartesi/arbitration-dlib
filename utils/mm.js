@@ -20,7 +20,8 @@ class MemoryManager {
         this.iteratedZeroHashes = [hashWord(0)];
         for (var i = 0; i < 61; i++) {
             this.iteratedZeroHashes.push(web3.utils.sha3(
-                this.iteratedZeroHashes[i] + this.iteratedZeroHashes[i])
+                this.iteratedZeroHashes[i]
+                + this.iteratedZeroHashes[i].replace(/^0x/, ''))
             );
         }
         //console.log(this.iteratedZeroHashes);
@@ -80,23 +81,22 @@ class MemoryManager {
         }
         // returns the hash of the concatenation
         // console.log("split: " + JSON.stringify(mem1)
-        //            + " for (" + begin +
-        //            ", " + (begin.plus(BigNumber(2).pow(log2length + 2))) + ")"
-        //            + " and " + JSON.stringify(mem2)
-        //            + " for (" + (begin.plus(BigNumber(2).pow(log2length + 2)))
-        //            + ", " + (begin.plus(BigNumber(2).pow(log2length + 3))) + ")");
+        //      + " for (" + begin +
+        //      ", " + (begin.plus(BigNumber(2).pow(log2length + 2))) + ")"
+        //      + " and " + JSON.stringify(mem2)
+        //      + " for (" + (begin.plus(BigNumber(2).pow(log2length + 2)))
+      //      + ", " + (begin.plus(BigNumber(2).pow(log2length + 3))) + ")");
         return web3.utils.sha3(
             this.subMerkel(mem1, begin, log2length - 1) +
             this.subMerkel(mem2, begin.plus(BigNumber(2).pow(log2length + 2)),
-                           log2length - 1)
+                           log2length - 1).replace(/^0x/, '')
         );
     }
 
     // returns the proof that a certain position contains a certain word
     // the proof consists of a list with 62 elements:
-    //   0          -> hash of the word at position
-    //   1          -> hash of the sister word
-    //   2 until 61 -> hash of the uncle subtree
+    //   0          -> hash of the sister word
+    //   1 until 60 -> hash of the uncle subtree
     generateProof(position) {
         position = BigNumber(position);
         if (position.mod(8) != 0) throw "Position should be word-aligned";
@@ -107,7 +107,7 @@ class MemoryManager {
         //console.log("position " + position);
         var value = this.getWord(position);
         //console.log("value " + value);
-        var proof = [hashWord(value)];
+        var proof = [];
         for (var i = 0; i < 61; i++) {
             let truncated_deep = position
                 .minus(position.mod(BigNumber(2).pow(i + 4)));
@@ -116,17 +116,18 @@ class MemoryManager {
             //console.log("truncated three at " + i + ": " + truncated);
             //console.log("truncated four  at " + i + ": " + truncated_deep);
             if (truncated.eq(truncated_deep)) {
-                //console.log("submerkel 1: " + truncated.plus(BigNumber(2).pow(i + 3))
+                //console.log("submerkel 1: "
+                //           + truncated.plus(BigNumber(2).pow(i + 3))
                 //           + ", " + BigNumber(2).pow(i + 3))
-                proof.push(//web3.utils.sha3(
+                proof.push(
                     this.subMerkel(this.memoryMap,
                                    truncated.plus(BigNumber(2).pow(i + 3)), i)
                 );
             } else {
                 //console.log("submerkel 2: " + truncated
                 //           + ", " + BigNumber(2).pow(i + 3))
-                proof.push(//web3.utils.sha3(
-                    this.subMerkel(this.memoryMap, truncated, i)
+                proof.push(
+                    this.subMerkel(this.memoryMap, truncated_deep, i)
                 );
             }
         }
@@ -134,7 +135,7 @@ class MemoryManager {
     }
 
     // verifies a proof that a certain position contains a certain word
-    //   0 -> hash of the word at position should equal proof[0]
+    //   we start with the hash of the word at position.
     //   hashing this inductively with the uncle hash
     //   should ultimately return the hash of the whole tree
     verifyProof(position, value, proof) {
@@ -146,7 +147,7 @@ class MemoryManager {
         let running_hash = hashWord(value);
         //console.log("hashWord(value): " + running_hash);
         //console.log("proof[0]: " + proof[0]);
-        for (var i = 0; i < 61; i++) {
+      for (var i = 0; i < 61; i++) {
             let truncated_deep = position
                 .minus(position.mod(BigNumber(2).pow(i + 4)));
             let truncated = position
@@ -156,36 +157,36 @@ class MemoryManager {
                 //     this.memoryMap,
                 //    truncated.plus(BigNumber(2).pow(i + 3)), i))
                 running_hash = web3.utils.sha3(
-                    running_hash +
-                    this.subMerkel(this.memoryMap,
-                                   truncated.plus(BigNumber(2).pow(i + 3)), i)
+                    running_hash + proof[i].replace(/^0x/, '')
+                    //this.subMerkel(this.memoryMap,
+                    //               truncated.plus(BigNumber(2).pow(i + 3)), i)
                 )
             } else {
                 //console.log("case2: " + this.subMerkel(
                 //    this.memoryMap, truncated, i))
                 running_hash = web3.utils.sha3(
-                    this.subMerkel(this.memoryMap, truncated_deep, i) +
-                    running_hash
+                    //this.subMerkel(this.memoryMap, truncated_deep, i) +
+                    proof[i] + running_hash.replace(/^0x/, '')
                 )
             }
-            if (i < 4) {
-            //console.log("-----------(");
-            //console.log("i: " + i + ", running_hash: " + running_hash);
-            //console.log("i: " + i + ", subtree merkel" +
-            //            this.subMerkel(this.memoryMap, truncated_deep, i + 1));
-            //console.log(")-----------");
-            }
+            // if (i < 4) {
+            //   console.log("-----------(");
+            //   console.log("i: " + i + ", running_hash: " + running_hash);
+            //   console.log("i: " + i + ", subtree merkel" +
+            //               this.subMerkel(this.memoryMap, truncated_deep, i + 1));
+            //   console.log(")-----------");
+            // }
         }
-        //console.log("sha  0: " + hashWord(0));
-        //console.log("sha  1: " + hashWord(1));
-        //let a = (web3.utils.sha3(hashWord(1) + hashWord(0)));
-        //let b = (web3.utils.sha3(hashWord(0) + hashWord(0)));
-        //console.log("sha 10: " + a);
-        //console.log("sha 00: " + b);
-        //let c = (web3.utils.sha3(b + a));
-        //console.log("sha all " + c);
-        //console.log("running_hash: " + running_hash);
-        //console.log(proof);
+        // console.log("sha  0: " + hashWord(0));
+        // console.log("sha  1: " + hashWord(1));
+        // let a = (web3.utils.sha3(hashWord(1) + hashWord(0)));
+        // let b = (web3.utils.sha3(hashWord(0) + hashWord(0)));
+        // console.log("sha 10: " + a);
+        // console.log("sha 00: " + b);
+        // let c = (web3.utils.sha3(b + a));
+        // console.log("sha all " + c);
+        // console.log("running_hash: " + running_hash);
+        // console.log(proof);
         return (running_hash == this.merkel());
     }
 
