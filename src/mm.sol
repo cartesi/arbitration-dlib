@@ -9,6 +9,10 @@ contract mortal {
 }
 
 contract mm is mortal {
+  // the privider will fill the memory for the client to read and write
+  // memory starts with hash and all values that are inserted are first verified
+  // then client can read inserted values and write some more
+  // finally the provider has to update the hash to account for writes
   address public provider;
   address public client;
   bytes32 initialHash;
@@ -21,11 +25,12 @@ contract mm is mortal {
   mapping(uint64 => uint64) public valueWritten; // value written to address
 
   enum state { WaitingValues, ReadAndWrite,
-               UpdatingHash, Finished }
+               UpdatingHashes, Finished }
   state public currentState;
 
   event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, uint64 valueSubmitted);
+  event FinishedSubmittions();
   event ValueWritten(uint64 addressSubmitted, uint64 valueSubmitted);
   event OneHashUpdate(uint64 addressSubmitted, uint64 valueSubmitted,
                       bytes32 newHash);
@@ -53,7 +58,7 @@ contract mm is mortal {
     require(proof.length == 61);
     bytes32 running_hash = keccak256(theValue);
     // iterate the hash with the uncle subtree stated in proof
-    uint64 eight = 0x0000000000000008;
+    uint64 eight = 8;
     for (uint i = 0; i < 61; i++) {
       if ((theAddress & (eight << i)) == 0) {
         running_hash = keccak256(running_hash, proof[i]);
@@ -66,6 +71,32 @@ contract mm is mortal {
     valueSubmitted[theAddress] = theValue;
 
     ValueSubmitted(theAddress, theValue);
+  }
+
+  /// @notice Stop memory insertion and start read and write phase
+  function finishSubmissionPhase() public {
+    require(msg.sender == provider);
+    currentState = state.ReadAndWrite;
+    FinishedSubmittions();
+  }
+
+  /// @notice reads a slot in memory that has been proved to be correct
+  /// according to initial hash
+  /// @param addr of the desired memory
+  function read(uint64 addr) public {
+    require(currentState == state.ReadAndWrite);
+    require(addressWasSubmitted[addr]);
+    return valueSubmitted[addr];
+  }
+
+  /// @notice writes on a slot of memory during read and write phase
+  /// @param addr of the write
+  /// @param value to be written
+  function read(uint64 addr, uint64 value) public {
+    require(currentState == state.ReadAndWrite);
+    require(msg.sender == client);
+    create a list of changed addresses!!!
+    return valueSubmitted[addr];
   }
 }
 
