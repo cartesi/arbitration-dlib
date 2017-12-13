@@ -53,8 +53,9 @@ contract mm is mortal {
     require(proof.length == 61);
     bytes32 running_hash = keccak256(theValue);
     // iterate the hash with the uncle subtree stated in proof
+    uint64 eight = 0x0000000000000008;
     for (uint i = 0; i < 61; i++) {
-      if (theAddress & (2 ** (i + 4)) == 0) {
+      if ((theAddress & (eight << i)) == 0) {
         running_hash = keccak256(running_hash, proof[i]);
       } else {
         running_hash = keccak256(proof[i], running_hash);
