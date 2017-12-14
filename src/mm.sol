@@ -55,9 +55,10 @@ contract mm is mortal {
                        bytes32[] proof) public {
     require(msg.sender == provider);
     require(currentState == state.WaitingValues);
+    require((theAddress & 7) == 0);
     require(proof.length == 61);
     bytes32 running_hash = keccak256(theValue);
-    // iterate the hash with the uncle subtree stated in proof
+    // iterate the hash with the uncle subtree provided in proof
     uint64 eight = 8;
     for (uint i = 0; i < 61; i++) {
       if ((theAddress & (eight << i)) == 0) {
@@ -67,7 +68,7 @@ contract mm is mortal {
       }
     }
     require (running_hash == initialHash);
-    addressWasSubmitted[theAddress] == true;
+    addressWasSubmitted[theAddress] = true;
     valueSubmitted[theAddress] = theValue;
 
     ValueSubmitted(theAddress, theValue);
@@ -82,21 +83,22 @@ contract mm is mortal {
 
   /// @notice reads a slot in memory that has been proved to be correct
   /// according to initial hash
-  /// @param addr of the desired memory
-  function read(uint64 addr) public {
+  /// @param theAddress of the desired memory
+  function read(uint64 theAddress) public view returns (uint64) {
     require(currentState == state.ReadAndWrite);
-    require(addressWasSubmitted[addr]);
-    return valueSubmitted[addr];
+    require((theAddress & 7) == 0);
+    require(addressWasSubmitted[theAddress] == true);
+    return valueSubmitted[theAddress];
   }
 
   /// @notice writes on a slot of memory during read and write phase
-  /// @param addr of the write
-  /// @param value to be written
-  function read(uint64 addr, uint64 value) public {
-    require(currentState == state.ReadAndWrite);
-    require(msg.sender == client);
-    create a list of changed addresses!!!
-    return valueSubmitted[addr];
-  }
+  /// @param theAddress of the write
+  /// @param theValue to be written
+  //function write(uint64 theAddress, uint64 theValue) public {
+  //  require(currentState == state.ReadAndWrite);
+  //  require((theAddress & 7) == 0);
+  //  require(msg.sender == client);
+  //  create a list of changed addresses!!!
+  //}
 }
 

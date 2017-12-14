@@ -86,11 +86,15 @@ describe('Testing memory manager contract', function() {
         .currentState().call({ from: aliceAddr });
       expect(currentState).to.equal('0');
 
+    // insert values in memory
     for (key in values) {
+      // check that key was not marked as submitted
+      wasSubmitted = yield mmContract.methods
+        .addressWasSubmitted(key)
+        .call({ from: machineAddr, gas: 1500000 });
+      expect(wasSubmitted).to.be.false;
       // generate proof of value
       let proof = myMM.generateProof(key);
-      //console.log('proof for ' + key + ': ' + values[key]);
-
       // inserting values on memory manager contract
       response = yield mmContract.methods
         .insertValue(key, values[key], proof)
@@ -99,7 +103,16 @@ describe('Testing memory manager contract', function() {
           expect(receipt.events.ValueSubmitted).not.to.be.undefined;
         });
       returnValues = response.events.ValueSubmitted.returnValues;
-      //console.log(returnValues);
+      // check that key was marked as submitted
+      wasSubmitted = yield mmContract.methods
+        .addressWasSubmitted(key)
+        .call({ from: machineAddr, gas: 1500000 });
+      expect(wasSubmitted).to.be.true;
+      // confirm the value
+      valueSubmitted = yield mmContract.methods
+        .valueSubmitted(key)
+        .call({ from: machineAddr, gas: 1500000 });
+      expect(valueSubmitted).to.equal(values[key].toString());
     }
 
     other_values = { '283888': '0',
@@ -107,11 +120,10 @@ describe('Testing memory manager contract', function() {
                      '2838918800': '0',
                    };
 
+    // insert some more (not inserted in myMM)
     for (key in other_values) {
       // generate proof of value
       let proof = myMM.generateProof(key);
-      //console.log('proof for ' + key + ': ' + values[key]);
-
       // inserting values on memory manager contract
       response = yield mmContract.methods
         .insertValue(key, other_values[key], proof)
@@ -123,18 +135,39 @@ describe('Testing memory manager contract', function() {
       //console.log(returnValues);
     }
 
-    //console.log("sha  0: " + hashWord(0));
-    //let b = (web3.utils.sha3(hashWord(0) + hashWord(0).replace(/^0x/, '')));
-    //console.log("sha 00: " + b);
-    //console.log(proof);
+    // cannot submit un-aligned address
+    let proof = myMM.generateProof(0);
+    response = yield mmContract.methods
+      .insertValue(2, 0, proof)
+      .send({ from: aliceAddr, gas: 1500000 })
+      .catch(function(error) {
+        expect(error.message).to.have.string('VM Exception');
+      });
 
+    // finishing submissions
+    response = yield mmContract.methods
+      .finishSubmissionPhase()
+      .send({ from: aliceAddr, gas: 1500000 })
+      .on('receipt', function(receipt) {
+        expect(receipt.events.FinishedSubmittions).not.to.be.undefined;
+      });
 
-    //  response = yield mmContract.methods
-    //    .replyQuery(queryArray, replyArray)
-    //    .send({ from: aliceAddr, gas: 1500000 })
-    //    .catch(function(error) {
-    //      expect(error.message).to.have.string('VM Exception');
-    //    });
+    // check if read and write phase
+    currentState = yield mmContract.methods
+        .currentState().call({ from: aliceAddr });
+      expect(currentState).to.equal('1');
+
+    for (key in values) {
+      // check that it waas submitted
+      wasSubmitted = yield mmContract.methods
+        .addressWasSubmitted(key)
+        .call({ from: machineAddr, gas: 1500000 });
+      // reading values on memory manager contract
+      response = yield mmContract.methods
+        .read(key)
+        .call({ from: machineAddr, gas: 1500000 });
+      expect(response).to.equal(values[key].toString());
+    }
 
     // kill contract
     response = yield mmContract.methods.kill()
