@@ -83,8 +83,8 @@ describe('Testing memory manager contract', function() {
 
     // check if waiting values
     currentState = yield mmContract.methods
-        .currentState().call({ from: aliceAddr });
-      expect(currentState).to.equal('0');
+      .currentState().call({ from: aliceAddr });
+    expect(currentState).to.equal('0');
 
     // insert values in memory
     for (key in values) {
@@ -149,8 +149,8 @@ describe('Testing memory manager contract', function() {
 
     // check if read phase
     currentState = yield mmContract.methods
-        .currentState().call({ from: aliceAddr });
-      expect(currentState).to.equal('1');
+      .currentState().call({ from: aliceAddr });
+    expect(currentState).to.equal('1');
 
     for (key in values) {
       // check that it waas submitted
@@ -174,8 +174,8 @@ describe('Testing memory manager contract', function() {
 
     // check if write phase
     currentState = yield mmContract.methods
-        .currentState().call({ from: aliceAddr });
-      expect(currentState).to.equal('2');
+      .currentState().call({ from: aliceAddr });
+    expect(currentState).to.equal('2');
 
     write_values = { '283888': '0',
                      '1808': 193284,
@@ -193,7 +193,48 @@ describe('Testing memory manager contract', function() {
       returnValues = response.events.ValueWritten.returnValues;
     }
 
+    // finishing write phase
+    response = yield mmContract.methods
+      .finishWritePhase()
+      .send({ from: machineAddr, gas: 1500000 })
+      .on('receipt', function(receipt) {
+        expect(receipt.events.FinishedWriting).not.to.be.undefined;
+      });
 
+    // check if update hash phase
+    currentState = yield mmContract.methods
+      .currentState().call({ from: aliceAddr });
+    expect(currentState).to.equal('3');
+
+    // check how many values were writen
+    sizeWriteArray = yield mmContract.methods
+      .getWrittenAddressLength().call({ from: aliceAddr });
+
+    // update each hash
+    for(let i = sizeWriteArray - 1; i >=0; i--) {
+      // address writen
+      addressWritten = yield mmContract.methods
+        .writtenAddress(i).call({ from: aliceAddr });
+      //console.log(addressWritten);
+      oldValue = myMM.getWord(addressWritten);
+      newValue = yield mmContract.methods
+        .valueWritten(addressWritten).call({ from: aliceAddr });
+      proof = myMM.generateProof(addressWritten);
+      response = yield mmContract.methods
+        .updateHash(proof)
+        .send({ from: aliceAddr, gas: 1500000 })
+        .on('receipt', function(receipt) {
+          expect(receipt.events.HashUpdated).not.to.be.undefined;
+        });
+      returnValues = response.events.HashUpdated.returnValues;
+      expect(returnValues.valueSubmitted).to.equal(newValue);
+      myMM.setValue(addressWritten, newValue);
+    }
+
+    finalHash = myMM.merkel();
+    remoteFinalHash = yield mmContract.methods
+      .newHash().call({ from: aliceAddr });
+    expect(finalHash).to.equal(remoteFinalHash);
 
     // kill contract
     response = yield mmContract.methods.kill()

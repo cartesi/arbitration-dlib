@@ -24,8 +24,8 @@ contract mm is mortal {
   // finally the provider has to update the hash to account for writes
   address public provider;
   address public client;
-  bytes32 initialHash;
-  bytes32 newHash;
+  bytes32 public initialHash;
+  bytes32 public newHash;
 
   mapping(uint64 => bool) public addressWasSubmitted; // mark address submitted
   mapping(uint64 => uint64) private valueSubmitted; // value submitted to address
@@ -174,6 +174,10 @@ contract mm is mortal {
     newHash = runningHash;
     writtenAddress.length = writtenAddress.length - 1;
     HashUpdated(theAddress, newValue, newHash);
+  }
+
+  function getWrittenAddressLength() public constant returns(uint) {
+    return writtenAddress.length;
   }
 }
 
