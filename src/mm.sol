@@ -16,23 +16,27 @@ contract mm is mortal {
   address public provider;
   address public client;
   bytes32 initialHash;
-  bytes32 finalHash;
+  bytes32 newHash;
 
   mapping(uint64 => bool) public addressWasSubmitted; // mark address submitted
-  mapping(uint64 => uint64) public valueSubmitted; // value submitted to address
+  mapping(uint64 => uint64) private valueSubmitted; // value submitted to address
 
   mapping(uint64 => bool) public addressWasWritten; // marks address as written
   mapping(uint64 => uint64) public valueWritten; // value written to address
 
-  enum state { WaitingValues, ReadAndWrite,
+  uint64[] public writtenAddress;
+
+  enum state { WaitingValues, Reading, Writing,
                UpdatingHashes, Finished }
   state public currentState;
 
   event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, uint64 valueSubmitted);
   event FinishedSubmittions();
+  event FinishedReading();
   event ValueWritten(uint64 addressSubmitted, uint64 valueSubmitted);
-  event OneHashUpdate(uint64 addressSubmitted, uint64 valueSubmitted,
+  event FinishedWriting();
+  event HashUpdated(uint64 addressSubmitted, uint64 valueSubmitted,
                       bytes32 newHash);
   event Finished();
 
@@ -42,6 +46,7 @@ contract mm is mortal {
     provider = theProvider;
     client = theClient;
     initialHash = theInitialHash;
+    newHash = theInitialHash;
 
     currentState = state.WaitingValues;
     MemoryCreated(theInitialHash);
@@ -77,7 +82,8 @@ contract mm is mortal {
   /// @notice Stop memory insertion and start read and write phase
   function finishSubmissionPhase() public {
     require(msg.sender == provider);
-    currentState = state.ReadAndWrite;
+    require(currentState == state.WaitingValues);
+    currentState = state.Reading;
     FinishedSubmittions();
   }
 
@@ -85,20 +91,79 @@ contract mm is mortal {
   /// according to initial hash
   /// @param theAddress of the desired memory
   function read(uint64 theAddress) public view returns (uint64) {
-    require(currentState == state.ReadAndWrite);
+    require(currentState == state.Reading);
     require((theAddress & 7) == 0);
     require(addressWasSubmitted[theAddress] == true);
     return valueSubmitted[theAddress];
   }
 
+  /// @notice Stop read phase and start write phase
+  function finishReadPhase() public {
+    require(msg.sender == client);
+    require(currentState == state.Reading);
+    currentState = state.Writing;
+    FinishedReading();
+  }
+
   /// @notice writes on a slot of memory during read and write phase
   /// @param theAddress of the write
   /// @param theValue to be written
-  //function write(uint64 theAddress, uint64 theValue) public {
-  //  require(currentState == state.ReadAndWrite);
-  //  require((theAddress & 7) == 0);
-  //  require(msg.sender == client);
-  //  create a list of changed addresses!!!
-  //}
+  function write(uint64 theAddress, uint64 theValue) public {
+    require(msg.sender == client);
+    require(currentState == state.Writing);
+    require((theAddress & 7) == 0);
+    require(addressWasSubmitted[theAddress]);
+    require(!addressWasWritten[theAddress]);
+    addressWasWritten[theAddress] = true;
+    valueWritten[theAddress] = theValue;
+    writtenAddress.push(theAddress);
+    ValueWritten(theAddress, theValue);
+  }
+
+  /// @notice Stop write phase
+  function finishWritePhase() public {
+    require(msg.sender == client);
+    require(currentState == state.Writing);
+    currentState = state.UpdatingHashes;
+    FinishedWriting();
+  }
+
+  /// @notice Update hash corresponding to write
+  /// @param proof The proof that the new value is correct
+  function updateHash(bytes32[] proof) public {
+    require(msg.sender == provider);
+    require(currentState == state.UpdatingHashes);
+    require(writtenAddress.length > 0);
+    uint64 theAddress = writtenAddress[writtenAddress.length - 1];
+    require((theAddress & 7) == 0);
+    require(addressWasSubmitted[theAddress]);
+    require(addressWasWritten[theAddress]);
+    require(proof.length == 61);
+    uint64 oldValue = valueSubmitted[theAddress];
+    uint64 newValue = valueWritten[theAddress];
+    // verifying the proof of the old value
+    bytes32 running_hash = keccak256(oldValue);
+    uint64 eight = 8;
+    for (uint i = 0; i < 61; i++) {
+      if ((theAddress & (eight << i)) == 0) {
+        running_hash = keccak256(running_hash, proof[i]);
+      } else {
+        running_hash = keccak256(proof[i], running_hash);
+      }
+    }
+    require (running_hash == newHash);
+    // find out new hash after write
+    running_hash = keccak256(newValue);
+    for (i = 0; i < 61; i++) {
+      if ((theAddress & (eight << i)) == 0) {
+        running_hash = keccak256(running_hash, proof[i]);
+      } else {
+        running_hash = keccak256(proof[i], running_hash);
+      }
+    }
+    newHash = running_hash;
+    writtenAddress.length = writtenAddress.length - 1;
+    HashUpdated(theAddress, newValue, newHash);
+  }
 }
 

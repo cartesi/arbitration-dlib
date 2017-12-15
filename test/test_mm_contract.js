@@ -32,7 +32,7 @@ function hashWord(word) {
 
 describe('Testing memory manager contract', function() {
   it('Checking functionalities', function*() {
-    this.timeout(15000)
+    this.timeout(150000)
     // testrpc
     var testrpcParameters = {
       "accounts":
@@ -108,11 +108,6 @@ describe('Testing memory manager contract', function() {
         .addressWasSubmitted(key)
         .call({ from: machineAddr, gas: 1500000 });
       expect(wasSubmitted).to.be.true;
-      // confirm the value
-      valueSubmitted = yield mmContract.methods
-        .valueSubmitted(key)
-        .call({ from: machineAddr, gas: 1500000 });
-      expect(valueSubmitted).to.equal(values[key].toString());
     }
 
     other_values = { '283888': '0',
@@ -152,7 +147,7 @@ describe('Testing memory manager contract', function() {
         expect(receipt.events.FinishedSubmittions).not.to.be.undefined;
       });
 
-    // check if read and write phase
+    // check if read phase
     currentState = yield mmContract.methods
         .currentState().call({ from: aliceAddr });
       expect(currentState).to.equal('1');
@@ -168,6 +163,37 @@ describe('Testing memory manager contract', function() {
         .call({ from: machineAddr, gas: 1500000 });
       expect(response).to.equal(values[key].toString());
     }
+
+    // finishing read phase
+    response = yield mmContract.methods
+      .finishReadPhase()
+      .send({ from: machineAddr, gas: 1500000 })
+      .on('receipt', function(receipt) {
+        expect(receipt.events.FinishedReading).not.to.be.undefined;
+      });
+
+    // check if write phase
+    currentState = yield mmContract.methods
+        .currentState().call({ from: aliceAddr });
+      expect(currentState).to.equal('2');
+
+    write_values = { '283888': '0',
+                     '1808': 193284,
+                     '2838918800': '0',
+                   };
+    // write values in mm
+    for (key in write_values) {
+      // write values to memory manager contract
+      response = yield mmContract.methods
+        .write(key, write_values[key])
+        .send({ from: machineAddr, gas: 1500000 })
+        .on('receipt', function(receipt) {
+          expect(receipt.events.ValueWritten).not.to.be.undefined;
+        });
+      returnValues = response.events.ValueWritten.returnValues;
+    }
+
+
 
     // kill contract
     response = yield mmContract.methods.kill()
