@@ -3,12 +3,19 @@ pragma solidity ^0.4.18;
 
 import "./timeaware.sol";
 
-contract mortal {
-    address public owner;
 
-    function mortal() public { owner = msg.sender; }
-    function kill() public { if (msg.sender == owner) selfdestruct(owner); }
+contract mortal {
+  address public owner;
+
+  function mortal() public {
+    owner = msg.sender;
+  }
+
+  function kill() public {
+    if (msg.sender == owner) selfdestruct(owner);
+  }
 }
+
 
 contract partition is mortal, timeAware {
   address public challenger;
@@ -39,7 +46,8 @@ contract partition is mortal, timeAware {
   function partition(address theChallenger, address theClaimer,
                      bytes32 theInitialHash, bytes32 theClaimerFinalHash,
                      uint theFinalTime, uint theQuerySize,
-                     uint theRoundDuration) public {
+                     uint theRoundDuration) public
+  {
     require(theChallenger != theClaimer);
     challenger = theChallenger;
     claimer = theClaimer;
@@ -54,7 +62,9 @@ contract partition is mortal, timeAware {
     require(theQuerySize > 2);
     require(theQuerySize < 100);
     querySize = theQuerySize;
-    for (uint i = 0; i < querySize; i++) { queryArray.push(0); }
+    for (uint i = 0; i < querySize; i++) {
+      queryArray.push(0);
+    }
 
     // slice the interval, placing the separators in queryArray
     slice(0, finalTime);
@@ -76,10 +86,11 @@ contract partition is mortal, timeAware {
     // one, we go step by step
     if (intervalLength < 2 * (querySize - 1)) {
       for (i = 0; i < querySize - 1; i++) {
-        if (leftPoint + i < rightPoint)
-          { queryArray[i] = leftPoint + i; }
-        else
-          { queryArray[i] = rightPoint; }
+        if (leftPoint + i < rightPoint) {
+          queryArray[i] = leftPoint + i;
+        } else {
+          queryArray[i] = rightPoint;
+        }
       }
     } else {
       // otherwise: intervalLength = (querySize - 1) * divisionLength + j
@@ -142,16 +153,16 @@ contract partition is mortal, timeAware {
 
   /// @notice Claim victory for opponent timeout.
   function claimVictoryByTime() public {
-    if (msg.sender == challenger && currentState == state.WaitingHashes
-        && getTime() > timeOfLastMove + roundDuration)
-      { currentState = state.ChallengerWon;
-        ChallengeEnded(currentState);
-      }
-    if (msg.sender == claimer && currentState == state.WaitingQuery
-        && getTime() > timeOfLastMove + roundDuration)
-      { currentState = state.ClaimerWon;
-        ChallengeEnded(currentState);
-      }
+    if ((msg.sender == challenger) && (currentState == state.WaitingHashes)
+        && (getTime() > timeOfLastMove + roundDuration)) {
+      currentState = state.ChallengerWon;
+      ChallengeEnded(currentState);
+    }
+    if ((msg.sender == claimer) && (currentState == state.WaitingQuery)
+        && (getTime() > timeOfLastMove + roundDuration)) {
+      currentState = state.ClaimerWon;
+      ChallengeEnded(currentState);
+    }
   }
 
   /// @notice Present a precise time of divergence (can only be called by

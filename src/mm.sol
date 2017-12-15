@@ -1,12 +1,21 @@
 /// @title Partition contract
 pragma solidity ^0.4.18;
 
-contract mortal {
-    address public owner;
 
-    function mortal() public { owner = msg.sender; }
-    function kill() public { if (msg.sender == owner) selfdestruct(owner); }
+contract mortal {
+  address public owner;
+
+  function mortal() public {
+    owner = msg.sender;
+  }
+
+  function kill() public {
+    if (msg.sender == owner) {
+      selfdestruct(owner);
+    }
+  }
 }
+
 
 contract mm is mortal {
   // the privider will fill the memory for the client to read and write
@@ -26,8 +35,7 @@ contract mm is mortal {
 
   uint64[] public writtenAddress;
 
-  enum state { WaitingValues, Reading, Writing,
-               UpdatingHashes, Finished }
+  enum state { WaitingValues, Reading, Writing, UpdatingHashes, Finished }
   state public currentState;
 
   event MemoryCreated(bytes32 theInitialHash);
@@ -37,11 +45,12 @@ contract mm is mortal {
   event ValueWritten(uint64 addressSubmitted, uint64 valueSubmitted);
   event FinishedWriting();
   event HashUpdated(uint64 addressSubmitted, uint64 valueSubmitted,
-                      bytes32 newHash);
+                    bytes32 newHash);
   event Finished();
 
   function mm(address theProvider, address theClient,
-              bytes32 theInitialHash) public {
+              bytes32 theInitialHash) public
+  {
     require(theProvider != theClient);
     provider = theProvider;
     client = theClient;
@@ -57,22 +66,23 @@ contract mm is mortal {
   /// @param theValue The value to be inserted
   /// @param proof The proof that this value is correct
   function insertValue(uint64 theAddress, uint64 theValue,
-                       bytes32[] proof) public {
+                       bytes32[] proof) public
+  {
     require(msg.sender == provider);
     require(currentState == state.WaitingValues);
     require((theAddress & 7) == 0);
     require(proof.length == 61);
-    bytes32 running_hash = keccak256(theValue);
+    bytes32 runningHash = keccak256(theValue);
     // iterate the hash with the uncle subtree provided in proof
     uint64 eight = 8;
     for (uint i = 0; i < 61; i++) {
       if ((theAddress & (eight << i)) == 0) {
-        running_hash = keccak256(running_hash, proof[i]);
+        runningHash = keccak256(runningHash, proof[i]);
       } else {
-        running_hash = keccak256(proof[i], running_hash);
+        runningHash = keccak256(proof[i], runningHash);
       }
     }
-    require (running_hash == initialHash);
+    require (runningHash == initialHash);
     addressWasSubmitted[theAddress] = true;
     valueSubmitted[theAddress] = theValue;
 
@@ -142,26 +152,26 @@ contract mm is mortal {
     uint64 oldValue = valueSubmitted[theAddress];
     uint64 newValue = valueWritten[theAddress];
     // verifying the proof of the old value
-    bytes32 running_hash = keccak256(oldValue);
+    bytes32 runningHash = keccak256(oldValue);
     uint64 eight = 8;
     for (uint i = 0; i < 61; i++) {
       if ((theAddress & (eight << i)) == 0) {
-        running_hash = keccak256(running_hash, proof[i]);
+        runningHash = keccak256(runningHash, proof[i]);
       } else {
-        running_hash = keccak256(proof[i], running_hash);
+        runningHash = keccak256(proof[i], runningHash);
       }
     }
-    require (running_hash == newHash);
+    require (runningHash == newHash);
     // find out new hash after write
-    running_hash = keccak256(newValue);
+    runningHash = keccak256(newValue);
     for (i = 0; i < 61; i++) {
       if ((theAddress & (eight << i)) == 0) {
-        running_hash = keccak256(running_hash, proof[i]);
+        runningHash = keccak256(runningHash, proof[i]);
       } else {
-        running_hash = keccak256(proof[i], running_hash);
+        runningHash = keccak256(proof[i], runningHash);
       }
     }
-    newHash = running_hash;
+    newHash = runningHash;
     writtenAddress.length = writtenAddress.length - 1;
     HashUpdated(theAddress, newValue, newHash);
   }
