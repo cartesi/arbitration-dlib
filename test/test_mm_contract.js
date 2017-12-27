@@ -86,7 +86,7 @@ describe('Testing memory manager contract', function() {
       .currentState().call({ from: aliceAddr });
     expect(currentState).to.equal('0');
 
-    // insert values in memory
+    // prove that the values in initial memory are correct
     for (key in values) {
       // check that key was not marked as submitted
       wasSubmitted = yield mmContract.methods
@@ -95,9 +95,9 @@ describe('Testing memory manager contract', function() {
       expect(wasSubmitted).to.be.false;
       // generate proof of value
       let proof = myMM.generateProof(key);
-      // inserting values on memory manager contract
+      // proving values on memory manager contract
       response = yield mmContract.methods
-        .insertValue(key, values[key], proof)
+        .proveValue(key, values[key], proof)
         .send({ from: aliceAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
           expect(receipt.events.ValueSubmitted).not.to.be.undefined;
@@ -115,13 +115,13 @@ describe('Testing memory manager contract', function() {
                      '2838918800': '0',
                    };
 
-    // insert some more (not inserted in myMM)
+    // prove some more (some that were not inserted in myMM)
     for (key in other_values) {
       // generate proof of value
       let proof = myMM.generateProof(key);
-      // inserting values on memory manager contract
+      // prove values on memory manager contract
       response = yield mmContract.methods
-        .insertValue(key, other_values[key], proof)
+        .proveValue(key, other_values[key], proof)
         .send({ from: aliceAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
           expect(receipt.events.ValueSubmitted).not.to.be.undefined;
@@ -133,7 +133,7 @@ describe('Testing memory manager contract', function() {
     // cannot submit un-aligned address
     let proof = myMM.generateProof(0);
     response = yield mmContract.methods
-      .insertValue(2, 0, proof)
+      .proveValue(2, 0, proof)
       .send({ from: aliceAddr, gas: 1500000 })
       .catch(function(error) {
         expect(error.message).to.have.string('VM Exception');
@@ -235,6 +235,19 @@ describe('Testing memory manager contract', function() {
     remoteFinalHash = yield mmContract.methods
       .newHash().call({ from: aliceAddr });
     expect(finalHash).to.equal(remoteFinalHash);
+
+    // finishing update hash phase
+    response = yield mmContract.methods
+      .finishUpdateHashPhase()
+      .send({ from: aliceAddr, gas: 1500000 })
+      .on('receipt', function(receipt) {
+        expect(receipt.events.Finished).not.to.be.undefined;
+      });
+
+    // check if we are at the finished phase
+    currentState = yield mmContract.methods
+      .currentState().call({ from: aliceAddr });
+    expect(currentState).to.equal('4');
 
     // kill contract
     response = yield mmContract.methods.kill()
