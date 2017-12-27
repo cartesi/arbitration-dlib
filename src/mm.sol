@@ -28,10 +28,10 @@ contract mm is mortal {
   bytes32 public newHash;
 
   mapping(uint64 => bool) public addressWasSubmitted; // mark address submitted
-  mapping(uint64 => uint64) private valueSubmitted; // value submitted to address
+  mapping(uint64 => bytes8) private valueSubmitted; // value submitted to address
 
   mapping(uint64 => bool) public addressWasWritten; // marks address as written
-  mapping(uint64 => uint64) public valueWritten; // value written to address
+  mapping(uint64 => bytes8) public valueWritten; // value written to address
 
   uint64[] public writtenAddress;
   function getWrittenAddressLength() public constant returns(uint) {
@@ -42,12 +42,12 @@ contract mm is mortal {
   state public currentState;
 
   event MemoryCreated(bytes32 theInitialHash);
-  event ValueSubmitted(uint64 addressSubmitted, uint64 valueSubmitted);
+  event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
   event FinishedSubmittions();
   event FinishedReading();
-  event ValueWritten(uint64 addressSubmitted, uint64 valueSubmitted);
+  event ValueWritten(uint64 addressSubmitted, bytes8 valueSubmitted);
   event FinishedWriting();
-  event HashUpdated(uint64 addressSubmitted, uint64 valueSubmitted,
+  event HashUpdated(uint64 addressSubmitted, bytes8 valueSubmitted,
                     bytes32 newHash);
   event Finished();
 
@@ -68,7 +68,7 @@ contract mm is mortal {
   /// @param theAddress The address of the value to be confirmed
   /// @param theValue The value in that address to be confirmed
   /// @param proof The proof that this value is correct
-  function proveValue(uint64 theAddress, uint64 theValue,
+  function proveValue(uint64 theAddress, bytes8 theValue,
                        bytes32[] proof) public
   {
     require(msg.sender == provider);
@@ -103,7 +103,7 @@ contract mm is mortal {
   /// @notice reads a slot in memory that has been proved to be correct
   /// according to initial hash
   /// @param theAddress of the desired memory
-  function read(uint64 theAddress) public view returns (uint64) {
+  function read(uint64 theAddress) public view returns (bytes8) {
     require(currentState == state.Reading);
     require((theAddress & 7) == 0);
     require(addressWasSubmitted[theAddress] == true);
@@ -121,7 +121,7 @@ contract mm is mortal {
   /// @notice writes on a slot of memory during read and write phase
   /// @param theAddress of the write
   /// @param theValue to be written
-  function write(uint64 theAddress, uint64 theValue) public {
+  function write(uint64 theAddress, bytes8 theValue) public {
     require(msg.sender == client);
     require(currentState == state.Writing);
     require((theAddress & 7) == 0);
@@ -152,8 +152,8 @@ contract mm is mortal {
     require(addressWasSubmitted[theAddress]);
     require(addressWasWritten[theAddress]);
     require(proof.length == 61);
-    uint64 oldValue = valueSubmitted[theAddress];
-    uint64 newValue = valueWritten[theAddress];
+    bytes8 oldValue = valueSubmitted[theAddress];
+    bytes8 newValue = valueWritten[theAddress];
     // verifying the proof of the old value
     bytes32 runningHash = keccak256(oldValue);
     uint64 eight = 8;

@@ -64,9 +64,9 @@ describe('Testing memory manager contract', function() {
     let large = BigNumber('18446744073709551608');
     let large_string = large.toString();
 
-    let values = { '0': 1,
-                   '18446744073709551608': 1,
-                   '1808': 193284
+    let values = { '0':                    '0x0000000000300000',
+                   '18446744073709551608': '0x00000000000f0000',
+                   '1808':                 '0x000000000000c000'
                  };
 
     for (key in values) {
@@ -110,9 +110,9 @@ describe('Testing memory manager contract', function() {
       expect(wasSubmitted).to.be.true;
     }
 
-    other_values = { '283888': '0',
-                     '282343888': '0',
-                     '2838918800': '0',
+    other_values = { '283888':       '0x0000000000000000',
+                     '282343888':    '0x0000000000000000',
+                     '2838918800':   '0x0000000000000000'
                    };
 
     // prove some more (some that were not inserted in myMM)
@@ -133,7 +133,7 @@ describe('Testing memory manager contract', function() {
     // cannot submit un-aligned address
     let proof = myMM.generateProof(0);
     response = yield mmContract.methods
-      .proveValue(2, 0, proof)
+      .proveValue(4, '0x0000000000000000', proof)
       .send({ from: aliceAddr, gas: 1500000 })
       .catch(function(error) {
         expect(error.message).to.have.string('VM Exception');
@@ -177,9 +177,9 @@ describe('Testing memory manager contract', function() {
       .currentState().call({ from: aliceAddr });
     expect(currentState).to.equal('2');
 
-    write_values = { '283888': '0',
-                     '1808': 193284,
-                     '2838918800': '0',
+    write_values = { '283888':        '0x0000000000000000',
+                     '1808':          '0x0000f000f0000000',
+                     '2838918800':    '0xffffffffffffffff'
                    };
     // write values in mm
     for (key in write_values) {
