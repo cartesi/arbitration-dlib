@@ -34,6 +34,9 @@ contract mm is mortal {
   mapping(uint64 => uint64) public valueWritten; // value written to address
 
   uint64[] public writtenAddress;
+  function getWrittenAddressLength() public constant returns(uint) {
+    return writtenAddress.length;
+  }
 
   enum state { WaitingValues, Reading, Writing, UpdatingHashes, Finished }
   state public currentState;
@@ -61,11 +64,11 @@ contract mm is mortal {
     MemoryCreated(theInitialHash);
   }
 
-  /// @notice Insert value to be verified
-  /// @param theAddress The address of the value to be inserted
-  /// @param theValue The value to be inserted
+  /// @notice Proves that a certain value in initial memory is correct
+  /// @param theAddress The address of the value to be confirmed
+  /// @param theValue The value in that address to be confirmed
   /// @param proof The proof that this value is correct
-  function insertValue(uint64 theAddress, uint64 theValue,
+  function proveValue(uint64 theAddress, uint64 theValue,
                        bytes32[] proof) public
   {
     require(msg.sender == provider);
@@ -176,8 +179,13 @@ contract mm is mortal {
     HashUpdated(theAddress, newValue, newHash);
   }
 
-  function getWrittenAddressLength() public constant returns(uint) {
-    return writtenAddress.length;
+  /// @notice Finishes updating the hash
+  function finishUpdateHashPhase() public {
+    require(msg.sender == provider);
+    require(currentState == state.UpdatingHashes);
+    require(writtenAddress.length == 0);
+    currentState = state.Finished;
+    Finished();
   }
 }
 
