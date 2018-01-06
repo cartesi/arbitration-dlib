@@ -138,7 +138,8 @@ describe('Testing memory manager contract', function() {
     // deploy subleq contract and update object
     subleqContract = yield subleqContract.deploy({
       data: bytecode_2,
-      arguments: [testMemoryContract.options.address]
+      arguments: [testMemoryContract.options.address,
+                  1000000, 1000000, 1000000]
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
@@ -147,9 +148,9 @@ describe('Testing memory manager contract', function() {
       .currentState().call({ from: aliceAddr });
     expect(currentState).to.equal('1');
 
-    let running = true;
+    let running = '0';
 
-    while (running) {
+    while (running === '0') {
       // print machine state for debugging
       // response = yield testMemoryContract.methods
       //   .read(pc_position)
@@ -179,7 +180,7 @@ describe('Testing memory manager contract', function() {
         .on('receipt', function(receipt) {
           expect(receipt.events.StepGiven).not.to.be.undefined;
         });
-      running = response.events.StepGiven.returnValues.success;
+      running = response.events.StepGiven.returnValues.exitCode;
       console.log(running);
     }
 
