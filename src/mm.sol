@@ -110,23 +110,21 @@ contract mm is mortal {
     return valueSubmitted[theAddress];
   }
 
-  /// @notice Stop read phase and start write phase
-  function finishReadPhase() public {
-    require(msg.sender == client);
-    require(currentState == state.Reading);
-    currentState = state.Writing;
-    FinishedReading();
-  }
-
   /// @notice writes on a slot of memory during read and write phase
   /// @param theAddress of the write
   /// @param theValue to be written
   function write(uint64 theAddress, bytes8 theValue) public {
+    return;
     require(msg.sender == client);
-    require(currentState == state.Writing);
+    require((currentState == state.Writing)
+            || (currentState == state.Reading));
     require((theAddress & 7) == 0);
     require(addressWasSubmitted[theAddress]);
     require(!addressWasWritten[theAddress]);
+    if (currentState == state.Reading) {
+      currentState = state.Writing;
+      FinishedReading();
+    }
     addressWasWritten[theAddress] = true;
     valueWritten[theAddress] = theValue;
     writtenAddress.push(theAddress);
@@ -136,7 +134,8 @@ contract mm is mortal {
   /// @notice Stop write phase
   function finishWritePhase() public {
     require(msg.sender == client);
-    require(currentState == state.Writing);
+    require((currentState == state.Writing)
+            || (currentState == state.Reading));
     currentState = state.UpdatingHashes;
     FinishedWriting();
   }

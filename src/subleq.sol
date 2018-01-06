@@ -3,7 +3,6 @@ pragma solidity ^0.4.18;
 
 contract mmContract {
   function read(uint64 theAddress) public view returns (bytes8);
-  function finishReadPhase() public;
   function write(uint64 theAddress, bytes8 theValue) public;
   function finishWritePhase() public;
 }
@@ -77,7 +76,6 @@ contract subleq is mortal {
     if (memAddrA == -1) {
       // read input at ic
       bytes8 loaded = memoryManager.read(ic);
-      memoryManager.finishReadPhase();
       memoryManager.write(uint64(memAddrB) * 8, loaded);
       // increment ic
       memoryManager.write(icPosition, bytes8(ic + 8));
@@ -92,7 +90,6 @@ contract subleq is mortal {
     // if first operator is positive but second operator is -1, write to output
     if (memAddrB == -1) {
       // write contents addressed by first operator into output
-      memoryManager.finishReadPhase();
       memoryManager.write(oc, valueA);
       // increment oc
       memoryManager.write(ocPosition, bytes8(oc + 8));
@@ -107,7 +104,6 @@ contract subleq is mortal {
     bytes8 valueB = memoryManager.read(uint64(memAddrB) * 8);
     bytes8 subtraction = bytes8(int64(valueB) - int64(valueA));
     // write subtraction to memory addressed by second operator
-    memoryManager.finishReadPhase();
     memoryManager.write(uint64(memAddrB) * 8, subtraction);
     if (int64(subtraction) <= 0) {
       if (memAddrC < 0) {
