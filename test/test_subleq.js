@@ -150,6 +150,7 @@ describe('Testing memory manager contract', function() {
     let running = true;
 
     while (running) {
+      // print machine state for debugging
       // response = yield testMemoryContract.methods
       //   .read(pc_position)
       //   .call({ from: aliceAddr, gas: 1500000 });
@@ -172,7 +173,6 @@ describe('Testing memory manager contract', function() {
       //     .call({ from: aliceAddr, gas: 1500000 });
       //   console.log("output at: " + j + " = " + response);
       // }
-
       response = yield subleqContract.methods
         .step()
         .send({ from: aliceAddr, gas: 1500000 })

@@ -31,14 +31,16 @@ contract testMemory is mortal {
   /// @param theAddress of the write
   /// @param theValue to be written
   function write(uint64 theAddress, bytes8 theValue) public {
-    require(currentState == state.Writing);
+    require((currentState == state.Writing)
+            || (currentState == state.Reading));
     require((theAddress & 7) == 0);
     value[theAddress] = theValue;
   }
 
   /// @notice Stop write phase and restart read phase
   function finishWritePhase() public {
-    require(currentState == state.Writing);
+    require((currentState == state.Writing)
+            || (currentState == state.Reading));
     currentState = state.Reading;
   }
 
@@ -48,12 +50,6 @@ contract testMemory is mortal {
     require(currentState == state.Reading);
     require((theAddress & 7) == 0);
     return value[theAddress];
-  }
-
-  /// @notice Stop read phase and start write phase
-  function finishReadPhase() public {
-    require(currentState == state.Reading);
-    currentState = state.Writing;
   }
 }
 
