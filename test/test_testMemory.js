@@ -97,17 +97,6 @@ describe('Testing testMemory contract', function() {
       expect(response).to.equal(values[key].toString());
     }
 
-    // finishing read phase
-    response = yield testMemoryContract.methods
-      .finishReadPhase()
-      .send({ from: aliceAddr, gas: 1500000 })
-      .on('receipt');
-
-    // check if write phase
-    currentState = yield testMemoryContract.methods
-      .currentState().call({ from: aliceAddr });
-    expect(currentState).to.equal('0');
-
     // write some more
     write_values = { '283888':        '0x0000000000000000',
                      '1808':          '0x0000f000f0000000',

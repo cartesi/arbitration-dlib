@@ -1,7 +1,6 @@
 /// @title Partition contract
 pragma solidity ^0.4.18;
 
-
 contract mortal {
   address public owner;
 
@@ -114,7 +113,6 @@ contract mm is mortal {
   /// @param theAddress of the write
   /// @param theValue to be written
   function write(uint64 theAddress, bytes8 theValue) public {
-    return;
     require(msg.sender == client);
     require((currentState == state.Writing)
             || (currentState == state.Reading));

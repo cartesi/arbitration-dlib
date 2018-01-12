@@ -98,6 +98,8 @@ describe('Testing partition contract', function() {
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
+    console.log(partitionContract.options.address);
+
     // create empty arrays for query and reply
     queryArray = [];
     replyArray = [];

@@ -54,6 +54,7 @@ describe('Testing memory manager contract', function() {
     //   });
     // }
 
+
     // create contract object
     mmContract = new web3.eth.Contract(abi);
 
@@ -80,6 +81,7 @@ describe('Testing memory manager contract', function() {
       arguments: [aliceAddr, machineAddr, initialHash]
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
+
 
     // check if waiting values
     currentState = yield mmContract.methods
@@ -163,19 +165,6 @@ describe('Testing memory manager contract', function() {
         .call({ from: machineAddr, gas: 1500000 });
       expect(response).to.equal(values[key].toString());
     }
-
-    // finishing read phase
-    response = yield mmContract.methods
-      .finishReadPhase()
-      .send({ from: machineAddr, gas: 1500000 })
-      .on('receipt', function(receipt) {
-        expect(receipt.events.FinishedReading).not.to.be.undefined;
-      });
-
-    // check if write phase
-    currentState = yield mmContract.methods
-      .currentState().call({ from: aliceAddr });
-    expect(currentState).to.equal('2');
 
     write_values = { '283888':        '0x0000000000000000',
                      '1808':          '0x0000f000f0000000',
