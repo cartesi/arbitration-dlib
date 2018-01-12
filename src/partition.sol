@@ -1,9 +1,6 @@
 /// @title Partition contract
 pragma solidity ^0.4.18;
 
-import "./timeaware.sol";
-
-
 contract mortal {
   address public owner;
 
@@ -17,7 +14,7 @@ contract mortal {
 }
 
 
-contract partition is mortal, timeAware {
+contract partition is mortal {
   address public challenger;
   address public claimer;
   uint public finalTime; // hashes provided between 0 and finalTime (inclusive)
@@ -70,7 +67,7 @@ contract partition is mortal, timeAware {
     slice(0, finalTime);
 
     roundDuration = theRoundDuration;
-    timeOfLastMove = getTime();
+    timeOfLastMove = now;
 
     currentState = state.WaitingHashes;
     QueryPosted(queryArray);
@@ -124,7 +121,7 @@ contract partition is mortal, timeAware {
       }
     }
     currentState = state.WaitingQuery;
-    timeOfLastMove = getTime();
+    timeOfLastMove = now;
     HashesPosted(postedTimes, postedHashes);
   }
 
@@ -147,19 +144,19 @@ contract partition is mortal, timeAware {
     require(rightPoint - leftPoint > 1);
     slice(leftPoint, rightPoint);
     currentState = state.WaitingHashes;
-    timeOfLastMove = getTime();
+    timeOfLastMove = now;
     QueryPosted(queryArray);
   }
 
   /// @notice Claim victory for opponent timeout.
   function claimVictoryByTime() public {
     if ((msg.sender == challenger) && (currentState == state.WaitingHashes)
-        && (getTime() > timeOfLastMove + roundDuration)) {
+        && (now > timeOfLastMove + roundDuration)) {
       currentState = state.ChallengerWon;
       ChallengeEnded(currentState);
     }
     if ((msg.sender == claimer) && (currentState == state.WaitingQuery)
-        && (getTime() > timeOfLastMove + roundDuration)) {
+        && (now > timeOfLastMove + roundDuration)) {
       currentState = state.ClaimerWon;
       ChallengeEnded(currentState);
     }
