@@ -24,7 +24,7 @@ contract mm is mortal {
   address public provider;
   address public client;
   bytes32 public initialHash;
-  bytes32 public newHash;
+  bytes32 public newHash; // hash after some write operations have been proved
 
   mapping(uint64 => bool) public addressWasSubmitted; // mark address submitted
   mapping(uint64 => bytes8) private valueSubmitted; // value submitted to address
