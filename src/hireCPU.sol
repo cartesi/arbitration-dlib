@@ -5,6 +5,8 @@
 /// @title Betting contract
 pragma solidity ^0.4.0;
 
+import "./mm.sol";
+import "./subleq.sol";
 import "./partition.sol";
 import "./lib/bokkypoobah/Token.sol";
 
@@ -33,15 +35,66 @@ contract hireCPU {
   uint public roundDuration; // time interval one has before expiration
   uint public jobDuration; // time to perform the job
 
-  bytes32 claimedHashOfEncryptedOutput;
-  bytes32 acknowledgedKey;
+  bytes32 public claimedHashOfEncryptedOutputList;
+  bytes32 public acknowledgedKey;
+
+  // for disputes only
+  uint64 public divergingSeed;
+  bytes32 public final1HashOfDecryptMachine; // these four hashes compose the
+  bytes32 public final2HashOfDecryptMachine; // final state of the decrypt
+  bytes32 public final3HashOfDecryptMachine; // machine
+  bytes32 public final4HashOfDecryptMachine;
+  bytes32 public final1HashOfClientMachine; // these three hashes, together with
+  bytes32 public final2HashOfClientMachine; // the hash of unencrypted output
+  bytes32 public final3HashOfClientMachine; // give the final state of client
+  bytes32 public hashOfEncryptedSelectedOuput;
 
   partition public partitionContract;
+  function getPartitionCurrentState() view public returns (partition.state) {
+    return partitionContract.currentState();
+  }
+
+  mm public mmContract;
+  function getMMCurrentState() view public returns (mm.state) {
+    return mmContract.currentState();
+  }
+
+  subleq public subleqContract;
+
+  // These are the possible (abbreviated) states of the contract,
+  // see the full names below:
+  //
+  //                               Bids
+  //                                |
+  //                               Sol
+  //                                |
+  //         -------------------- TrRec -------
+  //        /                                  \
+  //     AckKey                              UnackKey
+  //       |                                    |
+  //     AckApp --                             ...
+  //       |      \
+  //     AckExp    F
+  //          \
+  //      -- AckChal --
+  //     /             \
+  // AckReOut        PartDisp
+  //    |               |
+  //    F            MachDisp
+  //                    |
+  //                    F
+
 
   enum state { WaitingBids, WaitingSolution, WaitingTransferReceipt,
                WaitingAcknowledgedKey, WaitingAcknowledgedApproval,
+               WaitingAcknowledgedExplanation, WaitingAcknowledgedChallenge,
+               WaitingAcknowledgedResponseToClient,
+               WaitingPartitionDispute, WaitingMachineStep,
+
                WaitingUnacknowledgedKey,
                Finished }
+
+  enum challenge { outputHash, decyptMachine, clientMachine }
 
   state public currentState;
 
@@ -52,7 +105,7 @@ contract hireCPU {
                    uint theDepositRequired, uint theAuctionDuraiton,
                    uint theRoundDuration, uint theJobDuration);
   event LowestBidDecreased(address bidder, uint amount);
-  event SolutionPosted(bytes32 theClaimedHashOfEncryptedOutput);
+  event SolutionPosted(bytes32 theClaimedHashOfEncryptedOutputList);
   //event ChallengePosted(address thePartitionContract);
   //event WinerFound(state finalState);
 
@@ -74,6 +127,10 @@ contract hireCPU {
     finalTime = theFinalTime;
 
     addressForSeed = theAddressForSeed;
+    require(theInitialSeed + theNumberOfSeeds > theInitialSeed); // sum < 2^64
+    // all hashes must fit mm and each hash takes 4 words
+    require(theInitialSeed + theNumberOfSeeds < uint64(0x4000000000000000));
+
     initialSeed = theInitialSeed;
     numberOfSeeds = theNumberOfSeeds;
 
@@ -117,13 +174,13 @@ contract hireCPU {
     currentState = state.WaitingSolution;
   }
 
-  function postSolution(bytes32 theClaimedHashOfEncryptedOutput) public {
+  function postSolution(bytes32 theClaimedHashOfEncryptedOutputList) public {
     require(msg.sender == provider);
     require(currentState == state.WaitingSolution);
-    claimedHashOfEncryptedOutput = theClaimedHashOfEncryptedOutput;
+    claimedHashOfEncryptedOutputList = theClaimedHashOfEncryptedOutputList;
     currentState = state.WaitingTransferReceipt;
     timeOfLastMove = now;
-    SolutionPosted(claimedHashOfEncryptedOutput);
+    SolutionPosted(claimedHashOfEncryptedOutputList);
   }
 
   // this part of the code refers to an acknowledged transfer of data
@@ -142,6 +199,7 @@ contract hireCPU {
     currentState = state.WaitingAcknowledgedApproval;
   }
 
+  // here we have an acknowledged transfer and aggreed in calculation
   function aproveAcknowledgedCalculation() public {
     require(msg.sender == client);
     require(currentState == state.WaitingAcknowledgedApproval);
@@ -150,15 +208,129 @@ contract hireCPU {
     currentState = state.Finished;
   }
 
-  // here we have an acknowledged transfer but a disagreement in calculation value
+  // here we have an acknowledged transfer but a disagreement in calculation
+  function disaproveAcknowledgedCalculation(uint64 theDivergingSeed) public {
+    require(msg.sender == client);
+    require(currentState == state.WaitingAcknowledgedApproval);
+    require(theDivergingSeed >= initialSeed);
+    require(theDivergingSeed < initialSeed + numberOfSeeds);
+    tokenContract.transferFrom(client, address(this), depositRequired);
+    divergingSeed = theDivergingSeed;
+    timeOfLastMove = now;
+    currentState = state.WaitingAcknowledgedExplanation;
+  }
+
+  function giveAcknowledgedExplanation
+    ( bytes32 theHashOfEncryptedSelectedOutput,
+      bytes32 theFinal1HashOfDecryptMachine,
+      bytes32 theFinal2HashOfDecryptMachine,
+      bytes32 theFinal3HashOfDecryptMachine,
+      bytes32 theFinal4HashOfDecryptMachine,
+      bytes32 theFinal1HashOfClientMachine,
+      bytes32 theFinal2HashOfClientMachine,
+      bytes32 theFinal3HashOfClientMachine
+      ) {
+    require(msg.sender == provider);
+    require(currentState = state.WaitingAcknowledgedExplanation);
+    hashOfEncryptedSelectedOuput = theHashOfEncryptedSelectedOutput;
+    final1HashOfDecryptMachine = theFinal1HashOfDecryptMachine;
+    final2HashOfDecryptMachine = theFinal2HashOfDecryptMachine;
+    final3HashOfDecryptMachine = theFinal3HashOfDecryptMachine;
+    final4HashOfDecryptMachine = theFinal4HashOfDecryptMachine;
+    final1HashOfClientMachine = theFinal1HashOfClientMachine;
+    final2HashOfClientMachine = theFinal2HashOfClientMachine;
+    final3HashOfClientMachine = theFinal3HashOfClientMachine;
+    timeOfLastMove = now;
+    currentState = state.WaitingAcknowledgedChallenge;
+  }
+
+  function postAcknowledgedChallenge(challenge theChallenge) {
+    require(msg.sender == client);
+    require(currentState = state.WaitingAcknowledgedChallenge);
+    timeOfLastMove = now;
+    if (theChallenge == challenge.outputHash) {
+      mmContract = new mm(provider, address(this),
+                          claimedHashOfEncryptedOutputList);
+      currentState = state.WaitingAcknowledgedResponseToOutputHash;
+    }
+    if (theChallenge == challenge.decryptMachine) {
+      // 0x00000... has to be replaced by the hash of 2^62 zeros
+      // 0x11111... has to be replaced by our machine hash
+      // 0x22222... has to be replaced by our decryption hd hash
+      bytes32 machine = keccak256
+        ( 0x1111111111111111111111111111111111111111111111111111111111111111,
+          0x2222222222222222222222222222222222222222222222222222222222222222
+          );
+      bytes32 inputOutput = keccak256
+        ( hashOfEncryptedSelectedOuput,
+          0x0000000000000000000000000000000000000000000000000000000000000000
+          );
+      bytes32 finalClient1 = keccak256
+        ( final1HashOfClientMachine, final2HashOfClientMachine );
+      bytes32 finalClient2 = keccak256
+        ( final1HashOfClientMachine, final2HashOfClientMachine );
+      partitionContract = new partition(client, provider,
+                                        keccak256(machine, inputOutput),
+                                        keccak256(finalClient1, finalClient2),
+                                        2**64, 10, roundDuration);
+      currentState = state.WaitingPartitionDispute;
+    }
+  }
+
+  function proveCorrectAcklowledgedOutputHash() {
+    require(msg.sender == provider);
+    require(currentState = state.WaitingAcknowledgedResponseToOutputHash);
+    require(getMMCurrentState() == mm.state.Reading);
+    bytes8 word1 = mm.read(4 * divergingSeed);
+    bytes8 word2 = mm.read(4 * divergingSeed + 1);
+    bytes8 word3 = mm.read(4 * divergingSeed + 2);
+    bytes8 word4 = mm.read(4 * divergingSeed + 3);
+    uint word = uint64(word1) * 2**192 + uint64(word2) * 2**128
+      + uint64(word3) * 2**64 + uint64(word4);
+    require(hashOfEncryptedSelectedOuput = bytes32(word));
+    tokenContract.transfer(provider, 2 * depositRequired + lowestBid);
+    currentState = state.Finished;
+  }
+
+  function winByPartitionTimeout() {
+    require(currentState == state.WaitingPartitionDispute);
+    if (getPartitionCurrentState() == partition.state.ChallengerWon) {
+      tokenContract.transfer(partition.challenger,
+                             2 * depositRequired + lowestBid);
+      currentState = state.Finished;
+    }
+    if (getPartitionCurrentState() == partition.state.ClaimerWon) {
+      tokenContract.transfer(partition.claimer,
+                             2 * depositRequired + lowestBid);
+      currentState = state.Finished;
+    }
+    require(false);
+  }
+
+  function startMachineDisputeStep() {
+    require(currentState == state.WaitingPartitionDispute);
+    require(getPartitionCurrentState() == partition.state.DivergenceFound);
+    // problem with cyclic addresses
+    subleqContract = new subleq(provider, address(this),
+                                claimedHashOfEncryptedOutputList);
+    mmContract = new mm(partition.challenger, address(subleqContract),
+                        claimedHashOfEncryptedOutputList);
+    currentState = state.WaitingForMachineToRun;
+  }
 
 
+
+    getPartitionCurrentState() == partition.state.DivergenceFound
+
+WaitingAcknowledgedResponseToOutputHash
+      }
 
   // this part of the code refers to a disagreement on the transfer of data
 
 
 
-
+  function claimVictoryByDeadline() {
+  }
 
   // to kill the contract and receive refunds
   function killContract() public {
