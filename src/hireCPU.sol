@@ -40,23 +40,33 @@ contract hireCPU {
 
   // for disputes only
   uint64 public divergingSeed;
-  bytes32 public final1HashOfDecryptMachine; // these four hashes compose the
-  bytes32 public final2HashOfDecryptMachine; // final state of the decrypt
-  bytes32 public final3HashOfDecryptMachine; // machine
-  bytes32 public final4HashOfDecryptMachine;
-  bytes32 public final1HashOfClientMachine; // these three hashes, together with
-  bytes32 public final2HashOfClientMachine; // the hash of unencrypted output
-  bytes32 public final3HashOfClientMachine; // give the final state of client
+  bytes32 public decryptionMachinePreparationHash; // hash of machine before key
+  bytes32 public decryptionMachineInitialHash; // hash of machine after key
+  bytes32 public decryptionMachineFinalHash; // hash of machine after running
+
+  bytes32 public clientMachinePreparationHash; // hash of machine before seed
+  bytes32 public clientMachineInitialHash; // hash of machine after seed
+  bytes32 public clientMachineFinalHash; // hash of machine after running
+
   bytes32 public hashOfEncryptedSelectedOuput;
 
-  partition public partitionContract;
-  function getPartitionCurrentState() view public returns (partition.state) {
-    return partitionContract.currentState();
-  }
-
+  // for challenges
+  address challenger;
+  address claimer;
+ 
+  // for memory read/write and machine run challenges
   mm public mmContract;
   function getMMCurrentState() view public returns (mm.state) {
     return mmContract.currentState();
+  }
+  // for memory challenges, this are the relevant hash and position to be tested
+  bytes32 hashForChallenge;
+  uint64 memoryPositionForChallenge;
+
+  // for processing challenges
+  partition public partitionContract;
+  function getPartitionCurrentState() view public returns (partition.state) {
+    return partitionContract.currentState();
   }
 
   subleq public subleqContract;
@@ -78,7 +88,7 @@ contract hireCPU {
   //          \
   //      -- AckChal --
   //     /             \
-  // AckReOut        PartDisp
+  // MemChall        PartDisp
   //    |               |
   //    F            MachDisp
   //                    |
@@ -94,7 +104,8 @@ contract hireCPU {
                WaitingUnacknowledgedKey,
                Finished }
 
-  enum challenge { outputHash, decyptMachine, clientMachine }
+  enum challenge { outputHash, keyInsertion, decyptMachineRun,
+                   seedInsertion, clientMachineRun }
 
   state public currentState;
 
@@ -222,24 +233,57 @@ contract hireCPU {
 
   function giveAcknowledgedExplanation
     ( bytes32 theHashOfEncryptedSelectedOutput,
+      bytes32 theDecryptionMachineInitialHash,
+      bytes32 decryptionMachineFinalHash,
       bytes32 theFinal1HashOfDecryptMachine,
       bytes32 theFinal2HashOfDecryptMachine,
       bytes32 theFinal3HashOfDecryptMachine,
       bytes32 theFinal4HashOfDecryptMachine,
+      bytes32 theClientMachineInitialHash,
       bytes32 theFinal1HashOfClientMachine,
       bytes32 theFinal2HashOfClientMachine,
       bytes32 theFinal3HashOfClientMachine
       ) {
     require(msg.sender == provider);
     require(currentState = state.WaitingAcknowledgedExplanation);
-    hashOfEncryptedSelectedOuput = theHashOfEncryptedSelectedOutput;
-    final1HashOfDecryptMachine = theFinal1HashOfDecryptMachine;
-    final2HashOfDecryptMachine = theFinal2HashOfDecryptMachine;
-    final3HashOfDecryptMachine = theFinal3HashOfDecryptMachine;
-    final4HashOfDecryptMachine = theFinal4HashOfDecryptMachine;
-    final1HashOfClientMachine = theFinal1HashOfClientMachine;
-    final2HashOfClientMachine = theFinal2HashOfClientMachine;
-    final3HashOfClientMachine = theFinal3HashOfClientMachine;
+    hashOfEncryptedSelectedOutput = theHashOfEncryptedSelectedOutput;
+    // assemble decryption machine preparation hash
+    // 0x00000... has to be replaced by the merkel hash of 2^62 zeros
+    // 0x11111... has to be replaced by our machine hash
+    // 0x22222... has to be replaced by our decryption hd hash
+    bytes32 machine = keccak256
+      ( 0x1111111111111111111111111111111111111111111111111111111111111111,
+        0x2222222222222222222222222222222222222222222222222222222222222222
+        );
+    bytes32 inputOutput = keccak256
+      ( hashOfEncryptedSelectedOuput,
+        0x0000000000000000000000000000000000000000000000000000000000000000
+        );
+    decryptionMachinePreparationHash = keccak256(machine, inputOutput);
+    // state the decryption machine initial hash
+    decryptionMachineInitialHash = theDecryptionMachineInitialHash;
+    // assemble decryption machine final hash
+    machine = keccak256
+      ( theFinal1HashOfDecryptMachine,
+        theFinal2HashOfDecryptMachine
+        );
+    inputOutput = keccak256
+      ( theFinal3HashOfDecryptMachine,
+        theFinal4HashOfDecryptMachine
+        );
+    decryptionMachineFinalHash = keccak256(machine, inputOutput);
+    // state the client machine initial hash
+    clientMachineInitialHash = theClientMachineInitialHash;
+    // assemble client machine final hash
+    machine = keccak256
+      ( theFinal1HashOfClientMachine,
+        theFinal2HashOfClientMachine,
+        );
+    inputOutput = keccak256
+      ( theFinal3HashOfClientMachine,
+        theFinal4HashOfDecryptMachine
+        );
+    clientMachineFinalHash = keccak256(machine, inputOutput);
     timeOfLastMove = now;
     currentState = state.WaitingAcknowledgedChallenge;
   }
@@ -249,26 +293,28 @@ contract hireCPU {
     require(currentState = state.WaitingAcknowledgedChallenge);
     timeOfLastMove = now;
     if (theChallenge == challenge.outputHash) {
+      challenger = client;
+      claimer = provider;
+      hashForChallenge = hashOfEncryptedSelectedOuput;
       mmContract = new mm(provider, address(this),
                           claimedHashOfEncryptedOutputList);
-      currentState = state.WaitingAcknowledgedResponseToOutputHash;
+      currentState = state.WaitingMemoryReadHashChallenge;
+    }
+    if (theChallenge == challenge.keyInsert) {
+      challenger = client;
+      claimer = provider;
+      hashForChallenge = hashOfEncryptedSelectedOuput;
+      // replace this by the position of the key in decryption machine memory
+      memoryPositionForChallenge = 0x5555555555555555;
+      mmContract = new mm(provider, address(this),
+                          decryptionMachinePreparationMemory);
+      currentState = state.WaitingMemoryWriteHashChallenge;
     }
     if (theChallenge == challenge.decryptMachine) {
-      // 0x00000... has to be replaced by the hash of 2^62 zeros
-      // 0x11111... has to be replaced by our machine hash
-      // 0x22222... has to be replaced by our decryption hd hash
-      bytes32 machine = keccak256
-        ( 0x1111111111111111111111111111111111111111111111111111111111111111,
-          0x2222222222222222222222222222222222222222222222222222222222222222
-          );
-      bytes32 inputOutput = keccak256
-        ( hashOfEncryptedSelectedOuput,
-          0x0000000000000000000000000000000000000000000000000000000000000000
-          );
       bytes32 finalClient1 = keccak256
         ( final1HashOfClientMachine, final2HashOfClientMachine );
       bytes32 finalClient2 = keccak256
-        ( final1HashOfClientMachine, final2HashOfClientMachine );
+        (  );
       partitionContract = new partition(client, provider,
                                         keccak256(machine, inputOutput),
                                         keccak256(finalClient1, finalClient2),
@@ -277,20 +323,39 @@ contract hireCPU {
     }
   }
 
-  function proveCorrectAcklowledgedOutputHash() {
-    require(msg.sender == provider);
-    require(currentState = state.WaitingAcknowledgedResponseToOutputHash);
+  function settleMemoryChallenge() {
+    require(msg.sender == claimer);
+    require(currentState = state.WaitingMemoryReadHashChallenge);
     require(getMMCurrentState() == mm.state.Reading);
-    bytes8 word1 = mm.read(4 * divergingSeed);
-    bytes8 word2 = mm.read(4 * divergingSeed + 1);
-    bytes8 word3 = mm.read(4 * divergingSeed + 2);
-    bytes8 word4 = mm.read(4 * divergingSeed + 3);
+    bytes8 word1 = mm.read(32 * divergingSeed);
+    bytes8 word2 = mm.read(32 * divergingSeed + 8);
+    bytes8 word3 = mm.read(32 * divergingSeed + 16);
+    bytes8 word4 = mm.read(32 * divergingSeed + 24);
     uint word = uint64(word1) * 2**192 + uint64(word2) * 2**128
       + uint64(word3) * 2**64 + uint64(word4);
-    require(hashOfEncryptedSelectedOuput = bytes32(word));
+    require(bytes32(word) = claimedHash);
     tokenContract.transfer(provider, 2 * depositRequired + lowestBid);
     currentState = state.Finished;
   }
+
+  function insertionForWriteMemoryChallenge() {
+    require(msg.sender == claimer);
+    require(currentState = state.WaitingMemoryReadHashChallenge);
+    require(getMMCurrentState() == mm.state.Reading);
+    bytes8 word1 = bytes8(hashForChallenge / 2**192);
+    bytes8 word2 = bytes8((hashForChallenge
+      & 0x0000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) / 2**128);
+    bytes8 word3 = bytes8((hashForChallenge
+      & 0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) / 2**64);
+    bytes8 word4 = bytes8(hashForChallenge
+      & 0x000000000000000000000000000000000000000000000000FFFFFFFFFFFFFFFF);
+    mm.write(memoryPositionForChallenge, word1);
+    mm.write(memoryPositionForChallenge, word1 + 8);
+    mm.write(memoryPositionForChallenge, word1 + 16);
+    mm.write(memoryPositionForChallenge, word1 + 24);
+    currentState = state.???;
+  }
+
 
   function winByPartitionTimeout() {
     require(currentState == state.WaitingPartitionDispute);
@@ -424,4 +489,3 @@ WaitingAcknowledgedResponseToOutputHash
   }
   */
 }
-
