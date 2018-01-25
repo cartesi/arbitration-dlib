@@ -58,7 +58,7 @@ class MemoryManager {
         // if memory is empty, use the iterated hashes of zero bytes
         // console.log(memory, begin, log2length);
         if (isEmpty(memory)) return this.iteratedZeroHashes[log2length];
-        // if memory is not empty, return the byte at location begin
+        // if memory is not empty, but length = 1 return the hash of the word
         if (log2length === 0)
             if (begin in memory) {
                 return hashWord(memory[begin]);

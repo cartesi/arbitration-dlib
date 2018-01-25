@@ -11,6 +11,9 @@ import "./partition.sol";
 import "./lib/bokkypoobah/Token.sol";
 
 contract hireCPU {
+  bytes32 constant public zeros =
+    0x0000000000000000000000000000000000000000000000000000000000000000;
+
   Token public tokenContract; // address of Themis ERC20 contract
 
   address public client; // who is hiring the provider to perform a calculation
@@ -331,9 +334,12 @@ contract hireCPU {
     bytes8 word2 = mm.read(32 * divergingSeed + 8);
     bytes8 word3 = mm.read(32 * divergingSeed + 16);
     bytes8 word4 = mm.read(32 * divergingSeed + 24);
-    uint word = uint64(word1) * 2**192 + uint64(word2) * 2**128
-      + uint64(word3) * 2**64 + uint64(word4);
-    require(bytes32(word) = claimedHash);
+    bytes32 word = zeros;
+    word |= word1 << 192;
+    word |= word2 << 128;
+    word |= word3 << 64;
+    word |= word4;
+    require(word = claimedHash);
     tokenContract.transfer(provider, 2 * depositRequired + lowestBid);
     currentState = state.Finished;
   }
@@ -342,17 +348,23 @@ contract hireCPU {
     require(msg.sender == claimer);
     require(currentState = state.WaitingMemoryReadHashChallenge);
     require(getMMCurrentState() == mm.state.Reading);
-    bytes8 word1 = bytes8(hashForChallenge / 2**192);
-    bytes8 word2 = bytes8((hashForChallenge
-      & 0x0000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) / 2**128);
-    bytes8 word3 = bytes8((hashForChallenge
-      & 0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) / 2**64);
-    bytes8 word4 = bytes8(hashForChallenge
-      & 0x000000000000000000000000000000000000000000000000FFFFFFFFFFFFFFFF);
+    bytes8 word1, word2, word3, word4;
+    for (uint i = 0; i < 8; i++) {
+      word1[i] = hashForChallenge[i];
+    }
+    for (uint i = 0; i < 8; i++) {
+      word2[i] = hashForChallenge[8 + i];
+    }
+    for (uint i = 0; i < 8; i++) {
+      word3[i] = hashForChallenge[16 + i];
+    }
+    for (uint i = 0; i < 8; i++) {
+      word4[i] = hashForChallenge[24 + i];
+    }
     mm.write(memoryPositionForChallenge, word1);
-    mm.write(memoryPositionForChallenge, word1 + 8);
-    mm.write(memoryPositionForChallenge, word1 + 16);
-    mm.write(memoryPositionForChallenge, word1 + 24);
+    mm.write(memoryPositionForChallenge + ???, word2 + ???);
+    mm.write(memoryPositionForChallenge, word3);
+    mm.write(memoryPositionForChallenge, word4);
     currentState = state.???;
   }
 
