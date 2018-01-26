@@ -91,14 +91,14 @@ describe('Testing depth contract', function() {
     depthContract = new web3.eth.Contract(abi);
   });
 
-  it('Find divergence', function*() {
+  it.only('Find divergence', function*() {
     this.timeout(15000)
 
     // deploy contract and update object
     depthContract = yield depthContract.deploy({
       data: bytecode,
-      arguments: [aliceAddr, bobAddr, bobMM.merkel(), roundDuration]
-    }).send({ from: aliceAddr, gas: 1500000 })
+      arguments: [aliceAddr, bobAddr, bobMM.merkel(), roundDuration]})
+      .send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
     while (true) {
@@ -108,23 +108,23 @@ describe('Testing depth contract', function() {
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('1');
 
-      currentAddress = yield depthContract.methods
-        .currentAddress().call({ from: bobAddr });
-
-      currentAddress = BigNumber(currentAddress);
-
       currentDepth = yield depthContract.methods
         .currentDepth().call({ from: bobAddr });
+      currentAddress = yield depthContract.methods
+        .currentAddress().call({ from: bobAddr });
+      currentSize = BigNumber(2).pow(63 - currentDepth);
+      currentLeftAddress = BigNumber(currentAddress);
+      currentRightAddress = currentLeftAddress.add(currentSize);
 
       // get the hashes of children and prepare response
-      let leftHash = bobMM.subMerkel(bobMM, currentAddress,
-                                     63 - currentDepth);
-      let leftHash = bobMM.subMerkel(bobMM, currentAddress.add(???),
-                                     63 - currentDepth);
+      let leftHash = bobMM.subMerkel(bobMM, currentLeftAddress,
+                                     60 - currentDepth);
+      let leftHash = bobMM.subMerkel(bobMM, currentRightAddress,
+                                     60 - currentDepth);
 
       // sending hashes from alice should fail
       response = yield depthContract.methods
-        .replyQuery(queryArray, replyArray)
+        .replyQuery(leftHash, rightHash)
         .send({ from: aliceAddr, gas: 1500000 })
         .catch(function(error) {
           expect(error.message).to.have.string('VM Exception');
@@ -140,22 +140,32 @@ describe('Testing depth contract', function() {
 
       // send hashes
       response = yield depthContract.methods
-        .replyQuery(queryArray, replyArray)
+        .replyQuery(leftHash, rightHash)
         .send({ from: bobAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
           expect(receipt.events.HashesPosted).not.to.be.undefined;
         });
       returnValues = response.events.HashesPosted.returnValues;
 
-      // find first last time of query where there was aggreement
-      var lastConsensualQuery = 0;
-      for (i = 0; i < querySize - 1; i++){
-        if (aliceHistory[returnValues.thePostedTimes[i]]
-            == returnValues.thePostedHashes[i]) {
-          lastConsensualQuery = i;
-        } else {
-          break;
-        }
+      // get the hashes of children in alice memory to prepare query
+      let leftHash = aliceMM.subMerkel(alcieMM, currentLeftAddress,
+                                       60 - currentDepth);
+      let leftHash = aliceMM.subMerkel(aliceMM, currentRightAddress,
+                                     60 - currentDepth);
+
+      // decide where to turn
+      claimerLeftHash = yield depthContract.methods
+        .claimerLeftChildHash().call({ from: aliceAddr });
+      claimerRigthHash = yield depthContract.methods
+        .claimerRightChildHash().call({ from: aliceAddr });
+      let continueToTheLeft = false;
+      let differentHash;
+      if (claimerLeftHash === leftHash) {
+        continueToTheLeft = false;
+        differentHash = claimerRightHash;
+      } else {
+        continueToTheLeft = true;
+        differentHash = claimerLeftHash;
       }
 
       // check if the state is WaitingQuery
@@ -171,35 +181,46 @@ describe('Testing depth contract', function() {
           expect(error.message).to.have.string('VM Exception');
         });
 
-      leftPoint = returnValues.thePostedTimes[lastConsensualQuery];
-      rightPoint = returnValues.thePostedTimes[lastConsensualQuery + 1];
+      // send query with last queried time of aggreement
+      response = yield depthContract.methods
+        .makeQuery(continueToTheLeft, differentHash)
+        .send({ from: aliceAddr, gas: 1500000 })
+        .on('receipt', function(receipt) {
+          expect(receipt.events.QueryPosted).not.to.be.undefined;
+        });
 
-      // check if the interval is unitary
-      if (+rightPoint == +leftPoint + 1) {
-        // if the interval is unitary, present divergence
-        response = yield depthContract.methods
-          .presentDivergence(leftPoint)
-          .send({ from: aliceAddr, gas: 1500000 })
-          .on('receipt', function(receipt) {
-            expect(receipt.events.DivergenceFound).not.to.be.undefined;
-          });
-        returnValues = response.events.DivergenceFound.returnValues;
-        expect(+returnValues.timeOfDivergence).to.equal(lastAggreement);
-        // check if the state is DivergenceFound
-        currentState = yield depthContract.methods
-          .currentState().call({ from: bobAddr });
-        expect(currentState).to.equal('4');
-        break;
-      } else {
-        // send query with last queried time of aggreement
-        response = yield depthContract.methods
-          .makeQuery(lastConsensualQuery, leftPoint, rightPoint)
-          .send({ from: aliceAddr, gas: 1500000 })
-          .on('receipt', function(receipt) {
-            expect(receipt.events.QueryPosted).not.to.be.undefined;
-          });
-      }
+      // if the state is WaitingControversialPhrase, exit while loop
+      // check if the state is WaitingQuery
+      currentState = yield depthContract.methods
+        .currentState().call({ from: bobAddr });
+      if (currentState === '4') break;
     }
+
+    currentAddress = yield depthContract.methods
+      .currentAddress().call({ from: bobAddr });
+    currentAddress = BigNumber(currentAddress);
+
+    let word1 = bobMM.getWord(currentAddress);
+    let word2 = bobMM.getWord(currentAddress.add(8));
+    let word3 = bobMM.getWord(currentAddress.add(16));
+    let word4 = bobMM.getWord(currentAddress.add(24));
+
+    // send controversial hash
+    response = yield depthContract.methods
+      .postControversialPhrase(word1, word2, word3, word4)
+      .send({ from: bobAddr, gas: 1500000 })
+      .on('receipt', function(receipt) {
+        expect(receipt.events.ControversialPhrasePosted).not.to.be.undefined;
+      });
+
+    // check if the state is WaitingQuery
+    currentState = yield depthContract.methods
+      .currentState().call({ from: bobAddr });
+    expect(currentState).to.equal('5');
+
+    divergingAddress = yield depthContract.methods
+      .currentAddress().call({ from: bobAddr });
+    expect(divergingAddress).to.equal(large);
 
     // kill contract
     response = yield depthContract.methods.kill()
