@@ -15,9 +15,6 @@ contract mortal {
 
 
 contract depth is mortal {
-  bytes32 constant public zeros =
-    0x0000000000000000000000000000000000000000000000000000000000000000;
-
   address public challenger;
   address public claimer;
 
@@ -30,20 +27,29 @@ contract depth is mortal {
   uint8 public currentDepth;
   uint64 public currentAddress;
 
-  bytes32 public controversialHashOfClaimer;
+  bytes32 public controversialPhraseOfClaimer;
 
   enum state { WaitingQuery, WaitingHashes,
                ChallengerWon, ClaimerWon,
-               WaitingControversialHash,
-               ControversialHashFound}
+               WaitingControversialPhrase,
+               ControversialPhraseFound}
   state public currentState;
 
   event QueryPosted(uint8 theCurrentDepth, uint64 theCurrentAddress);
   event HashesPosted(bytes32 theLeftHash, bytes32 theRightHash);
   event ChallengeEnded(state theState);
-  event ControversialHashPosted(uint64 addressStartingDivergence,
-                                bytes32 theControversialHashOfClaimer);
+  event ControversialPhrasePosted(uint64 addressStartingDivergence,
+                                bytes32 theControversialPhraseOfClaimer);
 
+  // Suppose two agents have distinct memory states, of course with different
+  // Merkel-tree hashes. This contract helps them find the exact point where
+  // their contents diverge. Instead of looking for a diverging byte or a
+  // diverging 64 bit word, we decided to return a "phrase" which is a 256 bit
+  // aligned sequence (four adjacent words aligned with 256 bits). This can
+  // be useful if the memory contained a list of 256 bit hashes.
+  //
+  // These are the states of the machine:
+  //
   //            Hashes (children of 0 at at level 1)
   //              |
   //             ...
@@ -72,9 +78,10 @@ contract depth is mortal {
     QueryPosted(currentDepth, currentAddress);
   }
 
-  /// @notice Answer the query (only claimer can call it).
-  /// @param leftHash the hash to the left of the current one.
-  /// @param rightHash the hash to the right of the current one.
+  /// @notice Answer the query (only claimer can call it) by posting.
+  /// two hashes that combine to the currentHash.
+  /// @param leftHash the child hash to the left of the current one.
+  /// @param rightHash the child hash to the right of the current one.
   function replyQuery(bytes32 leftHash, bytes32 rightHash) public {
     require(msg.sender == claimer);
     require(currentState == state.WaitingHashes);
@@ -86,10 +93,11 @@ contract depth is mortal {
     HashesPosted(leftHash, rightHash);
   }
 
-  /// @notice Makes a query (only challenger can call it).
+  /// @notice Makes a query (only challenger can call it) indicating the
+  /// direction to continue the search.
   /// @param continueToTheLeft a boolean saying if we should continue to the
   /// left (otherwise we continue to the right)
-  function makeQuery(bool continueToTheLeft) public {
+  function makeQuery(bool continueToTheLeft, bytes32 differentHash) public {
     require(msg.sender == challenger);
     require(currentState == state.WaitingQuery);
     if(continueToTheLeft) {
@@ -98,9 +106,11 @@ contract depth is mortal {
       claimerCurrentHash = claimerRightChildHash;
       currentAddress = currentAddress + uint64(2)**uint64(63 - currentDepth);
     }
+    // test if challenger knows the new problematic hash
+    require(claimerCurrentHash == differenHash);
     currentDepth = currentDepth + 1;
     if (currentDepth == 59) {
-      currentState = state.WaitingControversialHash;
+      currentState = state.WaitingControversialPhrase;
     } else {
       currentState = state.WaitingHashes;
     }
@@ -113,10 +123,10 @@ contract depth is mortal {
   /// @param word2 second word composing hash
   /// @param word3 third word composing hash
   /// @param word4 forth word composing hash
-  function postControversialHash(bytes8 word1, bytes8 word2,
-                                 bytes8 word3, bytes8 word4) public {
+  function postControversialPhrase(bytes8 word1, bytes8 word2,
+                                   bytes8 word3, bytes8 word4) public {
     require(msg.sender == claimer);
-    require(currentState == state.WaitingControversialHash);
+    require(currentState == state.WaitingControversialPhrase);
     require(currentDepth == 59);
     bytes32 word1Hash = keccak256(word1);
     bytes32 word2Hash = keccak256(word2);
@@ -125,13 +135,12 @@ contract depth is mortal {
     bytes32 word12Hash = keccak256(word1Hash, word2Hash);
     bytes32 word34Hash = keccak256(word3Hash, word4Hash);
     require(keccak256(word12Hash, word34Hash) == claimerCurrentHash);
-    controversialHashOfClaimer = zeros;
-    controversialHashOfClaimer |= bytes32(word1) << 192;
-    controversialHashOfClaimer |= bytes32(word2) << 128;
-    controversialHashOfClaimer |= bytes32(word3) << 64;
-    controversialHashOfClaimer |= bytes32(word4);
-    currentState = state.ControversialHashFound;
-    ControversialHashPosted(currentAddress, controversialHashOfClaimer);
+    controversialPhraseOfClaimer = bytes32(word1);
+    controversialPhraseOfClaimer |= bytes32(word2) >> 64;
+    controversialPhraseOfClaimer |= bytes32(word3) >> 128;
+    controversialPhraseOfClaimer |= bytes32(word4) >> 192;
+    currentState = state.ControversialPhraseFound;
+    ControversialPhrasePosted(currentAddress, controversialPhraseOfClaimer);
     ChallengeEnded(currentState);
   }
 
@@ -148,7 +157,7 @@ contract depth is mortal {
       ChallengeEnded(currentState);
     }
     if ((msg.sender == challenger)
-        && (currentState == state.WaitingControversialHash)
+        && (currentState == state.WaitingControversialPhrase)
         && (now > timeOfLastMove + roundDuration)) {
       currentState = state.ChallengerWon;
       ChallengeEnded(currentState);

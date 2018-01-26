@@ -335,10 +335,10 @@ contract hireCPU {
     bytes8 word3 = mm.read(32 * divergingSeed + 16);
     bytes8 word4 = mm.read(32 * divergingSeed + 24);
     bytes32 word = zeros;
-    word |= word1 << 192;
-    word |= word2 << 128;
-    word |= word3 << 64;
-    word |= word4;
+    word |= bytes32(word1);
+    word |= bytes32(word2) >> 64;
+    word |= bytes32(word3) >> 128;
+    word |= bytes32(word4) >> 192;
     require(word = claimedHash);
     tokenContract.transfer(provider, 2 * depositRequired + lowestBid);
     currentState = state.Finished;
