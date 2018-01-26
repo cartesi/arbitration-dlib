@@ -87,10 +87,11 @@ contract depth is mortal {
     require(currentState == state.WaitingHashes);
     require(keccak256(leftHash, rightHash) == claimerCurrentHash);
     claimerLeftChildHash = leftHash;
-    claimerRightChildHash = leftHash;
+    claimerRightChildHash = rightHash;
     timeOfLastMove = now;
     currentState = state.WaitingQuery;
     HashesPosted(leftHash, rightHash);
+    //HashesPosted(keccak256(leftHash, rightHash), claimerCurrentHash);
   }
 
   /// @notice Makes a query (only challenger can call it) indicating the
@@ -107,7 +108,7 @@ contract depth is mortal {
       currentAddress = currentAddress + uint64(2)**uint64(63 - currentDepth);
     }
     // test if challenger knows the new problematic hash
-    require(claimerCurrentHash == differenHash);
+    require(claimerCurrentHash == differentHash);
     currentDepth = currentDepth + 1;
     if (currentDepth == 59) {
       currentState = state.WaitingControversialPhrase;

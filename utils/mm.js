@@ -1,5 +1,6 @@
 const Web3 = require('web3');
 var BigNumber = require('bignumber.js');
+
 // var Uint64BE = require("int64-buffer").Uint64BE;
 
 web3 = new Web3();
@@ -41,8 +42,8 @@ class MemoryManager {
 
     setValue(position, value) {
         if (BigNumber(position).mod(8) != 0) throw "Position should be word-aligned";
-        if (BigNumber(position).lessThan(0)) throw "Setting negative value"
-        if (BigNumber(position).greaterThanOrEqualTo(
+        if (BigNumber(position).isLessThan(0)) throw "Setting negative value"
+        if (BigNumber(position).isGreaterThanOrEqualTo(
             BigNumber(2).pow(64))) throw "Setting value too large"
         this.memoryMap[position] = value;
     }
@@ -72,7 +73,7 @@ class MemoryManager {
         for (var key in memory) {
             if (memory.hasOwnProperty(key)) {
                 if (BigNumber(key)
-                    .lessThan(begin.plus(BigNumber(2).pow(log2length + 2)))) {
+                    .isLessThan(begin.plus(BigNumber(2).pow(log2length + 2)))) {
                     mem1[key] = memory[key];
                 } else {
                     mem2[key] = memory[key];
@@ -100,8 +101,8 @@ class MemoryManager {
     generateProof(position) {
         position = BigNumber(position);
         if (position.mod(8) != 0) throw "Position should be word-aligned";
-        if (BigNumber(position).lessThan(0)) throw "Proving negative position"
-        if (BigNumber(position).greaterThanOrEqualTo(
+        if (BigNumber(position).isLessThan(0)) throw "Proving negative position"
+        if (BigNumber(position).isGreaterThanOrEqualTo(
             BigNumber(2).pow(64))) throw "Proving position too large"
 
         //console.log("position " + position);
@@ -141,8 +142,8 @@ class MemoryManager {
     verifyProof(position, value, proof) {
         position = BigNumber(position);
         if (position.mod(8) != 0) throw "Position should be word-aligned";
-        if (BigNumber(position).lessThan(0)) throw "Verifying negative position"
-        if (BigNumber(position).greaterThanOrEqualTo(
+        if (BigNumber(position).isLessThan(0)) throw "Verifying negative position"
+        if (BigNumber(position).isGreaterThanOrEqualTo(
             BigNumber(2).pow(64))) throw "Verifying position too large"
         let running_hash = hashWord(value);
         //console.log("hashWord(value): " + running_hash);

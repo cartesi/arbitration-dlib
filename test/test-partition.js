@@ -98,6 +98,10 @@ describe('Testing partition contract', function() {
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
+    // this line should leave after they fix this bug
+    // https://github.com/ethereum/web3.js/issues/1266
+    partitionContract.setProvider(web3.currentProvider)
+
     console.log(partitionContract.options.address);
 
     // create empty arrays for query and reply
@@ -217,6 +221,10 @@ describe('Testing partition contract', function() {
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
+    // this line should leave after they fix this bug
+    // https://github.com/ethereum/web3.js/issues/1266
+    partitionContract.setProvider(web3.currentProvider)
+
     // check if the state is WaitingHashes
     currentState = yield partitionContract.methods
       .currentState().call({ from: bobAddr });
@@ -266,6 +274,10 @@ describe('Testing partition contract', function() {
                   finalTime, querySize, roundDuration]
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
+
+    // this line should leave after they fix this bug
+    // https://github.com/ethereum/web3.js/issues/1266
+    partitionContract.setProvider(web3.currentProvider)
 
     // check if the state is WaitingHashes
     currentState = yield partitionContract.methods

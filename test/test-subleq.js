@@ -87,6 +87,10 @@ describe('Testing memory manager contract', function() {
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
+    // this line should leave after they fix this bug
+    // https://github.com/ethereum/web3.js/issues/1266
+    testMemoryContract.setProvider(web3.currentProvider)
+
     // check if waiting to write values
     currentState = yield testMemoryContract.methods
       .currentState().call({ from: aliceAddr });
@@ -123,7 +127,7 @@ describe('Testing memory manager contract', function() {
       // write on memory
       console.log(two_complement_32(input_string[i]));
       response = yield testMemoryContract.methods
-        .write(BigNumber(initial_ic).add(8 * i),
+        .write(BigNumber(initial_ic).plus(8 * i),
                two_complement_32(input_string[i]))
         .send({ from: aliceAddr, gas: 1500000 })
         .on('receipt');
@@ -142,6 +146,10 @@ describe('Testing memory manager contract', function() {
                   1000000, 1000000, 1000000]
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
+
+    // this line should leave after they fix this bug
+    // https://github.com/ethereum/web3.js/issues/1266
+    subleqContract.setProvider(web3.currentProvider)
 
     // check if waiting to read values
     currentState = yield testMemoryContract.methods
@@ -188,7 +196,7 @@ describe('Testing memory manager contract', function() {
     // verifying output
     while (true) {
       response = yield testMemoryContract.methods
-        .read(BigNumber(initial_oc).add(8 * j))
+        .read(BigNumber(initial_oc).plus(8 * j))
         .call({ from: aliceAddr, gas: 1500000 });
       console.log(response);
       expect(response).to.equal(two_complement_32(input_string[j]));
