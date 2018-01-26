@@ -11,9 +11,6 @@ import "./partition.sol";
 import "./lib/bokkypoobah/Token.sol";
 
 contract hireCPU {
-  bytes32 constant public zeros =
-    0x0000000000000000000000000000000000000000000000000000000000000000;
-
   Token public tokenContract; // address of Themis ERC20 contract
 
   address public client; // who is hiring the provider to perform a calculation
@@ -129,7 +126,7 @@ contract hireCPU {
                    uint64 theNumberOfSeeds, uint theMaxPriceOffered,
                    uint theDepositRequired, uint theAuctionDuration,
                    uint theRoundDuration, uint theJobDuration)
-    payable public {
+    public {
 
     tokenContract = Token(0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab);
     client = theClient;
@@ -141,7 +138,8 @@ contract hireCPU {
     finalTime = theFinalTime;
 
     addressForSeed = theAddressForSeed;
-    require(theInitialSeed + theNumberOfSeeds > theInitialSeed); // sum < 2^64
+    // there should be no overflow in the sum below
+    require(theInitialSeed + theNumberOfSeeds > theInitialSeed);
     // all hashes must fit mm and each hash takes 4 words
     require(theInitialSeed + theNumberOfSeeds < uint64(0x4000000000000000));
 
@@ -169,25 +167,42 @@ contract hireCPU {
     return partitionContract.currentState();
   }
 
-  /// @notice Posts a bid for the announced job
+  /// @notice Post a bid for the announced job
   /// @param numberOfTokens required by bidder to perform the computation
   function bid(uint numberOfTokens) public {
     require(currentState == state.WaitingBids);
     require(numberOfTokens < lowestBid);
     tokenContract.transferFrom(msg.sender, address(this), depositRequired);
+    // if there was a previous bid with a deposit, reimburse the previous bidder
+    if (lowestBidder != address(0)) {
+      tokenContract.transfer(lowestBidder, depositRequired);
+    }
     lowestBidder = msg.sender;
     lowestBid = numberOfTokens;
     LowestBidDecreased(msg.sender, numberOfTokens);
   }
 
+  /// @notice Finishes the auction, if there is no bid, send deposit back to
+  /// client
   function finishAuctionPhase() public {
     require(currentState == state.WaitingBids);
     require(now > timeOfLastMove + auctionDuration);
-    provider = lowestBidder;
-    timeOfLastMove = now;
-    currentState = state.WaitingSolution;
+    // check if lowestBidder was unset and then send ballance back to client
+    if (lowestBidder == address(0)) {
+      uint balance = tokenContract.ballanceOf(address(this));
+      tokenContract.transfer(client, balance);
+      currentState = state.Finished;
+    } else {
+      provider = lowestBidder;
+      timeOfLastMove = now;
+      currentState = state.WaitingSolution;
+    }
   }
 
+  /// @notice Provider posts the Merkel tree hash of a memory contataining the
+  /// Merkel tree hashes of all the encrypted outputs from the client machine
+  /// as we vary the seeds
+  /// @param theClaimedHashOfEncryptedOutputList the hash of the memory
   function postSolution(bytes32 theClaimedHashOfEncryptedOutputList) public {
     require(msg.sender == provider);
     require(currentState == state.WaitingSolution);
@@ -197,7 +212,8 @@ contract hireCPU {
     SolutionPosted(claimedHashOfEncryptedOutputList);
   }
 
-  // this part of the code refers to an acknowledged transfer of data
+  /// @notice Client acknowledges the transfer of data (off-chain), from the
+  /// provider.
   function acknowledgeTransfer() public {
     require(msg.sender == client);
     require(currentState == state.WaitingTransferReceipt);
@@ -205,6 +221,10 @@ contract hireCPU {
     currentState = state.WaitingAcknowledgedKey;
   }
 
+  /// @notice Provider sends the key to decrypt the outputs sent in the previous
+  /// step in case the transfer of data between provider and client was
+  /// acknowledged
+  /// @param theAcknowledgedKey the key
   function sendAcknowledgedKey(bytes32 theAcknowledgedKey) public {
     require(msg.sender == provider);
     require(currentState == state.WaitingAcknowledgedKey);
@@ -213,7 +233,8 @@ contract hireCPU {
     currentState = state.WaitingAcknowledgedApproval;
   }
 
-  // here we have an acknowledged transfer and aggreed in calculation
+  /// @notice Client approves payment of the job for having confirmed that the
+  /// calculation was done correctly for several seeds
   function aproveAcknowledgedCalculation() public {
     require(msg.sender == client);
     require(currentState == state.WaitingAcknowledgedApproval);
@@ -222,7 +243,9 @@ contract hireCPU {
     currentState = state.Finished;
   }
 
-  // here we have an acknowledged transfer but a disagreement in calculation
+  /// @notice Client has acknowledged the receipt of outputs but she disagrees
+  /// on the calculation of a certain seed
+  /// @param theDivergingSeed the index of the seed that was not aggreed uppon
   function disaproveAcknowledgedCalculation(uint64 theDivergingSeed) public {
     require(msg.sender == client);
     require(currentState == state.WaitingAcknowledgedApproval);
@@ -234,6 +257,8 @@ contract hireCPU {
     currentState = state.WaitingAcknowledgedExplanation;
   }
 
+  /// @notice Provider sends all the hashes that should be necessary to prove
+  /// that he is correct in his calculations of the diverging seed
   function giveAcknowledgedExplanation
     ( bytes32 theHashOfEncryptedSelectedOutput,
       bytes32 theDecryptionMachineInitialHash,
@@ -250,10 +275,11 @@ contract hireCPU {
     require(msg.sender == provider);
     require(currentState = state.WaitingAcknowledgedExplanation);
     hashOfEncryptedSelectedOutput = theHashOfEncryptedSelectedOutput;
-    // assemble decryption machine preparation hash
     // 0x00000... has to be replaced by the merkel hash of 2^62 zeros
     // 0x11111... has to be replaced by our machine hash
     // 0x22222... has to be replaced by our decryption hd hash
+
+    // assemble decryption machine preparation hash
     bytes32 machine = keccak256
       ( 0x1111111111111111111111111111111111111111111111111111111111111111,
         0x2222222222222222222222222222222222222222222222222222222222222222
@@ -263,7 +289,7 @@ contract hireCPU {
         0x0000000000000000000000000000000000000000000000000000000000000000
         );
     decryptionMachinePreparationHash = keccak256(machine, inputOutput);
-    // state the decryption machine initial hash
+    // store the decryption machine initial hash
     decryptionMachineInitialHash = theDecryptionMachineInitialHash;
     // assemble decryption machine final hash
     machine = keccak256
@@ -275,7 +301,7 @@ contract hireCPU {
         theFinal4HashOfDecryptMachine
         );
     decryptionMachineFinalHash = keccak256(machine, inputOutput);
-    // state the client machine initial hash
+    // store the client machine initial hash
     clientMachineInitialHash = theClientMachineInitialHash;
     // assemble client machine final hash
     machine = keccak256
@@ -291,6 +317,17 @@ contract hireCPU {
     currentState = state.WaitingAcknowledgedChallenge;
   }
 
+  /// @notice Client has acknowledged the receipt of the output data,
+  /// but he disagreed in some calculation. Having received the explanation
+  /// from the provider, she now must decide what part of the calculation
+  /// she disagrees with
+  /// @param theChallenge the type of challenge she will present with the
+  /// choices:
+  ///  - outputHash
+  ///  - keyInsertion
+  ///  - decyptMachineRun
+  ///  - seedInsertion
+  ///  - clientMachineRun
   function postAcknowledgedChallenge(challenge theChallenge) {
     require(msg.sender == client);
     require(currentState = state.WaitingAcknowledgedChallenge);
@@ -334,8 +371,7 @@ contract hireCPU {
     bytes8 word2 = mm.read(32 * divergingSeed + 8);
     bytes8 word3 = mm.read(32 * divergingSeed + 16);
     bytes8 word4 = mm.read(32 * divergingSeed + 24);
-    bytes32 word = zeros;
-    word |= bytes32(word1);
+    word = bytes32(word1);
     word |= bytes32(word2) >> 64;
     word |= bytes32(word3) >> 128;
     word |= bytes32(word4) >> 192;
