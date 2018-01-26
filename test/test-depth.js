@@ -4,6 +4,7 @@ const Web3 = require('web3');
 const TestRPC = require("ethereumjs-testrpc");
 const mocha = require('mocha')
 const coMocha = require('co-mocha')
+const BigNumber = require('bignumber.js');
 
 const mm = require('../utils/mm.js')
 
@@ -29,12 +30,16 @@ const abi = JSON.parse(compiledContract.contracts[':depth'].interface);
 // using solc from the command line
 // const { exec } = require('child_process');
 // exec('/home/cortex/solidity/build/solc/solc -o /home/cortex/project/contracts --abi --bin /home/cortex/contracts/src/partition.sol', (err, stdout, stderr) => {
-//     if (err) { console.log('Error compiling contract'); return; }
-//     console.log(`stdout: ${stdout}`);
-//     console.log(`stderr: ${stderr}`);
 // });
 // const bytecode = fs.readFileSync('src/partition.bin').toString();
 // const abi = JSON.parse(fs.readFileSync('src/partition.abi').toString());
+
+var aliceMM = new mm.MemoryManager();
+var bobMM = new mm.MemoryManager();
+var zero = BigNumber('0');
+var small = BigNumber('1024');
+var large = BigNumber('18446744073709551360');
+
 
 describe('Testing depth contract', function() {
   beforeEach(function() {
@@ -60,30 +65,25 @@ describe('Testing depth contract', function() {
       });
     }
 
-    let aliceMM = new mm.MemoryManager();
-    let bobMM = new mm.MemoryManager();
-    let zero = BigNumber('0')
-    let small = BigNumber('1024')
-    let large = BigNumber('18446744073709551360');
-
-    values = { zero: 7771,
-               zero.add(64): 7772,
-               zero.add(128): 7773,
-               zero.add(192): 7774,
-               small: 2221,
-               small.add(64): 2222,
-               small.add(128): 2223,
-               small.add(192): 2224,
-               large: 3331,
-               large.add(64): 3332,
-               large.add(128): 3333,
-               large.add(192): 3334
-             };
+    values = {
+      '0': '0x1111111111111111',
+      '8': '0x1111111111111111',
+      '16': '0x1111111111111111',
+      '24': '0x1111111111111111',
+      '1024': '0x1111111111111111',
+      '1032': '0x1111111111111111',
+      '1040': '0x1111111111111111',
+      '1048': '0x1111111111111111',
+      '18446744073709551360': '0x1111111111111111',
+      '18446744073709551368': '0x1111111111111111',
+      '18446744073709551376': '0x1111111111111111',
+      '18446744073709551384': '0x1111111111111111'
+    }
     for (key in values) {
       aliceMM.setValue(key, values[key]);
       bobMM.setValue(key, values[key]);
     }
-    bobMM.setValue(large.add(64), 3333);
+    bobMM.setValue('18446744073709551368', '0x1111111111111112');
 
     roundDuration = 3600;
 
@@ -101,26 +101,34 @@ describe('Testing depth contract', function() {
       .send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
+    // this line should leave after they fix this bug
+    // https://github.com/ethereum/web3.js/issues/1266
+    depthContract.setProvider(web3.currentProvider)
+
+    let leftHash, rightHash;
+
     while (true) {
-      var i;
       // check if the state is WaitingHashes
       currentState = yield depthContract.methods
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('1');
 
+
       currentDepth = yield depthContract.methods
         .currentDepth().call({ from: bobAddr });
+
       currentAddress = yield depthContract.methods
         .currentAddress().call({ from: bobAddr });
       currentSize = BigNumber(2).pow(63 - currentDepth);
       currentLeftAddress = BigNumber(currentAddress);
-      currentRightAddress = currentLeftAddress.add(currentSize);
+      currentRightAddress = currentLeftAddress.plus(currentSize);
 
       // get the hashes of children and prepare response
-      let leftHash = bobMM.subMerkel(bobMM, currentLeftAddress,
-                                     60 - currentDepth);
-      let leftHash = bobMM.subMerkel(bobMM, currentRightAddress,
-                                     60 - currentDepth);
+      leftHash = bobMM.subMerkel(bobMM.memoryMap, currentLeftAddress,
+                                 60 - currentDepth);
+      rightHash = bobMM.subMerkel(bobMM.memoryMap, currentRightAddress,
+                                 60 - currentDepth);
+
 
       // sending hashes from alice should fail
       response = yield depthContract.methods
@@ -130,6 +138,7 @@ describe('Testing depth contract', function() {
           expect(error.message).to.have.string('VM Exception');
         });
 
+
       // alice claiming victory should fail
       response = yield depthContract.methods
         .claimVictoryByTime()
@@ -137,6 +146,8 @@ describe('Testing depth contract', function() {
         .catch(function(error) {
           expect(error.message).to.have.string('VM Exception');
         });
+
+
 
       // send hashes
       response = yield depthContract.methods
@@ -148,15 +159,14 @@ describe('Testing depth contract', function() {
       returnValues = response.events.HashesPosted.returnValues;
 
       // get the hashes of children in alice memory to prepare query
-      let leftHash = aliceMM.subMerkel(alcieMM, currentLeftAddress,
+      leftHash = aliceMM.subMerkel(aliceMM.memoryMap, currentLeftAddress,
                                        60 - currentDepth);
-      let leftHash = aliceMM.subMerkel(aliceMM, currentRightAddress,
+      rightHash = aliceMM.subMerkel(aliceMM.memoryMap, currentRightAddress,
                                      60 - currentDepth);
-
       // decide where to turn
       claimerLeftHash = yield depthContract.methods
         .claimerLeftChildHash().call({ from: aliceAddr });
-      claimerRigthHash = yield depthContract.methods
+      claimerRightHash = yield depthContract.methods
         .claimerRightChildHash().call({ from: aliceAddr });
       let continueToTheLeft = false;
       let differentHash;
@@ -180,7 +190,6 @@ describe('Testing depth contract', function() {
         .catch(function(error) {
           expect(error.message).to.have.string('VM Exception');
         });
-
       // send query with last queried time of aggreement
       response = yield depthContract.methods
         .makeQuery(continueToTheLeft, differentHash)
@@ -188,23 +197,21 @@ describe('Testing depth contract', function() {
         .on('receipt', function(receipt) {
           expect(receipt.events.QueryPosted).not.to.be.undefined;
         });
-
       // if the state is WaitingControversialPhrase, exit while loop
       // check if the state is WaitingQuery
       currentState = yield depthContract.methods
         .currentState().call({ from: bobAddr });
       if (currentState === '4') break;
     }
-
     currentAddress = yield depthContract.methods
       .currentAddress().call({ from: bobAddr });
     currentAddress = BigNumber(currentAddress);
 
-    let word1 = bobMM.getWord(currentAddress);
-    let word2 = bobMM.getWord(currentAddress.add(8));
-    let word3 = bobMM.getWord(currentAddress.add(16));
-    let word4 = bobMM.getWord(currentAddress.add(24));
 
+    let word1 = bobMM.getWord(currentAddress);
+    let word2 = bobMM.getWord(currentAddress.plus(8));
+    let word3 = bobMM.getWord(currentAddress.plus(16));
+    let word4 = bobMM.getWord(currentAddress.plus(24));
     // send controversial hash
     response = yield depthContract.methods
       .postControversialPhrase(word1, word2, word3, word4)
@@ -212,16 +219,13 @@ describe('Testing depth contract', function() {
       .on('receipt', function(receipt) {
         expect(receipt.events.ControversialPhrasePosted).not.to.be.undefined;
       });
-
     // check if the state is WaitingQuery
     currentState = yield depthContract.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('5');
-
     divergingAddress = yield depthContract.methods
       .currentAddress().call({ from: bobAddr });
-    expect(divergingAddress).to.equal(large);
-
+    expect(divergingAddress).to.equal(large.toString());
     // kill contract
     response = yield depthContract.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
@@ -349,6 +353,3 @@ describe('Testing depth contract', function() {
       .send({ from: aliceAddr, gas: 1500000 });
   });
 });
-
-
-

@@ -82,6 +82,9 @@ describe('Testing memory manager contract', function() {
     }).send({ from: aliceAddr, gas: 1500000 })
       .on('receipt');
 
+    // this line should leave after they fix this bug
+    // https://github.com/ethereum/web3.js/issues/1266
+    mmContract.setProvider(web3.currentProvider)
 
     // check if waiting values
     currentState = yield mmContract.methods

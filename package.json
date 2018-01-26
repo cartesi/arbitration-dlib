@@ -3,6 +3,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "bignumber.js": "^6.0.0",
     "chai": "^4.1.2",
     "co-mocha": "^1.2.1",
     "ethereumjs-testrpc": "^4.1.3",
