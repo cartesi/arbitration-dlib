@@ -63,6 +63,15 @@ contract mm is mortal {
     MemoryCreated(theInitialHash);
   }
 
+  /// @notice Change the client of the memory for the possible situations
+  /// where the client was not known at time of creation
+  /// @param theNewClient the address of the new client
+  function changeClient(address theNewClient) public {
+    if (msg.sender == owner) {
+      client = theNewClient;
+    }
+  }
+
   /// @notice Proves that a certain value in initial memory is correct
   /// @param theAddress The address of the value to be confirmed
   /// @param theValue The value in that address to be confirmed
