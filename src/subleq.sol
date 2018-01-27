@@ -76,6 +76,7 @@ contract subleq is mortal {
     // 11 -
     // 12 -
     // 13 -
+    require(msg.sender == owner);
 
     pcPosition = 0x4000000000000000;
     icPosition = 0x4000000000000008;
