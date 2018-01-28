@@ -20,10 +20,14 @@ halted_state = BigNumber("0x4000000000000018");
 initial_ic = BigNumber("0x8000000000000000");
 initial_oc = BigNumber("0xc000000000000000");
 
-echo_binary = [-1, 9, -1,
-               9, -1, 6,
-               9, 9, 0,
-               0]
+echo_binary = [-1, 21, 3,
+               21, -1, 6,
+               21, 22, 9,
+               22, 23, -1,
+               21, 21, 15,
+               22, 22, 18,
+               23, 23, 0,
+               0, 0, 0]
 
 input_string = [2, 4, 8, 16, 32, 64, -1];
 
@@ -54,9 +58,9 @@ describe('Testing memory manager', function() {
     // write input in memory contract
     var inputLength = input_string.length;
     for (let i = 0; i < inputLength; i++) {
-      myMM.setValue(BigNumber(initial_ic).add(8 * i),
+      myMM.setValue(BigNumber(initial_ic).plus(8 * i),
                     two_complement_32(input_string[i]));
-      expect(myMM.getWord(BigNumber(initial_ic).add(8 * i)))
+      expect(myMM.getWord(BigNumber(initial_ic).plus(8 * i)))
         .to.equal(two_complement_32(input_string[i]));
     }
 
@@ -66,7 +70,7 @@ describe('Testing memory manager', function() {
     let response;
     // verifying output
     while (true) {
-      response = myMM.getWord(BigNumber(initial_oc).add(8 * j));
+      response = myMM.getWord(BigNumber(initial_oc).plus(8 * j));
       expect(response).to.equal(two_complement_32(input_string[j]));
       if (response == '0xffffffffffffffff') break;
       j++;

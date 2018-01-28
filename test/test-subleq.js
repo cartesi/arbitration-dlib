@@ -17,10 +17,14 @@ machineKey = '0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1
 aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
 machineAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
 
-echo_binary = [-1, 9, -1,
-               9, -1, 6,
-               9, 9, 0,
-               0]
+echo_binary = [-1, 21, 3,
+               21, -1, 6,
+               21, 22, 9,
+               22, 23, -1,
+               21, 21, 15,
+               22, 22, 18,
+               23, 23, 0,
+               0, 0, 0]
 
 input_string = [2, 4, 8, 16, 32, 64, -1];
 
