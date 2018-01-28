@@ -67,12 +67,12 @@ contract hireCPU {
   bytes32 hashForMemoryWriteChallenge; // hash to be written
   bytes32 finalHashAfterWriteChallenge; // final hash of memory after write
 
-  // for processing challenges
+  // for binary search in challenges
   partition public partitionContract;
   function getPartitionCurrentState() view public returns (partition.state) {
     return partitionContract.currentState();
   }
-
+  // for simulation during challenges
   subleq public subleqContract;
 
   // These are the possible (abbreviated) states of the contract,
@@ -89,26 +89,32 @@ contract hireCPU {
   //     AckApp --                             ...
   //       |      \
   //     AckExp    FSmooth
-  //          \
+  //           \
   //      -- AckChal --
   //     /             \
   // MemChall        PartDisp
-  //  |    |            |
-  // FMC  FMP        MachDisp
+  //    |               |
+  //  FPWOC          MachToRun
   //                    |
-  //                    F
+  //               FinishMachRun
+  //                    |
+  //                  FPWMRC
 
 
   enum state { WaitingBids, WaitingSolution, WaitingTransferReceipt,
                WaitingAcknowledgedKey, WaitingAcknowledgedApproval,
                WaitingAcknowledgedExplanation, WaitingAcknowledgedChallenge,
-               WaitingAcknowledgedResponseToClient,
-               WaitingPartitionDispute, WaitingMachineStep,
-               WaitingUnacknowledgedKey,
+               WaitingOutputHashChallenge,
+               WaitingInsertionForMemoryChallenge,
+               WaitingMemoryWriteChallenge,
+               WaitingPartitionDispute, WaitingForMachineToRun,
+               WaitingToFinishMachineRunChallenge,
+
                FinishedNoBidder,
                FinishedSmooth,
                FinishedProviderWonOutputHashChallenge,
-               FinishedProviderWonMemoryWriteChallenge
+               FinishedProviderWonMemoryWriteChallenge,
+               FinishedProviderWonMachineRunChallenge
   }
 
   enum challenge { outputHash, keyInsertion, decyptMachineRun,
@@ -348,7 +354,9 @@ contract hireCPU {
   ///    decryptionMachineFinalHash
   ///  - seedInsertion: dispute that inserting the divergingSeed into the
   ///    client machine does not yield clientMachineInitialHash
-  ///  - clientMachineRun
+  ///  - clientMachineRun: dispute that running the machine from
+  ///    clientMachineInitialHash will give finish with
+  ///    clientMachineFinalHash
   function postAcknowledgedChallenge(challenge theChallenge) {
     require(msg.sender == client);
     require(currentState = state.WaitingAcknowledgedChallenge);
@@ -382,13 +390,18 @@ contract hireCPU {
                           clientMachinePreparationHash);
       currentState = state.WaitingInsertionForMemoryChallenge;
     }
-
-
+    if (theChallenge == challenge.clientMachineRun) {
+      partitionContract = new partition(client, provider,
+                                        clientMachineInitialHash,
+                                        clientMachineFinalHash,
+                                        finalTime, 10, roundDuration);
+      currentState = state.WaitingPartitionDispute;
+    }
     timeOfLastMove = now;
   }
 
   function settleOutputHashChallenge() {
-    require(msg.sender == claimer);
+    require(msg.sender == provider);
     require(currentState = state.WaitingOutputHashChallenge);
     require(getMMCurrentState() == mm.state.Reading);
     bytes8 word1 = mm.read(32 * divergingSeed);
@@ -405,7 +418,7 @@ contract hireCPU {
   }
 
   function insertionForMemoryWriteChallenge() {
-    require(msg.sender == claimer);
+    require(msg.sender == provider);
     require(currentState = state.WaitingInsertionForMemoryChallenge);
     require(getMMCurrentState() == mm.state.Reading);
     bytes8 word1 = bytes8(hashForMemoryWriteChallenge);
@@ -416,11 +429,12 @@ contract hireCPU {
     mm.write(positionForMemoryWriteChallenge + 8, word2);
     mm.write(positionForMemoryWriteChallenge + 16, word3);
     mm.write(positionForMemoryWriteChallenge + 24, word4);
+    timeOfLastMove = now;
     currentState = state.WaitingMemoryWriteChallenge;
   }
 
   function settleMemoryWriteChallenge() {
-    require(msg.sender == claimer);
+    require(msg.sender == provider);
     require(currentState = state.WaitingMemoryWriteChallenge);
     require(getMMCurrentState() == mm.state.Finished);
     require(mm.newHash == finalHashAfterWriteChallenge);
@@ -446,26 +460,76 @@ contract hireCPU {
     uint divergenceTime = partitionContract.divergenceTime;
     hashBeforeDivergence = partitionContract.timeHash[divergenceTime];
     hashAfterDivergence = partitionContract.timeHash[divergenceTime + 1];
-    mmContract = new mm(client, address(this), hashBeforeDivergence);
+    mmContract = new mm(provider, address(this), hashBeforeDivergence);
+    timeOfLastMove = now;
     currentState = state.WaitingForMachineToRun;
   }
 
-  function settleMachineRunChallenge() {
+  function continueMachineRunChallenge() {
+    require(msg.sender == provider);
     require(currentState == state.WaitingForMachineToRun);
     subleqContract = new subleq(address(mmContract), ramSize, inputMaxSize,
                                 outputMaxSize);
     mmContract.changeClient(address(subleqContract));
-    bool result = subleqContract.step();
-    ???
+    uint8 result = subleqContract.step();
+    timeOfLastMove = now;
+    currentState = state.WaitingToFinishMachineRunChallenge;
   }
+
+  function settleMachineRunChallenge() {
+    require(msg.sender == provider);
+    require(currentState == state.WaitingToFinishMachineRunChallenge);
+    require(getMMCurrentState() == mm.state.Finished);
+    require(mm.newHash != hashAfterDivergence);
+    tokenContract.transfer(client, 2 * depositRequired + lowestBid);
+    currentState = state.FinishedProviderWonMachineRunChallenge;
+  }
+
+  function claimVictoryByDeadline() {
+    if (msg.sender == client) {
+      if ((currentState == state.WaitingAcknowledgedKey)
+          || (currentState == state.WaitingAcknowledgedExplanation)
+          || (currentState == state.WaitingOutputHashChallenge)
+          || (currentState == state.WaitingInsertionForMemoryChallenge)
+          || (currentState == state.WaitingMemoryWriteChallenge)
+          || (currentState == state.WaitingForMachineToRun)
+          || (currentState == state.WaitingToFinishMachineRunChallenge)) {
+        if (now > timeOfLastMove + roundDuration) {
+          uint balance = tokenContract.ballanceOf(address(this));
+          tokenContract.transfer(client, balance);
+          currentState = state.Finished;
+          ChallengeEnded(currentState);
+        }
+      }
+      if ((currentState == state.WaitingSolution)
+          && (now > timeOfLastMove + jobDuration)) {
+        uint balance = tokenContract.ballanceOf(address(this));
+        tokenContract.transfer(client, balance);
+        currentState = state.Finished;
+        ChallengeEnded(currentState);
+      }
+    }
+    if (msg.sender == provider) {
+      // we need longer times when partition or depth contracts are
+      // involved
+      if ((currentState == state.acknowledgeTransfer)
+          || (currentState == state.WaitingAcknowledgedApproval)
+          || (currentState == state.WaitingAcknowledgedChallenge)) {
+        if (now > timeOfLastMove + roundDuration) {
+          uint balance = tokenContract.ballanceOf(address(this));
+          tokenContract.transfer(provider, balance);
+          currentState = state.Finished;
+          ChallengeEnded(currentState);
+        }
+      }
+    }
+  }
+
 
 
   // this part of the code refers to a disagreement on the transfer of data
 
 
-
-  function claimVictoryByDeadline() {
-  }
 
   // to kill the contract and receive refunds
   function killContract() public {

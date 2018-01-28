@@ -68,9 +68,9 @@ class Subleq {
     let hs = this.mm.getWord(haltedState);
     let memAddrA = two_complement_32_inverse(this.mm.getWord(pc));
     let memAddrB = two_complement_32_inverse(this.mm.getWord(
-      BigNumber(pc).add(8)));
+      BigNumber(pc).plus(8)));
     let memAddrC = two_complement_32_inverse(this.mm.getWord(
-      BigNumber(pc).add(16)));
+      BigNumber(pc).plus(16)));
 
     // if first or second operator are < -1, throw
     if (hs != 0x0000000000000000) { return 1; }
@@ -83,12 +83,12 @@ class Subleq {
        { return 6; }
     // if first operator is -1, read from input
     if (memAddrA == -1) {
-      // read input at ic
-      let loaded = this.mm.getWord(ic);
-      this.mm.setValue(memAddrB * 8, loaded);
       if (BigNumber(ic).minus("0x8000000000000000") > inputMaxSize) {
         return 8;
       }
+      // read input at ic
+      let loaded = this.mm.getWord(ic);
+      this.mm.setValue(memAddrB * 8, loaded);
       // increment ic;
       this.mm.setValue(icPosition, BigNumber(ic).plus(8));
       // increment pc by three words
@@ -108,19 +108,20 @@ class Subleq {
       this.mm.setValue(ocPosition, BigNumber(oc).plus(8));
       // increment pc by three words
       this.mm.setValue(pcPosition, BigNumber(pc).plus(24));
-      if (two_complement_32_inverse(valueA) < 0) { return 1; }
+      // cancelling this rule of halting on negative write
+      // if (two_complement_32_inverse(valueA) < 0) { return 1; }
       return 0;
     }
     // if valueB is non-negative, make the subleq operation
     let valueB = this.mm.getWord(memAddrB * 8);
     let subtraction = (two_complement_32_inverse(valueB)
-                   - two_complement_32_inverse(valueA));
+                       - two_complement_32_inverse(valueA));
     // write subtraction to memory addressed by second operator
-    this.mm.setValue(memAddrB * 8, subtraction);
+    this.mm.setValue(memAddrB * 8, two_complement_32(subtraction));
     if (subtraction <= 0) {
       if (memAddrC < 0) {
         // halt machine
-        this.mm.setValue(haltedState, 1);
+        this.mm.setValue(haltedState, two_complement_32(1));
         return 0;
       }
       if (memAddrC > ramSize)
@@ -128,6 +129,8 @@ class Subleq {
       this.mm.setValue(pcPosition, memAddrC * 8);
       return 0;
     }
+    this.mm.setValue(pcPosition, BigNumber(pc).plus(24));
+    return 0;
   }
 
   run(maxTime) {

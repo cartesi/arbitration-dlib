@@ -101,12 +101,13 @@ contract subleq is mortal {
        { StepGiven(6); return 6; }
     // if first operator is -1, read from input
     if (memAddrA == -1) {
-      // read input at ic
-      bytes8 loaded = memoryManager.read(ic);
-      memoryManager.write(uint64(memAddrB) * 8, loaded);
+      // test if input is out of range
       if (ic - 0x8000000000000000 > inputMaxSize) {
         StepGiven(8); return 8;
       }
+      // read input at ic
+      bytes8 loaded = memoryManager.read(ic);
+      memoryManager.write(uint64(memAddrB) * 8, loaded);
       // increment ic
       memoryManager.write(icPosition, bytes8(ic + 8));
       // increment pc by three words
@@ -115,21 +116,24 @@ contract subleq is mortal {
       StepGiven(0);
       return 0;
     }
-    // if valueA is non-negative, load the memory address
+    // if first operator is non-negative, load the memory address
     bytes8 valueA = memoryManager.read(uint64(memAddrA) * 8);
-    // if first operator is positive but second operator is -1, write to output
+    // if first operator is non-negative, but second operator is -1,
+    // write to output
     if (memAddrB == -1) {
-      // write contents addressed by first operator into output
-      memoryManager.write(oc, valueA);
+      // test if output is out of range
       if (oc - 0xc000000000000000 > outputMaxSize) {
         StepGiven(9); return 9;
       }
+      // write contents addressed by first operator into output
+      memoryManager.write(oc, valueA);
       // increment oc
       memoryManager.write(ocPosition, bytes8(oc + 8));
       // increment pc by three words
       memoryManager.write(pcPosition, bytes8(pc + 24));
       memoryManager.finishWritePhase();
-      if (int64(valueA) < 0) { StepGiven(1); return 1; }
+      // cancelling this rule of halting on negative write
+      // if (int64(valueA) < 0) { memoryManager.write(haltedState, 1); }
       StepGiven(0);
       return 0;
     }
@@ -139,6 +143,7 @@ contract subleq is mortal {
     // write subtraction to memory addressed by second operator
     memoryManager.write(uint64(memAddrB) * 8, subtraction);
     if (int64(subtraction) <= 0) {
+      if (uint64(memAddrC) > ramSize) { StepGiven(7); return 7; }
       if (memAddrC < 0) {
         // halt machine
         memoryManager.write(haltedState, 1);
@@ -146,12 +151,13 @@ contract subleq is mortal {
         StepGiven(0);
         return 0;
       }
-      if (uint64(memAddrC) > ramSize)
-        { StepGiven(7); return 7; }
       memoryManager.write(pcPosition, bytes8(memAddrC * 8));
       memoryManager.finishWritePhase();
       StepGiven(0);
       return 0;
     }
+    memoryManager.write(pcPosition, bytes8(pc + 24));
+    StepGiven(0);
+    return 0;
   }
 }
