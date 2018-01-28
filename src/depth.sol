@@ -32,7 +32,7 @@ contract depth is mortal {
   enum state { WaitingQuery, WaitingHashes,
                ChallengerWon, ClaimerWon,
                WaitingControversialPhrase,
-               ControversialPhraseFound}
+               ControversialPhraseFound }
   state public currentState;
 
   event QueryPosted(uint8 theCurrentDepth, uint64 theCurrentAddress);
