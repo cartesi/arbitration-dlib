@@ -8,7 +8,6 @@ pragma solidity ^0.4.0;
 import "./mm.sol";
 import "./subleq.sol";
 import "./partition.sol";
-import "./depth.sol";
 import "./lib/bokkypoobah/Token.sol";
 
 contract hireCPU {
@@ -72,12 +71,6 @@ contract hireCPU {
   // for unacknowledged transfers
   bytes32 hashOfDecryptedSolutionList;
   //bytes32 controversialPhraseOfClaimer
-
-  // for depth first search in challenges
-  depth public depthContract;
-  function getDepthCurrentState() view public returns (depth.state) {
-    return depthContract.currentState();
-  }
 
   // for binary search in challenges
   partition public partitionContract;
@@ -545,8 +538,6 @@ contract hireCPU {
     require(msg.sender == provider);
     require(currentState == state.WaitingDecryptedSolutionHash);
     hashOfDecryptedSolutionList = theHashOfDecryptedSolutionList;
-    //depthContract = new partition(client, provider, hashOfDecryptedSolution,
-    //                              roundDuration);
     timeOfLastMove = now;
     currentState = state.WaitingUnacknowledgedSampleSeed;
   }
@@ -563,30 +554,6 @@ contract hireCPU {
     timeOfLastMove = now;
     currentState = state.WaitingUncknowledgedExplanation;
   }
-
-  /*
-  function winByDepthTimeout() {
-    require(currentState == state.WaitingPartitionDispute);
-    if (getPartitionCurrentState() == partition.state.ChallengerWon) {
-      tokenContract.transfer(client, 2 * depositRequired + lowestBid);
-      currentState = state.Finished;
-    }
-    if (getPartitionCurrentState() == partition.state.ClaimerWon) {
-      tokenContract.transfer(provider, 2 * depositRequired + lowestBid);
-      currentState = state.Finished;
-    }
-  }
-
-  function findControversialHashForChallenge() {
-    require(currentState == state.WaitingControversialPhrase;
-    require(getDepthCurrentState() == depth.ControvesialPhraseFound);
-    controversialPhraseOfClaimer = depthContract.controversialPhraseOfClaimer;
-    mmContract = new mm(provider, address(this), hashBeforeDivergence);
-    currentState = state.WaitingPartitionDispute;
-    timeOfLastMove = now;
-    currentState = state.WaitingUnacknowledgedChallenge;
-  }
-  */
 
   /// @notice Provider sends all the hashes that are necessary to prove
   /// that his calculations are correct for the controversial hash
@@ -688,8 +655,6 @@ contract hireCPU {
       }
     }
     if (msg.sender == provider) {
-      // we need longer times when partition or depth contracts are
-      // involved
       if ((currentState == state.acknowledgeTransfer)
           || (currentState == state.WaitingAcknowledgedApproval)
           || (currentState == state.WaitingAcknowledgedChallenge)
