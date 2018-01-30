@@ -1,24 +1,13 @@
-/// @title Partition contract
+/// @title Subleq machine contract
 pragma solidity ^0.4.18;
+
+import "./mortal.sol";
 
 contract mmContract {
   function read(uint64 theAddress) public view returns (bytes8);
   function write(uint64 theAddress, bytes8 theValue) public;
   function finishWritePhase() public;
 }
-
-contract mortal {
-  address public owner;
-
-  function mortal() public {
-    owner = msg.sender;
-  }
-
-  function kill() public {
-    if (msg.sender == owner) selfdestruct(owner);
-  }
-}
-
 
 contract subleq is mortal {
 
