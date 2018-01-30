@@ -1,7 +1,3 @@
-// This is not the best way to do a bet between two players.
-// For better bets, use something similar to RANDAO's algorithm.
-// This should however be safe and more modular for other tasks.
-
 /// @title Betting contract
 pragma solidity ^0.4.0;
 
@@ -16,10 +12,10 @@ contract hireCPU {
   address public client; // who is hiring the provider to perform a calculation
   address public provider; // winner of bit to preform calculation
 
-  bytes32 public clientMachinePreparationHash;
+  bytes32 public clientMachinePreparationHash; // hash of machine before seed
   bytes public clientMachinePreparationURI;
   uint public finalTime;
-  bytes8 public addressForSeed;
+  uint64 public addressForSeed;
   uint64 public initialSeed;
   uint64 public numberOfSeeds;
 
@@ -48,12 +44,11 @@ contract hireCPU {
   bytes32 public decryptionMachineInitialHash; // hash of machine after key
   bytes32 public decryptionMachineFinalHash; // hash of machine after running
 
-  bytes32 public clientMachinePreparationHash; // hash of machine before seed
   bytes32 public clientMachineInitialHash; // hash of machine after seed
   bytes32 public clientMachineFinalHash; // hash of machine after running
 
-  bytes32 public hashOfEncryptedSelectedOuput;
-  bytes32 public hashOfDecryptedSelectedOuput; // for unacknowledged challenges
+  bytes32 public hashOfEncryptedSelectedOutput;
+  bytes32 public hashOfDecryptedSelectedOutput; // for unacknowledged challenges
 
   bytes32 public hashBeforeDivergence; // for the case of run challenge
   bytes32 public hashAfterDivergence; // for the case of run challenge
@@ -83,46 +78,54 @@ contract hireCPU {
   // These are the possible (abbreviated) states of the contract,
   // see the full names below:
   //
-  //                               Bids
-  //                                |
-  //                               Sol
+  //                               Bids --
+  //                                |     \
+  //                               Sol     FNoBidder
   //                                |
   //         -------------------- TrRec -------
   //        /                                  \
   //     AckKey                              DecrSol
   //       |                                    |
-  //     AckApp --                             ...
-  //       |      \
-  //     AckExp    FSmooth
-  //           \
-  //      -- AckChal --
-  //     /             \
-  // MemChall        PartDisp
-  //    |               |
-  //  FPWOC          MachToRun
-  //                    |
-  //               FinishMachRun
-  //                    |
-  //                  FPWMRC
-
+  //     AckApp --                          UnackSamp
+  //       |      \                             |
+  //     AckExp    FSmooth                  UnackExpl
+  //       |                                    |
+  //     AckChal ---------------------    - UnackChal
+  //       \   \                      \  /     /    |
+  //        \   ------------      ---- \      /    /
+  //         \              \    /      \    /    |
+  //          \     -------  \  -   ---- \ --    /
+  //           \   /          \    /      \      |
+  //         OutChall      InsertChal     PartDisp
+  //            |              |             |
+  //          FPWOC       MemWriteChal   MachToRun
+  //                           |             |
+  //                        FPWMWC      FinishMachRun
+  //                                         |
+  //                                       FPWMRC
+  //
+  // Besides these states, there are four states that relate to
+  // timeout by any of the parties: two for timeout in the partition
+  // contract and two for timeout here.
 
   enum state { WaitingBids, WaitingSolution, WaitingTransferReceipt,
                WaitingAcknowledgedKey, WaitingAcknowledgedApproval,
                WaitingAcknowledgedExplanation, WaitingAcknowledgedChallenge,
-               WaitingOutputHashChallenge,
-               WaitingInsertionForMemoryChallenge,
-               WaitingMemoryWriteChallenge,
-               WaitingPartitionDispute, WaitingForMachineToRun,
-               WaitingToFinishMachineRunChallenge,
-               WaitingDecryptedSolutionHash,
-               FinishedNoBidder,
-               FinishedSmooth,
+               WaitingOutputHashChallenge, WaitingInsertionForMemoryChallenge,
+               WaitingMemoryWriteChallenge, WaitingPartitionDispute,
+               WaitingForMachineToRun, WaitingToFinishMachineRunChallenge,
+               WaitingDecryptedSolutionHash, WaitingUnacknowledgedSampleSeed,
+               WaitingUnacknowledgedExplanation, WaitingUnacknowledgedChallenge,
+               FinishedNoBidder, FinishedSmooth,
                FinishedProviderWonOutputHashChallenge,
                FinishedProviderWonMemoryWriteChallenge,
-               FinishedProviderWonMachineRunChallenge
+               FinishedProviderWonMachineRunChallenge,
+               FinishedPartitionProviderTimeout,
+               FinishedPartitionClientTimeout,
+               FinishedProviderTimeout, FinishedClientTimeout
   }
 
-  enum challenge { outputHash, keyInsertion, decyptMachineRun,
+  enum challenge { outputHash, keyInsertion, decryptMachineRun,
                    seedInsertion, clientMachineRun }
 
   state public currentState;
@@ -130,7 +133,7 @@ contract hireCPU {
   event AnounceJob(address theClient, uint theFinalTime,
                    bytes32 theClientMachinePreparationHash,
                    bytes theClientMachinePreparationURI,
-                   bytes8 theAddressForSeed, uint64 theInitialSeed,
+                   uint64 theAddressForSeed, uint64 theInitialSeed,
                    uint64 theNumberOfSeeds, uint64 theRamSize,
                    uint64 theInputMaxSize, uint64 theOutputMaxSize,
                    uint theMaxPriceOffered, uint theDepositRequired,
@@ -140,14 +143,17 @@ contract hireCPU {
   event SolutionPosted(bytes32 theClaimedHashOfEncryptedOutputList);
   //event ChallengePosted(address thePartitionContract);
   //event WinerFound(state finalState);
+  event ChallengeEnded(state);
 
   function hireCPU(address theClient, uint theFinalTime,
                    bytes32 theClientMachinePreparationHash,
                    bytes theClientMachinePreparationURI,
-                   bytes8 theAddressForSeed, uint64 theInitialSeed,
-                   uint64 theNumberOfSeeds, uint theMaxPriceOffered,
-                   uint theDepositRequired, uint theAuctionDuration,
-                   uint theRoundDuration, uint theJobDuration)
+                   uint64 theAddressForSeed, uint64 theInitialSeed,
+                   uint64 theNumberOfSeeds, uint64 theRamSize,
+                   uint64 theInputMaxSize, uint64 theOutputMaxSize,
+                   uint theMaxPriceOffered, uint theDepositRequired,
+                   uint theAuctionDuration, uint theRoundDuration,
+                   uint theJobDuration)
     public {
 
     tokenContract = Token(0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab);
@@ -184,9 +190,9 @@ contract hireCPU {
 
     currentState = state.WaitingBids;
     AnounceJob(client, finalTime, clientMachinePreparationHash,
-               clientMachinePreparationURI,
-               addressForSeed, initialSeed, numberOfSeeds, maxPriceOffered,
-               depositRequired, auctionDuration, roundDuration,
+               clientMachinePreparationURI, addressForSeed, initialSeed,
+               numberOfSeeds, ramSize, inputMaxSize, outputMaxSize,
+               maxPriceOffered, depositRequired, auctionDuration, roundDuration,
                jobDuration);
   }
 
@@ -210,9 +216,9 @@ contract hireCPU {
   function finishAuctionPhase() public {
     require(currentState == state.WaitingBids);
     require(now > timeOfLastMove + auctionDuration);
-    // check if lowestBidder was unset and then send ballance back to client
+    // check if lowestBidder was unset and then send balance back to client
     if (lowestBidder == address(0)) {
-      uint balance = tokenContract.ballanceOf(address(this));
+      uint balance = tokenContract.balanceOf(address(this));
       tokenContract.transfer(client, balance);
       currentState = state.FinishedNoBidder;
     } else {
@@ -285,7 +291,7 @@ contract hireCPU {
   function giveAcknowledgedExplanation
     ( bytes32 theHashOfEncryptedSelectedOutput,
       bytes32 theDecryptionMachineInitialHash,
-      bytes32 decryptionMachineFinalHash,
+      bytes32 theDecryptionMachineFinalHash,
       bytes32 theFinal1HashOfDecryptMachine,
       bytes32 theFinal2HashOfDecryptMachine,
       bytes32 theFinal3HashOfDecryptMachine,
@@ -294,9 +300,9 @@ contract hireCPU {
       bytes32 theFinal1HashOfClientMachine,
       bytes32 theFinal2HashOfClientMachine,
       bytes32 theFinal3HashOfClientMachine
-      ) {
+      ) public {
     require(msg.sender == provider);
-    require(currentState = state.WaitingAcknowledgedExplanation);
+    require(currentState == state.WaitingAcknowledgedExplanation);
     hashOfEncryptedSelectedOutput = theHashOfEncryptedSelectedOutput;
     // 0x00000... has to be replaced by the merkel hash of 2^62 zeros
     // 0x11111... has to be replaced by our machine hash
@@ -304,12 +310,12 @@ contract hireCPU {
 
     // assemble decryption machine preparation hash
     bytes32 machine = keccak256
-      ( 0x1111111111111111111111111111111111111111111111111111111111111111,
-        0x2222222222222222222222222222222222222222222222222222222222222222
+      ( bytes32(0x1111111111111111111111111111111111111111111111111111111111111111),
+        bytes32(0x2222222222222222222222222222222222222222222222222222222222222222)
         );
     bytes32 inputOutput = keccak256
-      ( hashOfEncryptedSelectedOuput,
-        0x0000000000000000000000000000000000000000000000000000000000000000
+      ( hashOfEncryptedSelectedOutput,
+        bytes32(0x0000000000000000000000000000000000000000000000000000000000000000)
         );
     decryptionMachinePreparationHash = keccak256(machine, inputOutput);
     // store the decryption machine initial hash
@@ -329,7 +335,7 @@ contract hireCPU {
     // assemble client machine final hash
     machine = keccak256
       ( theFinal1HashOfClientMachine,
-        theFinal2HashOfClientMachine,
+        theFinal2HashOfClientMachine
         );
     inputOutput = keccak256
       ( theFinal3HashOfClientMachine,
@@ -350,17 +356,17 @@ contract hireCPU {
   ///    points to hashOfEncryptedSelectedOutput at position sampledSeed
   ///  - keyInsertion: dispute that inserting the key into the
   ///    decryption machine does not yield decryptionMachineInitialHash
-  ///  - decyptMachineRun: dispute that running the machine from
-  ///    decryptionMachineInitialHash for time 2^64 will give finish with
+  ///  - decryptMachineRun: dispute that running the machine from
+  ///    decrryptionMachineInitialHash for time 2^64 will give finish with
   ///    decryptionMachineFinalHash
   ///  - seedInsertion: dispute that inserting the sampledSeed into the
   ///    client machine yields clientMachineInitialHash
   ///  - clientMachineRun: dispute that running the machine from
   ///    clientMachineInitialHash will give finish with
   ///    clientMachineFinalHash
-  function postAcknowledgedChallenge(challenge theChallenge) {
+  function postAcknowledgedChallenge(challenge theChallenge) public {
     require(msg.sender == client);
-    require(currentState = state.WaitingAcknowledgedChallenge);
+    require(currentState == state.WaitingAcknowledgedChallenge);
     if (theChallenge == challenge.outputHash) {
       amountCommittedToOutputChallenge = 2 * depositRequired + lowestBid;
       mmContract = new mm(provider, address(this),
@@ -373,7 +379,7 @@ contract hireCPU {
       hashForMemoryWriteChallenge = acknowledgedKey;
       finalHashAfterWriteChallenge = decryptionMachineInitialHash;
       mmContract = new mm(provider, address(this),
-                          decryptionMachinePreparationMemory);
+                          decryptionMachinePreparationHash);
       currentState = state.WaitingInsertionForMemoryChallenge;
     }
     if (theChallenge == challenge.decryptMachineRun) {
@@ -386,7 +392,7 @@ contract hireCPU {
     if (theChallenge == challenge.seedInsertion) {
       positionForMemoryWriteChallenge = addressForSeed;
       // care for the endianness of the machine
-      hashForMemoryWriteChallenge = uint256(sampledSeed);
+      hashForMemoryWriteChallenge = bytes32(uint256(sampledSeed));
       finalHashAfterWriteChallenge = clientMachineInitialHash;
       mmContract = new mm(provider, address(this),
                           clientMachinePreparationHash);
@@ -405,14 +411,15 @@ contract hireCPU {
   /// @notice Provider has a way to prove that he was correct in the output
   /// challenge. In this case he fills the appropriate parts of the memory with
   /// the corresponding pieces of the output hash and calls this function.
-  function settleOutputHashChallenge() {
+  function settleOutputHashChallenge() public {
     require(msg.sender == provider);
-    require(currentState = state.WaitingOutputHashChallenge);
+    require(currentState == state.WaitingOutputHashChallenge);
     require(getMMCurrentState() == mm.state.Reading);
-    bytes8 word1 = mm.read(32 * sampledSeed);
-    bytes8 word2 = mm.read(32 * sampledSeed + 8);
-    bytes8 word3 = mm.read(32 * sampledSeed + 16);
-    bytes8 word4 = mm.read(32 * sampledSeed + 24);
+    bytes8 word1 = mmContract.read(uint64(32 * sampledSeed));
+    bytes8 word2 = mmContract.read(uint64(32 * sampledSeed + 8));
+    bytes8 word3 = mmContract.read(uint64(32 * sampledSeed + 16));
+    bytes8 word4 = mmContract.read(uint64(32 * sampledSeed + 24));
+    bytes32 word;
     word = bytes32(word1);
     word |= bytes32(word2) >> 64;
     word |= bytes32(word3) >> 128;
@@ -420,7 +427,7 @@ contract hireCPU {
     require(word == hashOfEncryptedSelectedOutput);
     tokenContract.transfer(provider, amountCommittedToOutputChallenge);
     // transfer the rest to client
-    uint balance = tokenContract.ballanceOf(address(this));
+    uint balance = tokenContract.balanceOf(address(this));
     tokenContract.transfer(client, balance);
     currentState = state.FinishedProviderWonOutputHashChallenge;
   }
@@ -428,18 +435,18 @@ contract hireCPU {
   /// @notice In case of a memory challenge, this function should be called
   /// so that the contract will write hashForMemoryWriteChallenge in the
   /// position pointed by positionForMemoryWriteChallenge.
-  function insertionForMemoryWriteChallenge() {
+  function insertionForMemoryWriteChallenge() public {
     require(msg.sender == provider);
-    require(currentState = state.WaitingInsertionForMemoryChallenge);
+    require(currentState == state.WaitingInsertionForMemoryChallenge);
     require(getMMCurrentState() == mm.state.Reading);
     bytes8 word1 = bytes8(hashForMemoryWriteChallenge);
     bytes8 word2 = bytes8(hashForMemoryWriteChallenge << 64);
     bytes8 word3 = bytes8(hashForMemoryWriteChallenge << 128);
     bytes8 word4 = bytes8(hashForMemoryWriteChallenge << 192);
-    mm.write(positionForMemoryWriteChallenge, word1);
-    mm.write(positionForMemoryWriteChallenge + 8, word2);
-    mm.write(positionForMemoryWriteChallenge + 16, word3);
-    mm.write(positionForMemoryWriteChallenge + 24, word4);
+    mmContract.write(positionForMemoryWriteChallenge, word1);
+    mmContract.write(positionForMemoryWriteChallenge + 8, word2);
+    mmContract.write(positionForMemoryWriteChallenge + 16, word3);
+    mmContract.write(positionForMemoryWriteChallenge + 24, word4);
     timeOfLastMove = now;
     currentState = state.WaitingMemoryWriteChallenge;
   }
@@ -448,11 +455,11 @@ contract hireCPU {
   /// account for the memory insertion done in insertionForMemoryWriteChallenge,
   /// the provider calls this function to prove that he was correct in the
   /// memory insertion challenge.
-  function settleMemoryWriteChallenge() {
+  function settleMemoryWriteChallenge() public {
     require(msg.sender == provider);
-    require(currentState = state.WaitingMemoryWriteChallenge);
+    require(currentState == state.WaitingMemoryWriteChallenge);
     require(getMMCurrentState() == mm.state.Finished);
-    require(mm.newHash == finalHashAfterWriteChallenge);
+    require(mmContract.newHash() == finalHashAfterWriteChallenge);
     tokenContract.transfer(provider, 2 * depositRequired + lowestBid);
     currentState = state.FinishedProviderWonMemoryWriteChallenge;
   }
@@ -460,15 +467,15 @@ contract hireCPU {
   /// @notice In case one of the parties wins the partition challenge by
   /// timeout, then he or she can call this function to claim victory in
   /// the hireCPU contract as well.
-  function winByPartitionTimeout() {
+  function winByPartitionTimeout() public {
     require(currentState == state.WaitingPartitionDispute);
     if (getPartitionCurrentState() == partition.state.ChallengerWon) {
       tokenContract.transfer(client, 2 * depositRequired + lowestBid);
-      currentState = state.Finished;
+      currentState = state.FinishedPartitionProviderTimeout;
     }
     if (getPartitionCurrentState() == partition.state.ClaimerWon) {
       tokenContract.transfer(provider, 2 * depositRequired + lowestBid);
-      currentState = state.Finished;
+      currentState = state.FinishedPartitionClientTimeout;
     }
   }
 
@@ -478,12 +485,12 @@ contract hireCPU {
   /// This function call solely instantiate a memory manager, so the the
   /// provider can fill the appropriate addresses that will be read by the
   /// machine.
-  function startMachineRunChallenge() {
+  function startMachineRunChallenge() public {
     require(currentState == state.WaitingPartitionDispute);
     require(getPartitionCurrentState() == partition.state.DivergenceFound);
-    uint divergenceTime = partitionContract.divergenceTime;
-    hashBeforeDivergence = partitionContract.timeHash[divergenceTime];
-    hashAfterDivergence = partitionContract.timeHash[divergenceTime + 1];
+    uint divergenceTime = partitionContract.divergenceTime();
+    hashBeforeDivergence = partitionContract.timeHash(divergenceTime);
+    hashAfterDivergence = partitionContract.timeHash(divergenceTime + 1);
     mmContract = new mm(provider, address(this), hashBeforeDivergence);
     timeOfLastMove = now;
     currentState = state.WaitingForMachineToRun;
@@ -493,7 +500,7 @@ contract hireCPU {
   /// the provider calls this function to instantiate the machine and perform
   /// one step on it. The machine will write to memory in the process and the
   /// provider will be expected to update the memory hash accordingly.
-  function continueMachineRunChallenge() {
+  function continueMachineRunChallenge() public {
     require(msg.sender == provider);
     require(currentState == state.WaitingForMachineToRun);
     subleqContract = new subleq(address(mmContract), ramSize, inputMaxSize,
@@ -507,11 +514,11 @@ contract hireCPU {
   /// @notice After having updated to memory to account for the addresses
   /// that were written by the machine, the provider now calls this function
   /// to settle the challenge in his favour.
-  function settleMachineRunChallenge() {
+  function settleMachineRunChallenge() public {
     require(msg.sender == provider);
     require(currentState == state.WaitingToFinishMachineRunChallenge);
     require(getMMCurrentState() == mm.state.Finished);
-    require(mm.newHash != hashAfterDivergence);
+    require(mmContract.newHash() != hashAfterDivergence);
     tokenContract.transfer(client, 2 * depositRequired + lowestBid);
     currentState = state.FinishedProviderWonMachineRunChallenge;
   }
@@ -544,15 +551,15 @@ contract hireCPU {
 
   /// @notice The client gives one random seed to verify whether the provider
   /// has indeed made that specific calculation.
-  /// @param theSampleSeed the index of the seed to be sampled.
-  function giveUnacknowledgedSampleSeed (uint64 theSampleSeed) public {
+  /// @param theSampledSeed the index of the seed to be sampled.
+  function giveUnacknowledgedSampleSeed (uint64 theSampledSeed) public {
     require(msg.sender == client);
     require(currentState == state.WaitingUnacknowledgedSampleSeed);
     require(theSampledSeed >= initialSeed);
     require(theSampledSeed < initialSeed + numberOfSeeds);
     sampledSeed = theSampledSeed;
     timeOfLastMove = now;
-    currentState = state.WaitingUncknowledgedExplanation;
+    currentState = state.WaitingUnacknowledgedExplanation;
   }
 
   /// @notice Provider sends all the hashes that are necessary to prove
@@ -563,18 +570,18 @@ contract hireCPU {
       bytes32 theFinal2HashOfClientMachine,
       bytes32 theFinal3HashOfClientMachine,
       bytes32 theHashOfDecryptedSelectedOutput
-      ) {
+      ) public {
     require(msg.sender == provider);
-    require(currentState = state.WaitingUnacknowledgedExplanation);
+    require(currentState == state.WaitingUnacknowledgedExplanation);
     // store the client machine initial hash
     clientMachineInitialHash = theClientMachineInitialHash;
     // assemble client machine final hash
     hashOfDecryptedSelectedOutput = theHashOfDecryptedSelectedOutput;
-    machine = keccak256
+    bytes32 machine = keccak256
       ( theFinal1HashOfClientMachine,
-        theFinal2HashOfClientMachine,
+        theFinal2HashOfClientMachine
         );
-    inputOutput = keccak256
+    bytes32 inputOutput = keccak256
       ( theFinal3HashOfClientMachine,
         hashOfDecryptedSelectedOutput
         );
@@ -596,9 +603,9 @@ contract hireCPU {
   ///  - clientMachineRun: dispute that running the machine from
   ///    clientMachineInitialHash will give finish with
   ///    clientMachineFinalHash (needs payment)
-  function postUnacknowledgedChallenge(challenge theChallenge) {
+  function postUnacknowledgedChallenge(challenge theChallenge) public {
     require(msg.sender == client);
-    require(currentState = state.WaitingUnacknowledgedChallenge);
+    require(currentState == state.WaitingUnacknowledgedChallenge);
     if (theChallenge == challenge.outputHash) {
       amountCommittedToOutputChallenge = depositRequired + lowestBid/2;
       mmContract = new mm(provider, address(this),
@@ -609,7 +616,7 @@ contract hireCPU {
       tokenContract.transferFrom(client, address(this), depositRequired);
       positionForMemoryWriteChallenge = addressForSeed;
       // care for the endianness of the machine
-      hashForMemoryWriteChallenge = uint256(sampledSeed);
+      hashForMemoryWriteChallenge = bytes32(uint256(sampledSeed));
       finalHashAfterWriteChallenge = clientMachineInitialHash;
       mmContract = new mm(provider, address(this),
                           clientMachinePreparationHash);
@@ -628,7 +635,8 @@ contract hireCPU {
 
   /// @notice Any party can claim victory if the other has lost the deadline
   /// for some of the steps in the protocol.
-  function claimVictoryByDeadline() {
+  function claimVictoryByDeadline() public {
+    uint balance;
     if (msg.sender == client) {
       if ((currentState == state.WaitingAcknowledgedKey)
           || (currentState == state.WaitingAcknowledgedExplanation)
@@ -640,41 +648,42 @@ contract hireCPU {
           || (currentState == state.WaitingDecryptedSolutionHash)
           || (currentState == state.WaitingUnacknowledgedExplanation)) {
         if (now > timeOfLastMove + roundDuration) {
-          uint balance = tokenContract.ballanceOf(address(this));
+          balance = tokenContract.balanceOf(address(this));
           tokenContract.transfer(client, balance);
-          currentState = state.Finished;
+          currentState = state.FinishedProviderTimeout;
           ChallengeEnded(currentState);
         }
       }
       if ((currentState == state.WaitingSolution)
           && (now > timeOfLastMove + jobDuration)) {
-        uint balance = tokenContract.ballanceOf(address(this));
+        balance = tokenContract.balanceOf(address(this));
         tokenContract.transfer(client, balance);
-        currentState = state.Finished;
+        currentState = state.FinishedProviderTimeout;
         ChallengeEnded(currentState);
       }
     }
     if (msg.sender == provider) {
-      if ((currentState == state.acknowledgeTransfer)
+      if ((currentState == state.WaitingTransferReceipt)
           || (currentState == state.WaitingAcknowledgedApproval)
           || (currentState == state.WaitingAcknowledgedChallenge)
           || (currentState == state.WaitingUnacknowledgedSampleSeed)
-          || (currentStata == state.WaitingUnacknowledgedChallenge)) {
+          || (currentState == state.WaitingUnacknowledgedChallenge)) {
         if (now > timeOfLastMove + roundDuration) {
-          uint balance = tokenContract.ballanceOf(address(this));
+          balance = tokenContract.balanceOf(address(this));
           tokenContract.transfer(provider, balance);
-          currentState = state.Finished;
+          currentState = state.FinishedClientTimeout;
           ChallengeEnded(currentState);
         }
       }
     }
   }
 
-  // to kill the contract and receive refunds
+  /* to kill the contract and receive refunds
   function killContract() public {
     require(currentState == state.Finished);
     uint balance = tokenContract.balanceOf(address(this));
     tokenContract.transfer(client, balance);
     selfdestruct(client);
   }
+  */
 }
