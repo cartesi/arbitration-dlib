@@ -92,10 +92,10 @@ contract hireCPU {
   //       |                                    |
   //     AckChal ---------------------    - UnackChal
   //       \   \                      \  /     /    |
-  //        \   ------------      ---- \      /    /
-  //         \              \    /      \    /    |
-  //          \     -------  \  -   ---- \ --    /
-  //           \   /          \    /      \      |
+  //        \   ------------      ---- \      /     |
+  //         \              \    /      \    /     /
+  //          \     -------  \  -   ---- \ --     /
+  //           \   /          \    /      \      /
   //         OutChall      InsertChal     PartDisp
   //            |              |             |
   //          FPWOC       MemWriteChal   MachToRun
@@ -130,15 +130,15 @@ contract hireCPU {
 
   state public currentState;
 
-  event AnounceJob(address theClient, uint theFinalTime,
+  event AnounceJob(uint theFinalTime,
                    bytes32 theClientMachinePreparationHash,
                    bytes theClientMachinePreparationURI,
                    uint64 theAddressForSeed, uint64 theInitialSeed,
                    uint64 theNumberOfSeeds, uint64 theRamSize,
                    uint64 theInputMaxSize, uint64 theOutputMaxSize,
                    uint theMaxPriceOffered, uint theDepositRequired,
-                   uint theAuctionDuraiton, uint theRoundDuration,
-                   uint theJobDuration);
+                   uint theRoundDuration, uint theJobDuration);
+
   event LowestBidDecreased(address bidder, uint amount);
   event SolutionPosted(bytes32 theClaimedHashOfEncryptedOutputList);
   //event ChallengePosted(address thePartitionContract);
@@ -189,10 +189,10 @@ contract hireCPU {
     timeOfLastMove = now;
 
     currentState = state.WaitingBids;
-    AnounceJob(client, finalTime, clientMachinePreparationHash,
+    AnounceJob(finalTime, clientMachinePreparationHash,
                clientMachinePreparationURI, addressForSeed, initialSeed,
                numberOfSeeds, ramSize, inputMaxSize, outputMaxSize,
-               maxPriceOffered, depositRequired, auctionDuration, roundDuration,
+               maxPriceOffered, depositRequired, roundDuration,
                jobDuration);
   }
 
@@ -291,7 +291,6 @@ contract hireCPU {
   function giveAcknowledgedExplanation
     ( bytes32 theHashOfEncryptedSelectedOutput,
       bytes32 theDecryptionMachineInitialHash,
-      bytes32 theDecryptionMachineFinalHash,
       bytes32 theFinal1HashOfDecryptMachine,
       bytes32 theFinal2HashOfDecryptMachine,
       bytes32 theFinal3HashOfDecryptMachine,
@@ -506,7 +505,7 @@ contract hireCPU {
     subleqContract = new subleq(address(mmContract), ramSize, inputMaxSize,
                                 outputMaxSize);
     mmContract.changeClient(address(subleqContract));
-    uint8 result = subleqContract.step();
+    subleqContract.step();
     timeOfLastMove = now;
     currentState = state.WaitingToFinishMachineRunChallenge;
   }
@@ -678,12 +677,19 @@ contract hireCPU {
     }
   }
 
-  /* to kill the contract and receive refunds
+  // to kill the contract and receive refunds
   function killContract() public {
-    require(currentState == state.Finished);
+    require((currentState == state.FinishedNoBidder)
+            || (currentState == state.FinishedSmooth)
+            || (currentState == state.FinishedProviderWonOutputHashChallenge)
+            || (currentState == state.FinishedProviderWonMemoryWriteChallenge)
+            || (currentState == state.FinishedProviderWonMachineRunChallenge)
+            || (currentState == state.FinishedPartitionProviderTimeout)
+            || (currentState == state.FinishedPartitionClientTimeout)
+            || (currentState == state.FinishedProviderTimeout)
+            || (currentState == state.FinishedClientTimeout));
     uint balance = tokenContract.balanceOf(address(this));
     tokenContract.transfer(client, balance);
     selfdestruct(client);
   }
-  */
 }
