@@ -11,9 +11,11 @@ coMocha(mocha)
 
 aliceKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
 bobKey = '0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
+eveKey = '0x80bf04d3e10530fca6db5bb15d29c2561b86116f4c03d620036bb74378f802c0'
 
 aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
 bobAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
+eveAddr = '0xd38b636cf8fe793483141c9fa7a572c1f8b3778e'
 
 // compile contract
 //const contractSource = fs.readFileSync('src/hireCPU.sol').toString();
@@ -21,6 +23,7 @@ bobAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
 var input = {
   'src/hireCPU.sol': fs.readFileSync('src/hireCPU.sol', 'utf8'),
   'src/partition.sol': fs.readFileSync('src/partition.sol', 'utf8'),
+  'src/mm.sol': fs.readFileSync('src/mm.sol', 'utf8'),
   'src/lib/bokkypoobah/Token.sol':
   fs.readFileSync('src/lib/bokkypoobah/Token.sol', 'utf8'),
 };
@@ -43,7 +46,9 @@ var testrpcParameters = {
   [   { "balance": 100000000000000000000,
         "secretKey": aliceKey },
       { "balance": 100000000000000000000,
-        "secretKey": bobKey }
+        "secretKey": bobKey },
+      { "balance": 100000000000000000000,
+        "secretKey": eveKey }
   ]
 }
 web3 = new Web3(TestRPC.provider(testrpcParameters));
