@@ -13,7 +13,7 @@ contract hireCPU {
   address public provider; // winner of bit to preform calculation
 
   bytes32 public clientMachinePreparationHash; // hash of machine before seed
-  bytes public clientMachinePreparationURI;
+  //bytes public clientMachinePreparationURI;
   uint public finalTime;
   uint64 public addressForSeed;
   uint64 public initialSeed;
@@ -132,7 +132,7 @@ contract hireCPU {
 
   event AnounceJob(uint theFinalTime,
                    bytes32 theClientMachinePreparationHash,
-                   bytes theClientMachinePreparationURI,
+                   //bytes theClientMachinePreparationURI,
                    uint64 theAddressForSeed, uint64 theInitialSeed,
                    uint64 theNumberOfSeeds, uint64 theRamSize,
                    uint64 theInputMaxSize, uint64 theOutputMaxSize,
@@ -145,9 +145,9 @@ contract hireCPU {
   //event WinerFound(state finalState);
   event ChallengeEnded(state);
 
-  function hireCPU(address theClient, uint theFinalTime,
+  function hireCPU() public {} function a(address theClient, uint theFinalTime,
                    bytes32 theClientMachinePreparationHash,
-                   bytes theClientMachinePreparationURI,
+                   //bytes theClientMachinePreparationURI,
                    uint64 theAddressForSeed, uint64 theInitialSeed,
                    uint64 theNumberOfSeeds, uint64 theRamSize,
                    uint64 theInputMaxSize, uint64 theOutputMaxSize,
@@ -160,7 +160,7 @@ contract hireCPU {
     client = theClient;
 
     clientMachinePreparationHash = theClientMachinePreparationHash;
-    clientMachinePreparationURI = theClientMachinePreparationURI;
+    //clientMachinePreparationURI = theClientMachinePreparationURI;
 
     require(theFinalTime > 0);
     finalTime = theFinalTime;
@@ -190,7 +190,8 @@ contract hireCPU {
 
     currentState = state.WaitingBids;
     AnounceJob(finalTime, clientMachinePreparationHash,
-               clientMachinePreparationURI, addressForSeed, initialSeed,
+               //clientMachinePreparationURI
+               addressForSeed, initialSeed,
                numberOfSeeds, ramSize, inputMaxSize, outputMaxSize,
                maxPriceOffered, depositRequired, roundDuration,
                jobDuration);
