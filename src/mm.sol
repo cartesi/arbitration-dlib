@@ -1,31 +1,33 @@
 /// @title Memory manager contract
 pragma solidity ^0.4.18;
 
-import "./mortal.sol";
-
-contract mm is mortal {
+library mmLib {
   // the privider will fill the memory for the client to read and write
   // memory starts with hash and all values that are inserted are first verified
   // then client can read inserted values and write some more
   // finally the provider has to update the hash to account for writes
-  address public provider;
-  address public client;
-  bytes32 public initialHash;
-  bytes32 public newHash; // hash after some write operations have been proved
-
-  mapping(uint64 => bool) public addressWasSubmitted; // mark address submitted
-  mapping(uint64 => bytes8) private valueSubmitted; // value submitted to address
-
-  mapping(uint64 => bool) public addressWasWritten; // marks address as written
-  mapping(uint64 => bytes8) public valueWritten; // value written to address
-
-  uint64[] public writtenAddress;
-  function getWrittenAddressLength() public constant returns(uint) {
-    return writtenAddress.length;
-  }
 
   enum state { WaitingValues, Reading, Writing, UpdatingHashes, Finished }
-  state public currentState;
+
+  struct mmCtx {
+    address provider;
+    address client;
+    bytes32 initialHash;
+    bytes32 newHash; // hash after some write operations have been proved
+
+    mapping(uint64 => bool) addressWasSubmitted; // mark address submitted
+    mapping(uint64 => bytes8) valueSubmitted; // value submitted to address
+
+    mapping(uint64 => bool) addressWasWritten; // marks address as written
+    mapping(uint64 => bytes8) valueWritten; // value written to address
+
+    uint64[] writtenAddress;
+    state currentState;
+  }
+
+  //function getWrittenAddressLength() public constant returns(uint) {
+  //  return writtenAddress.length;
+  //}
 
   event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
@@ -37,37 +39,37 @@ contract mm is mortal {
                     bytes32 newHash);
   event Finished();
 
-  function mm(address theProvider, address theClient,
-              bytes32 theInitialHash) public
+  function init(mmCtx storage self, address theProvider, address theClient,
+                bytes32 theInitialHash) public
   {
     require(theProvider != theClient);
-    provider = theProvider;
-    client = theClient;
-    initialHash = theInitialHash;
-    newHash = theInitialHash;
+    self.provider = theProvider;
+    self.client = theClient;
+    self.initialHash = theInitialHash;
+    self.newHash = theInitialHash;
 
-    currentState = state.WaitingValues;
+    self.currentState = state.WaitingValues;
     MemoryCreated(theInitialHash);
   }
 
   /// @notice Change the client of the memory for the possible situations
   /// where the client was not known at time of creation
   /// @param theNewClient the address of the new client
-  function changeClient(address theNewClient) public {
-    if (msg.sender == owner) {
-      client = theNewClient;
-    }
-  }
+  /* function changeClient(address theNewClient) public { */
+  /*   if (msg.sender == owner) { */
+  /*     client = theNewClient; */
+  /*   } */
+  /* } */
 
   /// @notice Proves that a certain value in initial memory is correct
   /// @param theAddress The address of the value to be confirmed
   /// @param theValue The value in that address to be confirmed
   /// @param proof The proof that this value is correct
-  function proveValue(uint64 theAddress, bytes8 theValue,
-                       bytes32[] proof) public
+  function proveValue(mmCtx storage self, uint64 theAddress, bytes8 theValue,
+                      bytes32[] proof) public
   {
-    require(msg.sender == provider);
-    require(currentState == state.WaitingValues);
+    require(msg.sender == self.provider);
+    require(self.currentState == state.WaitingValues);
     require((theAddress & 7) == 0);
     require(proof.length == 61);
     bytes32 runningHash = keccak256(theValue);
@@ -80,73 +82,77 @@ contract mm is mortal {
         runningHash = keccak256(proof[i], runningHash);
       }
     }
-    require (runningHash == initialHash);
-    addressWasSubmitted[theAddress] = true;
-    valueSubmitted[theAddress] = theValue;
+    require (runningHash == self.initialHash);
+    self.addressWasSubmitted[theAddress] = true;
+    self.valueSubmitted[theAddress] = theValue;
 
     ValueSubmitted(theAddress, theValue);
   }
 
   /// @notice Stop memory insertion and start read and write phase
-  function finishSubmissionPhase() public {
-    require(msg.sender == provider);
-    require(currentState == state.WaitingValues);
-    currentState = state.Reading;
+  function finishSubmissionPhase(mmCtx storage self) public {
+    require(msg.sender == self.provider);
+    require(self.currentState == state.WaitingValues);
+    self.currentState = state.Reading;
     FinishedSubmittions();
   }
 
   /// @notice reads a slot in memory that has been proved to be correct
   /// according to initial hash
   /// @param theAddress of the desired memory
-  function read(uint64 theAddress) public view returns (bytes8) {
-    require(currentState == state.Reading);
+  function read(mmCtx storage self, uint64 theAddress)
+    public view returns (bytes8)
+  {
+    require(self.currentState == state.Reading);
     require((theAddress & 7) == 0);
-    require(addressWasSubmitted[theAddress] == true);
-    return valueSubmitted[theAddress];
+    require(self.addressWasSubmitted[theAddress] == true);
+    return self.valueSubmitted[theAddress];
   }
 
   /// @notice writes on a slot of memory during read and write phase
   /// @param theAddress of the write
   /// @param theValue to be written
-  function write(uint64 theAddress, bytes8 theValue) public {
-    require(msg.sender == client);
-    require((currentState == state.Writing)
-            || (currentState == state.Reading));
+  function write(mmCtx storage self, uint64 theAddress, bytes8 theValue)
+    public
+  {
+    require(msg.sender == self.client);
+    require((self.currentState == state.Writing)
+            || (self.currentState == state.Reading));
     require((theAddress & 7) == 0);
-    require(addressWasSubmitted[theAddress]);
-    require(!addressWasWritten[theAddress]);
-    if (currentState == state.Reading) {
-      currentState = state.Writing;
+    require(self.addressWasSubmitted[theAddress]);
+    require(!self.addressWasWritten[theAddress]);
+    if (self.currentState == state.Reading) {
+      self.currentState = state.Writing;
       FinishedReading();
     }
-    addressWasWritten[theAddress] = true;
-    valueWritten[theAddress] = theValue;
-    writtenAddress.push(theAddress);
+    self.addressWasWritten[theAddress] = true;
+    self.valueWritten[theAddress] = theValue;
+    self.writtenAddress.push(theAddress);
     ValueWritten(theAddress, theValue);
   }
 
   /// @notice Stop write phase
-  function finishWritePhase() public {
-    require(msg.sender == client);
-    require((currentState == state.Writing)
-            || (currentState == state.Reading));
-    currentState = state.UpdatingHashes;
+  function finishWritePhase(mmCtx storage self) public {
+    require(msg.sender == self.client);
+    require((self.currentState == state.Writing)
+            || (self.currentState == state.Reading));
+    self.currentState = state.UpdatingHashes;
     FinishedWriting();
   }
 
   /// @notice Update hash corresponding to write
   /// @param proof The proof that the new value is correct
-  function updateHash(bytes32[] proof) public {
-    require(msg.sender == provider);
-    require(currentState == state.UpdatingHashes);
-    require(writtenAddress.length > 0);
-    uint64 theAddress = writtenAddress[writtenAddress.length - 1];
+  function updateHash(mmCtx storage self, bytes32[] proof) public {
+    require(msg.sender == self.provider);
+    require(self.currentState == state.UpdatingHashes);
+    require(self.writtenAddress.length > 0);
+    uint64 theAddress = self.writtenAddress[self.writtenAddress.length - 1];
     require((theAddress & 7) == 0);
-    require(addressWasSubmitted[theAddress]);
-    require(addressWasWritten[theAddress]);
+    require(self.addressWasSubmitted[theAddress]);
+    require(self.addressWasWritten[theAddress]);
     require(proof.length == 61);
-    bytes8 oldValue = valueSubmitted[theAddress];
-    bytes8 newValue = valueWritten[theAddress];
+    bytes8 oldValue = self.valueSubmitted[theAddress];
+    bytes8 newValue = self.valueWritten[theAddress];
     // verifying the proof of the old value
     bytes32 runningHash = keccak256(oldValue);
     uint64 eight = 8;
@@ -157,7 +163,7 @@ contract mm is mortal {
         runningHash = keccak256(proof[i], runningHash);
       }
     }
-    require (runningHash == newHash);
+    require (runningHash == self.newHash);
     // find out new hash after write
     runningHash = keccak256(newValue);
     for (i = 0; i < 61; i++) {
@@ -167,17 +173,17 @@ contract mm is mortal {
         runningHash = keccak256(proof[i], runningHash);
       }
     }
-    newHash = runningHash;
-    writtenAddress.length = writtenAddress.length - 1;
-    HashUpdated(theAddress, newValue, newHash);
+    self.newHash = runningHash;
+    self.writtenAddress.length = self.writtenAddress.length - 1;
+    HashUpdated(theAddress, newValue, self.newHash);
   }
 
   /// @notice Finishes updating the hash
-  function finishUpdateHashPhase() public {
-    require(msg.sender == provider);
-    require(currentState == state.UpdatingHashes);
-    require(writtenAddress.length == 0);
-    currentState = state.Finished;
+  function finishUpdateHashPhase(mmCtx storage self) public {
+    require(msg.sender == self.provider);
+    require(self.currentState == state.UpdatingHashes);
+    require(self.writtenAddress.length == 0);
+    self.currentState = state.Finished;
     Finished();
   }
 }
