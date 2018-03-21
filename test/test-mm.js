@@ -18,13 +18,21 @@ aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
 machineAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
 
 // compile contract
-const contractSource = fs.readFileSync('src/mm.sol').toString();
+var input = {
+  'src/mm.sol': fs.readFileSync('src/mm.sol', 'utf8'),
+  'src/mortal.sol': fs.readFileSync('src/mortal.sol', 'utf8'),
+  'src/mm.t.sol': fs.readFileSync('src/mm.t.sol', 'utf8')
+};
 
 // using solc package for node
-const compiledContract = solc.compile(contractSource, 1);
+const compiledContract = solc.compile({ sources: input }, 1);
 expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
-const bytecode = compiledContract.contracts[':mm'].bytecode;
-const abi = JSON.parse(compiledContract.contracts[':mm'].interface);
+
+const mmLibBytecode = compiledContract.contracts['src/mm.sol:mmLib'].bytecode;
+const mmLibAbi = JSON.parse(compiledContract.contracts['src/mm.sol:mmLib'].interface);
+
+var mmTestBytecode = compiledContract.contracts['src/mm.t.sol:mmTest'].bytecode;
+const mmTestAbi = JSON.parse(compiledContract.contracts['src/mm.t.sol:mmTest'].interface);
 
 function hashWord(word) {
     return web3.utils.soliditySha3({type: 'uint64', value: word});
@@ -56,7 +64,9 @@ describe('Testing memory manager contract', function() {
 
 
     // create contract object
-    mmContract = new web3.eth.Contract(abi);
+    mmLibContract = new web3.eth.Contract(mmLibAbi);
+    // create contract object
+    mmTestContract = new web3.eth.Contract(mmTestAbi);
 
     // prepare memory
     let myMM = new mm.MemoryManager();
@@ -76,42 +86,55 @@ describe('Testing memory manager contract', function() {
     initialHash = myMM.merkel()
 
     // deploy contract and update object
-    mmContract = yield mmContract.deploy({
-      data: bytecode,
+    mmLibContract = yield mmLibContract.deploy({
+      data: mmLibBytecode,
       arguments: [aliceAddr, machineAddr, initialHash]
-    }).send({ from: aliceAddr, gas: 1500000 })
+    }).send({ from: aliceAddr, gas: 2000000 })
       .on('receipt');
 
+    mmLibAddress = mmLibContract.options.address;
+
+    var re = new RegExp('__src/mm.sol:mmLib______________________', 'g');
+    mmTestBytecode = mmTestBytecode.replace(re, mmLibAddress.substr(2));
+    // deploy contract and update object
+    mmTestContract = yield mmTestContract.deploy({
+      data: mmTestBytecode,
+      arguments: [aliceAddr, machineAddr, initialHash]
+    }).send({ from: aliceAddr, gas: 2000000 })
+      .on('receipt');
+
+      //.send({ from: aliceAddr, gas: 2000000 })
+      //.on('receipt');
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    mmContract.setProvider(web3.currentProvider)
+    mmTestContract.setProvider(web3.currentProvider)
 
     // check if waiting values
-    currentState = yield mmContract.methods
+    currentState = yield mmTestContract.methods
       .currentState().call({ from: aliceAddr });
     expect(currentState).to.equal('0');
 
     // prove that the values in initial memory are correct
     for (key in values) {
       // check that key was not marked as submitted
-      wasSubmitted = yield mmContract.methods
+      wasSubmitted = yield mmTestContract.methods
         .addressWasSubmitted(key)
-        .call({ from: machineAddr, gas: 1500000 });
+        .call({ from: machineAddr, gas: 2000000 });
       expect(wasSubmitted).to.be.false;
       // generate proof of value
       let proof = myMM.generateProof(key);
       // proving values on memory manager contract
-      response = yield mmContract.methods
+      response = yield mmTestContract.methods
         .proveValue(key, values[key], proof)
-        .send({ from: aliceAddr, gas: 1500000 })
+        .send({ from: aliceAddr, gas: 2000000 })
         .on('receipt', function(receipt) {
           expect(receipt.events.ValueSubmitted).not.to.be.undefined;
         });
       returnValues = response.events.ValueSubmitted.returnValues;
       // check that key was marked as submitted
-      wasSubmitted = yield mmContract.methods
+      wasSubmitted = yield mmTestContract.methods
         .addressWasSubmitted(key)
-        .call({ from: machineAddr, gas: 1500000 });
+        .call({ from: machineAddr, gas: 2000000 });
       expect(wasSubmitted).to.be.true;
     }
 
@@ -125,9 +148,9 @@ describe('Testing memory manager contract', function() {
       // generate proof of value
       let proof = myMM.generateProof(key);
       // prove values on memory manager contract
-      response = yield mmContract.methods
+      response = yield mmTestContract.methods
         .proveValue(key, other_values[key], proof)
-        .send({ from: aliceAddr, gas: 1500000 })
+        .send({ from: aliceAddr, gas: 2000000 })
         .on('receipt', function(receipt) {
           expect(receipt.events.ValueSubmitted).not.to.be.undefined;
         });
@@ -137,38 +160,35 @@ describe('Testing memory manager contract', function() {
 
     // cannot submit un-aligned address
     let proof = myMM.generateProof(0);
-    response = yield mmContract.methods
+    response = yield mmTestContract.methods
       .proveValue(4, '0x0000000000000000', proof)
-      .send({ from: aliceAddr, gas: 1500000 })
+      .send({ from: aliceAddr, gas: 2000000 })
       .catch(function(error) {
         expect(error.message).to.have.string('VM Exception');
       });
-
     // finishing submissions
-    response = yield mmContract.methods
+    response = yield mmTestContract.methods
       .finishSubmissionPhase()
-      .send({ from: aliceAddr, gas: 1500000 })
+      .send({ from: aliceAddr, gas: 2000000 })
       .on('receipt', function(receipt) {
         expect(receipt.events.FinishedSubmittions).not.to.be.undefined;
       });
 
     // check if read phase
-    currentState = yield mmContract.methods
+    currentState = yield mmTestContract.methods
       .currentState().call({ from: aliceAddr });
     expect(currentState).to.equal('1');
-
     for (key in values) {
       // check that it waas submitted
-      wasSubmitted = yield mmContract.methods
+      wasSubmitted = yield mmTestContract.methods
         .addressWasSubmitted(key)
-        .call({ from: machineAddr, gas: 1500000 });
+        .call({ from: machineAddr, gas: 2000000 });
       // reading values on memory manager contract
-      response = yield mmContract.methods
+      response = yield mmTestContract.methods
         .read(key)
-        .call({ from: machineAddr, gas: 1500000 });
+        .call({ from: machineAddr, gas: 2000000 });
       expect(response).to.equal(values[key].toString());
     }
-
     write_values = { '283888':        '0x0000000000000000',
                      '1808':          '0x0000f000f0000000',
                      '2838918800':    '0xffffffffffffffff'
@@ -176,9 +196,9 @@ describe('Testing memory manager contract', function() {
     // write values in mm
     for (key in write_values) {
       // write values to memory manager contract
-      response = yield mmContract.methods
+      response = yield mmTestContract.methods
         .write(key, write_values[key])
-        .send({ from: machineAddr, gas: 1500000 })
+        .send({ from: machineAddr, gas: 2000000 })
         .on('receipt', function(receipt) {
           expect(receipt.events.ValueWritten).not.to.be.undefined;
         });
@@ -186,35 +206,34 @@ describe('Testing memory manager contract', function() {
     }
 
     // finishing write phase
-    response = yield mmContract.methods
+    response = yield mmTestContract.methods
       .finishWritePhase()
-      .send({ from: machineAddr, gas: 1500000 })
+      .send({ from: machineAddr, gas: 2000000 })
       .on('receipt', function(receipt) {
         expect(receipt.events.FinishedWriting).not.to.be.undefined;
       });
 
     // check if update hash phase
-    currentState = yield mmContract.methods
+    currentState = yield mmTestContract.methods
       .currentState().call({ from: aliceAddr });
     expect(currentState).to.equal('3');
 
     // check how many values were writen
-    sizeWriteArray = yield mmContract.methods
+    sizeWriteArray = yield mmTestContract.methods
       .getWrittenAddressLength().call({ from: aliceAddr });
-
     // update each hash
     for(let i = sizeWriteArray - 1; i >=0; i--) {
       // address writen
-      addressWritten = yield mmContract.methods
+      addressWritten = yield mmTestContract.methods
         .writtenAddress(i).call({ from: aliceAddr });
       //console.log(addressWritten);
       oldValue = myMM.getWord(addressWritten);
-      newValue = yield mmContract.methods
+      newValue = yield mmTestContract.methods
         .valueWritten(addressWritten).call({ from: aliceAddr });
       proof = myMM.generateProof(addressWritten);
-      response = yield mmContract.methods
+      response = yield mmTestContract.methods
         .updateHash(proof)
-        .send({ from: aliceAddr, gas: 1500000 })
+        .send({ from: aliceAddr, gas: 2000000 })
         .on('receipt', function(receipt) {
           expect(receipt.events.HashUpdated).not.to.be.undefined;
         });
@@ -224,26 +243,26 @@ describe('Testing memory manager contract', function() {
     }
 
     finalHash = myMM.merkel();
-    remoteFinalHash = yield mmContract.methods
+    remoteFinalHash = yield mmTestContract.methods
       .newHash().call({ from: aliceAddr });
     expect(finalHash).to.equal(remoteFinalHash);
 
     // finishing update hash phase
-    response = yield mmContract.methods
+    response = yield mmTestContract.methods
       .finishUpdateHashPhase()
-      .send({ from: aliceAddr, gas: 1500000 })
+      .send({ from: aliceAddr, gas: 2000000 })
       .on('receipt', function(receipt) {
         expect(receipt.events.Finished).not.to.be.undefined;
       });
 
     // check if we are at the finished phase
-    currentState = yield mmContract.methods
+    currentState = yield mmTestContract.methods
       .currentState().call({ from: aliceAddr });
     expect(currentState).to.equal('4');
 
     // kill contract
-    response = yield mmContract.methods.kill()
-      .send({ from: aliceAddr, gas: 1500000 });
+    response = yield mmTestContract.methods.kill()
+      .send({ from: aliceAddr, gas: 2000000 });
   });
 });
 
