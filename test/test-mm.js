@@ -85,10 +85,10 @@ describe('Testing memory manager contract', function() {
     }
     initialHash = myMM.merkel()
 
-    // deploy contract and update object
+    // deploy library and update object
     mmLibContract = yield mmLibContract.deploy({
       data: mmLibBytecode,
-      arguments: [aliceAddr, machineAddr, initialHash]
+      arguments: []
     }).send({ from: aliceAddr, gas: 2000000 })
       .on('receipt');
 
