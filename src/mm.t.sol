@@ -19,31 +19,6 @@ contract mmTest is mortal {
                     bytes32 newHash);
   event Finished();
 
-
-  function currentState() public view returns (mmLib.state) {
-    return mm.currentState;
-  }
-
-  function addressWasSubmitted(uint64 key) public view returns (bool) {
-    return mm.addressWasSubmitted[key];
-  }
-
-  function writtenAddress(uint64 position) public view returns (uint64) {
-    return mm.writtenAddress[position];
-  }
-
-  function valueWritten(uint64 addr) public view returns (bytes8) {
-    return mm.valueWritten[addr];
-  }
-
-  function getWrittenAddressLength() public view returns (uint) {
-    return mm.writtenAddress.length;
-  }
-
-  function newHash() public view returns (bytes32) {
-    return mm.newHash;
-  }
-
   function mmTest(address theProvider, address theClient,
                   bytes32 theInitialHash) public
   {
@@ -88,5 +63,29 @@ contract mmTest is mortal {
     mm.finishUpdateHashPhase();
   }
 
+  // external interaction
+  function currentState() public view returns (mmLib.state) {
+    return mm.currentState;
+  }
+
+  function addressWasSubmitted(uint64 key) public view returns (bool) {
+    return mm.addressWasSubmitted[key];
+  }
+
+  function writtenAddress(uint64 position) public view returns (uint64) {
+    return mm.writtenAddress[position];
+  }
+
+  function valueWritten(uint64 addr) public view returns (bytes8) {
+    return mm.valueWritten[addr];
+  }
+
+  function getWrittenAddressLength() public view returns (uint) {
+    return mm.writtenAddress.length;
+  }
+
+  function newHash() public view returns (bytes32) {
+    return mm.newHash;
+  }
 }
 

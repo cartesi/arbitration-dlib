@@ -27,7 +27,7 @@ library partitionLib {
 
   event QueryPosted(uint[] theQueryTimes);
   event HashesPosted(uint[] thePostedTimes, bytes32[] thePostedHashes);
-  event ChallengeEnded(state theState);
+  event ChallengeEnded(uint8 theState);
   event DivergenceFound(uint timeOfDivergence, bytes32 hashAtDivergenceTime,
                         bytes32 hashRigthAfterDivergenceTime);
 
@@ -152,13 +152,13 @@ library partitionLib {
         && (self.currentState == state.WaitingHashes)
         && (now > self.timeOfLastMove + self.roundDuration)) {
       self.currentState = state.ChallengerWon;
-      emit ChallengeEnded(self.currentState);
+      emit ChallengeEnded(uint8(self.currentState));
     }
     if ((msg.sender == self.claimer)
         && (self.currentState == state.WaitingQuery)
         && (now > self.timeOfLastMove + self.roundDuration)) {
       self.currentState = state.ClaimerWon;
-      emit ChallengeEnded(self.currentState);
+      emit ChallengeEnded(uint8(self.currentState));
     }
   }
 
@@ -176,7 +176,7 @@ library partitionLib {
     require(self.timeSubmitted[theDivergenceTime + 1]);
     self.divergenceTime = theDivergenceTime;
     self.currentState = state.DivergenceFound;
-    emit ChallengeEnded(self.currentState);
+    emit ChallengeEnded(uint8(self.currentState));
     emit DivergenceFound(self.divergenceTime,
                          self.timeHash[self.divergenceTime],
                          self.timeHash[self.divergenceTime + 1]);

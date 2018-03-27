@@ -15,24 +15,27 @@ bobKey = '0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
 aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
 bobAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
 
+
 // compile contract
-const contractSource = fs.readFileSync('src/partition.sol').toString();
+var input = {
+  'src/partition.sol': fs.readFileSync('src/partition.sol', 'utf8'),
+  'src/mortal.sol': fs.readFileSync('src/mortal.sol', 'utf8'),
+  'src/partition.t.sol': fs.readFileSync('src/partition.t.sol', 'utf8')
+};
 
 // using solc package for node
-const compiledContract = solc.compile(contractSource, 1);
+const compiledContract = solc.compile({ sources: input }, 1);
 expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
-const bytecode = compiledContract.contracts[':partition'].bytecode;
-const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
 
-// using solc from the command line
-// const { exec } = require('child_process');
-// exec('/home/cortex/solidity/build/solc/solc -o /home/cortex/project/contracts --abi --bin /home/cortex/contracts/src/partition.sol', (err, stdout, stderr) => {
-//     if (err) { console.log('Error compiling contract'); return; }
-//     console.log(`stdout: ${stdout}`);
-//     console.log(`stderr: ${stderr}`);
-// });
-// const bytecode = fs.readFileSync('src/partition.bin').toString();
-// const abi = JSON.parse(fs.readFileSync('src/partition.abi').toString());
+const partitionLibBytecode = compiledContract
+      .contracts['src/partition.sol:partitionLib'].bytecode;
+const partitionLibAbi = JSON
+      .parse(compiledContract.contracts['src/partition.sol:partitionLib'].interface);
+
+var partitionTestBytecode = compiledContract
+    .contracts['src/partition.t.sol:partitionTest'].bytecode;
+const partitionTestAbi = JSON
+      .parse(compiledContract.contracts['src/partition.t.sol:partitionTest'].interface);
 
 describe('Testing partition contract', function() {
   beforeEach(function() {
@@ -80,19 +83,31 @@ describe('Testing partition contract', function() {
       if (i == lastAggreement)
       { bobFinalHash = web3.utils.sha3('mistake'); }
     }
-    // create contract object
-    partitionContract = new web3.eth.Contract(abi);
 
-    // another option is using a node serving in port 8545 with those users
-    // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    // create contract object
+    partitionLibContract = new web3.eth.Contract(partitionLibAbi);
+    // create contract object
+    partitionTestContract = new web3.eth.Contract(partitionTestAbi);
   });
 
   it('Find divergence', function*() {
     this.timeout(15000)
 
+    // deploy library and update object
+    partitionLibContract = yield partitionLibContract.deploy({
+      data: partitionLibBytecode,
+      arguments: []
+    }).send({ from: aliceAddr, gas: 2000000 })
+      .on('receipt');
+
+    partitionLibAddress = partitionLibContract.options.address;
+    var re = new RegExp('__src/partition.sol:partitionLib________', 'g');
+    partitionTestBytecode = partitionTestBytecode
+      .replace(re, partitionLibAddress.substr(2));
+
     // deploy contract and update object
-    partitionContract = yield partitionContract.deploy({
-      data: bytecode,
+    partitionTestContract = yield partitionTestContract.deploy({
+      data: partitionTestBytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
     }).send({ from: aliceAddr, gas: 1500000 })
@@ -100,9 +115,7 @@ describe('Testing partition contract', function() {
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    partitionContract.setProvider(web3.currentProvider)
-
-    console.log(partitionContract.options.address);
+    partitionTestContract.setProvider(web3.currentProvider)
 
     // create empty arrays for query and reply
     queryArray = [];
@@ -113,21 +126,21 @@ describe('Testing partition contract', function() {
     while (true) {
       var i;
       // check if the state is WaitingHashes
-      currentState = yield partitionContract.methods
+      currentState = yield partitionTestContract.methods
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('1');
 
       // get the query array and prepare response
       // (loop since solidity cannot return dynamic array from function)
       for (i = 0; i < querySize; i++) {
-        queryArray[i] = yield partitionContract.methods
+        queryArray[i] = yield partitionTestContract.methods
           .queryArray(i).call({ from: bobAddr });
         replyArray[i] = bobHistory[queryArray[i]];
       }
       //console.log(queryArray);
 
       // sending hashes from alice should fail
-      response = yield partitionContract.methods
+      response = yield partitionTestContract.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: aliceAddr, gas: 1500000 })
         .catch(function(error) {
@@ -135,7 +148,7 @@ describe('Testing partition contract', function() {
         });
 
       // alice claiming victory should fail
-      response = yield partitionContract.methods
+      response = yield partitionTestContract.methods
         .claimVictoryByTime()
         .send({ from: aliceAddr, gas: 1500000 })
         .catch(function(error) {
@@ -143,7 +156,7 @@ describe('Testing partition contract', function() {
         });
 
       // send hashes
-      response = yield partitionContract.methods
+      response = yield partitionTestContract.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: bobAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
@@ -163,12 +176,12 @@ describe('Testing partition contract', function() {
       }
 
       // check if the state is WaitingQuery
-      currentState = yield partitionContract.methods
+      currentState = yield partitionTestContract.methods
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('0');
 
       // bob claiming victory should fail
-      response = yield partitionContract.methods
+      response = yield partitionTestContract.methods
         .claimVictoryByTime()
         .send({ from: bobAddr, gas: 1500000 })
         .catch(function(error) {
@@ -181,7 +194,7 @@ describe('Testing partition contract', function() {
       // check if the interval is unitary
       if (+rightPoint == +leftPoint + 1) {
         // if the interval is unitary, present divergence
-        response = yield partitionContract.methods
+        response = yield partitionTestContract.methods
           .presentDivergence(leftPoint)
           .send({ from: aliceAddr, gas: 1500000 })
           .on('receipt', function(receipt) {
@@ -190,13 +203,13 @@ describe('Testing partition contract', function() {
         returnValues = response.events.DivergenceFound.returnValues;
         expect(+returnValues.timeOfDivergence).to.equal(lastAggreement);
         // check if the state is DivergenceFound
-        currentState = yield partitionContract.methods
+        currentState = yield partitionTestContract.methods
           .currentState().call({ from: bobAddr });
         expect(currentState).to.equal('4');
         break;
       } else {
         // send query with last queried time of aggreement
-        response = yield partitionContract.methods
+        response = yield partitionTestContract.methods
           .makeQuery(lastConsensualQuery, leftPoint, rightPoint)
           .send({ from: aliceAddr, gas: 1500000 })
           .on('receipt', function(receipt) {
@@ -206,16 +219,28 @@ describe('Testing partition contract', function() {
     }
 
     // kill contract
-    response = yield partitionContract.methods.kill()
+    response = yield partitionTestContract.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
   });
 
   it('Claimer timeout', function*() {
     this.timeout(15000)
 
+    // deploy library and update object
+    partitionLibContract = yield partitionLibContract.deploy({
+      data: partitionLibBytecode,
+      arguments: []
+    }).send({ from: aliceAddr, gas: 2000000 })
+      .on('receipt');
+
+    partitionLibAddress = partitionLibContract.options.address;
+    var re = new RegExp('__src/partition.sol:partitionLib________', 'g');
+    partitionTestBytecode = partitionTestBytecode
+      .replace(re, partitionLibAddress.substr(2));
+
     // deploy contract and update object
-    partitionContract = yield partitionContract.deploy({
-      data: bytecode,
+    partitionTestContract = yield partitionTestContract.deploy({
+      data: partitionTestBytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
     }).send({ from: aliceAddr, gas: 1500000 })
@@ -223,10 +248,10 @@ describe('Testing partition contract', function() {
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    partitionContract.setProvider(web3.currentProvider)
+    partitionTestContract.setProvider(web3.currentProvider)
 
     // check if the state is WaitingHashes
-    currentState = yield partitionContract.methods
+    currentState = yield partitionTestContract.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('1');
 
@@ -235,7 +260,7 @@ describe('Testing partition contract', function() {
                               params: [3500], id: 0});
 
     // alice claiming victory should fail
-    response = yield partitionContract.methods
+    response = yield partitionTestContract.methods
       .claimVictoryByTime()
       .send({ from: aliceAddr, gas: 1500000 })
       .catch(function(error) {
@@ -247,19 +272,19 @@ describe('Testing partition contract', function() {
                               params: [200], id: 0});
 
     // alice claiming victory should now work
-    response = yield partitionContract.methods
+    response = yield partitionTestContract.methods
       .claimVictoryByTime()
       .send({ from: aliceAddr, gas: 1500000 });
     returnValues = response.events.ChallengeEnded.returnValues;
     expect(+returnValues.theState).to.equal(2);
 
     // check if the state is ChallengerWon
-    currentState = yield partitionContract.methods
+    currentState = yield partitionTestContract.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('2');
 
     // kill contract
-    response = yield partitionContract.methods.kill()
+    response = yield partitionTestContract.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
 
   });
@@ -267,9 +292,21 @@ describe('Testing partition contract', function() {
   it('Challenger timeout', function*() {
     this.timeout(15000)
 
+    // deploy library and update object
+    partitionLibContract = yield partitionLibContract.deploy({
+      data: partitionLibBytecode,
+      arguments: []
+    }).send({ from: aliceAddr, gas: 2000000 })
+      .on('receipt');
+
+    partitionLibAddress = partitionLibContract.options.address;
+    var re = new RegExp('__src/partition.sol:partitionLib________', 'g');
+    partitionTestBytecode = partitionTestBytecode
+      .replace(re, partitionLibAddress.substr(2));
+
     // deploy contract and update object
-    partitionContract = yield partitionContract.deploy({
-      data: bytecode,
+    partitionTestContract = yield partitionTestContract.deploy({
+      data: partitionTestBytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
     }).send({ from: aliceAddr, gas: 1500000 })
@@ -277,10 +314,10 @@ describe('Testing partition contract', function() {
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    partitionContract.setProvider(web3.currentProvider)
+    partitionTestContract.setProvider(web3.currentProvider)
 
     // check if the state is WaitingHashes
-    currentState = yield partitionContract.methods
+    currentState = yield partitionTestContract.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('1');
 
@@ -293,13 +330,13 @@ describe('Testing partition contract', function() {
     // get the query array and prepare response
     // (loop since solidity cannot return dynamic array from function)
     for (i = 0; i < querySize; i++) {
-        queryArray[i] = yield partitionContract.methods
+        queryArray[i] = yield partitionTestContract.methods
             .queryArray(i).call({ from: bobAddr });
         replyArray[i] = bobHistory[queryArray[i]];
     }
 
     // send hashes
-    response = yield partitionContract.methods
+    response = yield partitionTestContract.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: bobAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
@@ -312,7 +349,7 @@ describe('Testing partition contract', function() {
                               params: [3500], id: 0});
 
     // bob claiming victory should fail
-    response = yield partitionContract.methods
+    response = yield partitionTestContract.methods
       .claimVictoryByTime()
       .send({ from: bobAddr, gas: 1500000 })
       .catch(function(error) {
@@ -324,19 +361,20 @@ describe('Testing partition contract', function() {
                               params: [200], id: 0});
 
     // bob claiming victory should now work
-    response = yield partitionContract.methods
+    response = yield partitionTestContract.methods
       .claimVictoryByTime()
       .send({ from: bobAddr, gas: 1500000 });
+
     returnValues = response.events.ChallengeEnded.returnValues;
     expect(+returnValues.theState).to.equal(3);
 
     // check if the state is ClaimerWon
-    currentState = yield partitionContract.methods
+    currentState = yield partitionTestContract.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('3');
 
     // kill contract
-    response = yield partitionContract.methods.kill()
+    response = yield partitionTestContract.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
   });
 });
