@@ -25,10 +25,6 @@ library mmLib {
     state currentState;
   }
 
-  //function getWrittenAddressLength() public constant returns(uint) {
-  //  return writtenAddress.length;
-  //}
-
   event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
   event FinishedSubmittions();
@@ -49,7 +45,7 @@ library mmLib {
     self.newHash = theInitialHash;
 
     self.currentState = state.WaitingValues;
-    MemoryCreated(theInitialHash);
+    emit MemoryCreated(self.initialHash);
   }
 
   /// @notice Change the client of the memory for the possible situations
@@ -86,7 +82,7 @@ library mmLib {
     self.addressWasSubmitted[theAddress] = true;
     self.valueSubmitted[theAddress] = theValue;
 
-    ValueSubmitted(theAddress, theValue);
+    emit ValueSubmitted(theAddress, theValue);
   }
 
   /// @notice Stop memory insertion and start read and write phase
@@ -94,7 +90,7 @@ library mmLib {
     require(msg.sender == self.provider);
     require(self.currentState == state.WaitingValues);
     self.currentState = state.Reading;
-    FinishedSubmittions();
+    emit FinishedSubmittions();
   }
 
   /// @notice reads a slot in memory that has been proved to be correct
@@ -123,12 +119,12 @@ library mmLib {
     require(!self.addressWasWritten[theAddress]);
     if (self.currentState == state.Reading) {
       self.currentState = state.Writing;
-      FinishedReading();
+      emit FinishedReading();
     }
     self.addressWasWritten[theAddress] = true;
     self.valueWritten[theAddress] = theValue;
     self.writtenAddress.push(theAddress);
-    ValueWritten(theAddress, theValue);
+    emit ValueWritten(theAddress, theValue);
   }
 
   /// @notice Stop write phase
@@ -137,7 +133,7 @@ library mmLib {
     require((self.currentState == state.Writing)
             || (self.currentState == state.Reading));
     self.currentState = state.UpdatingHashes;
-    FinishedWriting();
+    emit FinishedWriting();
   }
 
   /// @notice Update hash corresponding to write
@@ -175,7 +171,7 @@ library mmLib {
     }
     self.newHash = runningHash;
     self.writtenAddress.length = self.writtenAddress.length - 1;
-    HashUpdated(theAddress, newValue, self.newHash);
+    emit HashUpdated(theAddress, newValue, self.newHash);
   }
 
   /// @notice Finishes updating the hash
@@ -184,7 +180,7 @@ library mmLib {
     require(self.currentState == state.UpdatingHashes);
     require(self.writtenAddress.length == 0);
     self.currentState = state.Finished;
-    Finished();
+    emit Finished();
   }
 }
 
