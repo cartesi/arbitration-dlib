@@ -2,12 +2,12 @@
 pragma solidity ^0.4.18;
 
 import "./mortal.sol";
-import "./mm.sol";
+import "./MMLib.sol";
 
-contract mmTest is mortal {
+contract MMInterface is mortal {
 
-  using mmLib for mmLib.mmCtx;
-  mmLib.mmCtx mm;
+  using MMLib for MMLib.MMCtx;
+  MMLib.MMCtx mm;
 
   event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
@@ -20,7 +20,7 @@ contract mmTest is mortal {
   event Finished();
 
 
-  function currentState() public view returns (mmLib.state) {
+  function currentState() public view returns (MMLib.state) {
     return mm.currentState;
   }
 
