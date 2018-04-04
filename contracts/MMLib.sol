@@ -1,7 +1,7 @@
 /// @title Memory manager contract
 pragma solidity ^0.4.18;
 
-library mmLib {
+library MMLib {
   // the privider will fill the memory for the client to read and write
   // memory starts with hash and all values that are inserted are first verified
   // then client can read inserted values and write some more
@@ -9,7 +9,7 @@ library mmLib {
 
   enum state { WaitingValues, Reading, Writing, UpdatingHashes, Finished }
 
-  struct mmCtx {
+  struct MMCtx {
     address provider;
     address client;
     bytes32 initialHash;
@@ -39,7 +39,7 @@ library mmLib {
                     bytes32 newHash);
   event Finished();
 
-  function init(mmCtx storage self, address theProvider, address theClient,
+  function init(MMCtx storage self, address theProvider, address theClient,
                 bytes32 theInitialHash) public
   {
     require(theProvider != theClient);
@@ -49,7 +49,7 @@ library mmLib {
     self.newHash = theInitialHash;
 
     self.currentState = state.WaitingValues;
-    MemoryCreated(theInitialHash);
+    emit MemoryCreated(theInitialHash);
   }
 
   /// @notice Change the client of the memory for the possible situations
@@ -65,7 +65,7 @@ library mmLib {
   /// @param theAddress The address of the value to be confirmed
   /// @param theValue The value in that address to be confirmed
   /// @param proof The proof that this value is correct
-  function proveValue(mmCtx storage self, uint64 theAddress, bytes8 theValue,
+  function proveValue(MMCtx storage self, uint64 theAddress, bytes8 theValue,
                       bytes32[] proof) public
   {
     require(msg.sender == self.provider);
@@ -86,21 +86,21 @@ library mmLib {
     self.addressWasSubmitted[theAddress] = true;
     self.valueSubmitted[theAddress] = theValue;
 
-    ValueSubmitted(theAddress, theValue);
+    emit ValueSubmitted(theAddress, theValue);
   }
 
   /// @notice Stop memory insertion and start read and write phase
-  function finishSubmissionPhase(mmCtx storage self) public {
+  function finishSubmissionPhase(MMCtx storage self) public {
     require(msg.sender == self.provider);
     require(self.currentState == state.WaitingValues);
     self.currentState = state.Reading;
-    FinishedSubmittions();
+    emit FinishedSubmittions();
   }
 
   /// @notice reads a slot in memory that has been proved to be correct
   /// according to initial hash
   /// @param theAddress of the desired memory
-  function read(mmCtx storage self, uint64 theAddress)
+  function read(MMCtx storage self, uint64 theAddress)
     public view returns (bytes8)
   {
     require(self.currentState == state.Reading);
@@ -112,7 +112,7 @@ library mmLib {
   /// @notice writes on a slot of memory during read and write phase
   /// @param theAddress of the write
   /// @param theValue to be written
-  function write(mmCtx storage self, uint64 theAddress, bytes8 theValue)
+  function write(MMCtx storage self, uint64 theAddress, bytes8 theValue)
     public
   {
     require(msg.sender == self.client);
@@ -123,26 +123,26 @@ library mmLib {
     require(!self.addressWasWritten[theAddress]);
     if (self.currentState == state.Reading) {
       self.currentState = state.Writing;
-      FinishedReading();
+      emit FinishedReading();
     }
     self.addressWasWritten[theAddress] = true;
     self.valueWritten[theAddress] = theValue;
     self.writtenAddress.push(theAddress);
-    ValueWritten(theAddress, theValue);
+    emit ValueWritten(theAddress, theValue);
   }
 
   /// @notice Stop write phase
-  function finishWritePhase(mmCtx storage self) public {
+  function finishWritePhase(MMCtx storage self) public {
     require(msg.sender == self.client);
     require((self.currentState == state.Writing)
             || (self.currentState == state.Reading));
     self.currentState = state.UpdatingHashes;
-    FinishedWriting();
+    emit FinishedWriting();
   }
 
   /// @notice Update hash corresponding to write
   /// @param proof The proof that the new value is correct
-  function updateHash(mmCtx storage self, bytes32[] proof) public {
+  function updateHash(MMCtx storage self, bytes32[] proof) public {
     require(msg.sender == self.provider);
     require(self.currentState == state.UpdatingHashes);
     require(self.writtenAddress.length > 0);
@@ -175,16 +175,16 @@ library mmLib {
     }
     self.newHash = runningHash;
     self.writtenAddress.length = self.writtenAddress.length - 1;
-    HashUpdated(theAddress, newValue, self.newHash);
+    emit HashUpdated(theAddress, newValue, self.newHash);
   }
 
   /// @notice Finishes updating the hash
-  function finishUpdateHashPhase(mmCtx storage self) public {
+  function finishUpdateHashPhase(MMCtx storage self) public {
     require(msg.sender == self.provider);
     require(self.currentState == state.UpdatingHashes);
     require(self.writtenAddress.length == 0);
     self.currentState = state.Finished;
-    Finished();
+    emit Finished();
   }
 }
 
