@@ -19,6 +19,23 @@ contract MMInterface is mortal {
                     bytes32 newHash);
   event Finished();
 
+  // Getters methods
+
+  function provider() public view returns (address) {
+    return mm.provider;
+  }
+
+  function client() public view returns (address) {
+    return mm.client;
+  }
+
+  function initialHash() public view returns (bytes32) {
+    return mm.initialHash;
+  }
+
+  function newHash() public view returns (bytes32) {
+    return mm.newHash;
+  }
 
   function currentState() public view returns (MMLib.state) {
     return mm.currentState;
@@ -28,8 +45,16 @@ contract MMInterface is mortal {
     return mm.addressWasSubmitted[key];
   }
 
+  function valueSubmitted(uint64 key) public view returns (bytes8) {
+    return mm.valueSubmitted[key];
+  }
+
   function writtenAddress(uint64 position) public view returns (uint64) {
     return mm.writtenAddress[position];
+  }
+
+  function addressWasWritten(uint64 addr) public view returns (bool) {
+    return mm.addressWasWritten[addr];
   }
 
   function valueWritten(uint64 addr) public view returns (bytes8) {
@@ -40,13 +65,13 @@ contract MMInterface is mortal {
     return mm.writtenAddress.length;
   }
 
-  function newHash() public view returns (bytes32) {
-    return mm.newHash;
-  }
+  // Library functions
 
-  function mmTest(address theProvider, address theClient,
-                  bytes32 theInitialHash) public
+  function MMInterface(address theProvider, address theClient,
+                       bytes32 theInitialHash) public
   {
+    require(owner != theProvider);
+    require(owner != theClient);
     mm.init(theProvider, theClient, theInitialHash);
   }
 
@@ -87,6 +112,5 @@ contract MMInterface is mortal {
   {
     mm.finishUpdateHashPhase();
   }
-
 }
 
