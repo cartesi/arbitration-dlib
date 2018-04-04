@@ -3,30 +3,24 @@ const BigNumber = require('bignumber.js');
 
 var expect = require('chai').expect;
 var getEvent = require('../utils/tools.js').getEvent;
-
-function hashWord(word) {
-    return web3.utils.soliditySha3({type: 'uint64', value: word});
-}
+var unwrap = require('../utils/tools.js').unwrap;
+var shouldThrow = require('../utils/tools.js').shouldThrow;
 
 var MMInterface = artifacts.require("./MMInterface.sol");
 
-function unwrap(promise) {
-   return promise.then(data => {
-      return [null, data];
-   })
-   .catch(err => [err]);
-}
+
 
 contract('MMInterface', function(accounts) {
   it('Checking functionalities', async function() {
-    //this.timeout(150000)
-
     // prepare memory
     let myMM = new mm.MemoryManager();
     let values = { '0':                    '0x0000000000300001',
                    '180008':               '0x000000000000c030',
                    '18446744073709551608': '0x00000000000f00a0',
                  };
+    let currentState;
+    let proof;
+
     for (key in values) {
       myMM.setValue(key, values[key])
     }
@@ -38,13 +32,10 @@ contract('MMInterface', function(accounts) {
              { from: accounts[2], gas: 2000000 });
 
     // only owner should be able to kill contract
-    [error, response] = await unwrap(
-      mmInterface.kill({ from: accounts[0], gas: 2000000 })
-    );
-    expect(error.message).to.have.string('VM Exception');;
+    shouldThrow(mmInterface.kill({ from: accounts[0], gas: 2000000 }));
 
     // contract should start waiting for values to be inserted
-    let currentState = await mmInterface.currentState.call();
+    currentState = await mmInterface.currentState.call();
     expect(currentState.toNumber()).to.equal(0);
 
     // prove that the values in initial memory are correct
@@ -53,7 +44,7 @@ contract('MMInterface', function(accounts) {
       wasSubmitted = await mmInterface.addressWasSubmitted.call(key);
       expect(wasSubmitted).to.be.false;
       // generate proof of value
-      let proof = myMM.generateProof(key);
+      proof = myMM.generateProof(key);
       // proving values on memory manager contract
       response = await mmInterface
         .proveValue(key, values[key], proof,
@@ -76,7 +67,7 @@ contract('MMInterface', function(accounts) {
     // prove some zeros that were not inserted before and test for false proofs
     for (key in other_values) {
       // generate proof of value
-      let proof = myMM.generateProof(key);
+      proof = myMM.generateProof(key);
       // prove values on memory manager contract
       response = await mmInterface
         .proveValue(key, other_values[key], proof,
@@ -85,26 +76,22 @@ contract('MMInterface', function(accounts) {
       // alter proof and test for error
       proof[2] =
         '0xfedc0d0dbbd855c8ead6735448f9b0960e4a5a7cf43b4ef90afe607de7618cae';
-      [error, response] = await unwrap(mmInterface
+      shouldThrow(mmInterface
         .proveValue(key, other_values[key], proof,
                     { from: accounts[0], gas: 2000000 }));
-      expect(error.message).to.have.string('VM Exception');
-
     }
 
     // cannot submit un-aligned address
-    let proof = myMM.generateProof(0);
-    [error, response] = await unwrap(mmInterface
+    proof = myMM.generateProof(0);
+    shouldThrow(mmInterface
       .proveValue(4, '0x0000000000000000', proof,
                   { from: accounts[0], gas: 2000000 }))
-    expect(error.message).to.have.string('VM Exception');
 
     // other user cannot submit
     proof = myMM.generateProof(888);
-    [error, response] = await unwrap(mmInterface
+    shouldThrow(mmInterface
       .proveValue(888, '0x0000000000000000', proof,
                   { from: accounts[4], gas: 2000000 }))
-    expect(error.message).to.have.string('VM Exception');
 
     // finishing submissions
     response = await mmInterface
