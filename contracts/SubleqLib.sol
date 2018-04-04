@@ -7,11 +7,11 @@ contract mmContract {
   function finishWritePhase() public;
 }
 
-library subleqLib {
+library SubleqLib {
 
   event StepGiven(uint8 exitCode);
 
-  struct subleqCtx {
+  struct SubleqCtx {
     mmContract memoryManager;
     address owner;
 
@@ -32,7 +32,7 @@ library subleqLib {
     uint64 outputMaxSize;
   }
 
-  function init(subleqCtx storage self, address memoryManagerAddress,
+  function init(SubleqCtx storage self, address memoryManagerAddress,
                 uint64 theRamSize, uint64 theInputMaxSize,
                 uint64 theOutputMaxSize) public
   {
@@ -45,7 +45,7 @@ library subleqLib {
 
   /// @notice Performs one step of the subleq machine on memory
   /// @return false indicates a halted machine or invalid instruction
-  function step(subleqCtx storage self) public returns (uint8)
+  function step(SubleqCtx storage self) public returns (uint8)
   {
     // Architecture
     // +----------------+----------------+----------------+----------------+

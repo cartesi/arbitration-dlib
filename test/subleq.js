@@ -47,7 +47,8 @@ var testrpcParameters = {
   ]
 }
 
-web3 = new Web3(TestRPC.provider(testrpcParameters));
+var SubleqInterface = artifacts.require("./SubleqInterface.sol");
+
 
 // compile testMemory contract
 const contractSource = fs.readFileSync('src/testMemory.sol').toString();
