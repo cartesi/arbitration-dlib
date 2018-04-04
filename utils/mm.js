@@ -3,7 +3,7 @@ var BigNumber = require('bignumber.js');
 
 // var Uint64BE = require("int64-buffer").Uint64BE;
 
-web3 = new Web3();
+w3 = new Web3();
 
 // returns whether an object is empty
 function isEmpty(obj) {
@@ -11,7 +11,7 @@ function isEmpty(obj) {
 }
 
 function hashWord(word) {
-    return web3.utils.soliditySha3({type: 'uint64', value: word});
+  return w3.utils.soliditySha3({type: 'uint64', value: word});
 }
 
 class MemoryManager {
@@ -20,7 +20,7 @@ class MemoryManager {
         // initialize an array of iterated keccaks of a zero byte
         this.iteratedZeroHashes = [hashWord(0)];
         for (var i = 0; i < 61; i++) {
-            this.iteratedZeroHashes.push(web3.utils.sha3(
+            this.iteratedZeroHashes.push(w3.utils.sha3(
                 this.iteratedZeroHashes[i]
                 + this.iteratedZeroHashes[i].replace(/^0x/, ''))
             );
@@ -87,7 +87,7 @@ class MemoryManager {
         //      + " and " + JSON.stringify(mem2)
         //      + " for (" + (begin.plus(BigNumber(2).pow(log2length + 2)))
       //      + ", " + (begin.plus(BigNumber(2).pow(log2length + 3))) + ")");
-        return web3.utils.sha3(
+        return w3.utils.sha3(
             this.subMerkel(mem1, begin, log2length - 1) +
             this.subMerkel(mem2, begin.plus(BigNumber(2).pow(log2length + 2)),
                            log2length - 1).replace(/^0x/, '')
@@ -157,7 +157,7 @@ class MemoryManager {
                 //console.log("case1: " + this.subMerkel(
                 //     this.memoryMap,
                 //    truncated.plus(BigNumber(2).pow(i + 3)), i))
-                running_hash = web3.utils.sha3(
+                running_hash = w3.utils.sha3(
                     running_hash + proof[i].replace(/^0x/, '')
                     //this.subMerkel(this.memoryMap,
                     //               truncated.plus(BigNumber(2).pow(i + 3)), i)
@@ -165,7 +165,7 @@ class MemoryManager {
             } else {
                 //console.log("case2: " + this.subMerkel(
                 //    this.memoryMap, truncated, i))
-                running_hash = web3.utils.sha3(
+                running_hash = w3.utils.sha3(
                     //this.subMerkel(this.memoryMap, truncated_deep, i) +
                     proof[i] + running_hash.replace(/^0x/, '')
                 )
@@ -180,11 +180,11 @@ class MemoryManager {
         }
         // console.log("sha  0: " + hashWord(0));
         // console.log("sha  1: " + hashWord(1));
-        // let a = (web3.utils.sha3(hashWord(1) + hashWord(0)));
-        // let b = (web3.utils.sha3(hashWord(0) + hashWord(0)));
+        // let a = (w3.utils.sha3(hashWord(1) + hashWord(0)));
+        // let b = (w3.utils.sha3(hashWord(0) + hashWord(0)));
         // console.log("sha 10: " + a);
         // console.log("sha 00: " + b);
-        // let c = (web3.utils.sha3(b + a));
+        // let c = (w3.utils.sha3(b + a));
         // console.log("sha all " + c);
         // console.log("running_hash: " + running_hash);
         // console.log(proof);
