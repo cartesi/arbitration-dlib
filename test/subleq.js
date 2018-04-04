@@ -1,32 +1,23 @@
-const fs = require('fs');
-const solc = require('solc');
-const Web3 = require('web3');
-const TestRPC = require("ethereumjs-testrpc");
-const mocha = require('mocha')
-const coMocha = require('co-mocha')
-const mm = require('../utils/mm.js')
+const mm = require('../utils/mm.js');
 const BigNumber = require('bignumber.js');
 
-expect = require('chai').expect;
+var expect = require('chai').expect;
+var getEvent = require('../utils/tools.js').getEvent;
+var unwrap = require('../utils/tools.js').unwrap;
+var shouldThrow = require('../utils/tools.js').shouldThrow;
 
-coMocha(mocha)
+var SubleqInterface = artifacts.require("./SubleqInterface.sol");
 
-aliceKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
-machineKey = '0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
+var echo_binary = [-1, 21, 3,
+                   21, -1, 6,
+                   21, 22, 9,
+                   22, 23, -1,
+                   21, 21, 15,
+                   22, 22, 18,
+                   23, 23, 0,
+                   0, 0, 0]
 
-aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
-machineAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
-
-echo_binary = [-1, 21, 3,
-               21, -1, 6,
-               21, 22, 9,
-               22, 23, -1,
-               21, 21, 15,
-               22, 22, 18,
-               23, 23, 0,
-               0, 0, 0]
-
-input_string = [2, 4, 8, 16, 32, 64, -1];
+var input_string = [2, 4, 8, 16, 32, 64, -1];
 
 function two_complement_32(decimal) {
   if (decimal >= 0) {

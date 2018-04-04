@@ -45,7 +45,8 @@ contract('PartitionInterface', function() {
       { bobFinalHash = web3.utils.sha3('mistake'); }
     }
     // create contract object
-    partitionContract = new web3.eth.Contract(abi);
+    partitionInterface = await PartitionInterface
+      .new();
 
     // another option is using a node serving in port 8545 with those users
     // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
@@ -55,7 +56,7 @@ contract('PartitionInterface', function() {
     this.timeout(15000)
 
     // deploy contract and update object
-    partitionContract = yield partitionContract.deploy({
+    partitionInterface = yield partitionInterface.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
@@ -64,9 +65,9 @@ contract('PartitionInterface', function() {
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    partitionContract.setProvider(web3.currentProvider)
+    partitionInterface.setProvider(web3.currentProvider)
 
-    console.log(partitionContract.options.address);
+    console.log(partitionInterface.options.address);
 
     // create empty arrays for query and reply
     queryArray = [];
@@ -77,21 +78,21 @@ contract('PartitionInterface', function() {
     while (true) {
       var i;
       // check if the state is WaitingHashes
-      currentState = yield partitionContract.methods
+      currentState = yield partitionInterface.methods
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('1');
 
       // get the query array and prepare response
       // (loop since solidity cannot return dynamic array from function)
       for (i = 0; i < querySize; i++) {
-        queryArray[i] = yield partitionContract.methods
+        queryArray[i] = yield partitionInterface.methods
           .queryArray(i).call({ from: bobAddr });
         replyArray[i] = bobHistory[queryArray[i]];
       }
       //console.log(queryArray);
 
       // sending hashes from alice should fail
-      response = yield partitionContract.methods
+      response = yield partitionInterface.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: aliceAddr, gas: 1500000 })
         .catch(function(error) {
@@ -99,7 +100,7 @@ contract('PartitionInterface', function() {
         });
 
       // alice claiming victory should fail
-      response = yield partitionContract.methods
+      response = yield partitionInterface.methods
         .claimVictoryByTime()
         .send({ from: aliceAddr, gas: 1500000 })
         .catch(function(error) {
@@ -107,7 +108,7 @@ contract('PartitionInterface', function() {
         });
 
       // send hashes
-      response = yield partitionContract.methods
+      response = yield partitionInterface.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: bobAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
@@ -127,12 +128,12 @@ contract('PartitionInterface', function() {
       }
 
       // check if the state is WaitingQuery
-      currentState = yield partitionContract.methods
+      currentState = yield partitionInterface.methods
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('0');
 
       // bob claiming victory should fail
-      response = yield partitionContract.methods
+      response = yield partitionInterface.methods
         .claimVictoryByTime()
         .send({ from: bobAddr, gas: 1500000 })
         .catch(function(error) {
@@ -145,7 +146,7 @@ contract('PartitionInterface', function() {
       // check if the interval is unitary
       if (+rightPoint == +leftPoint + 1) {
         // if the interval is unitary, present divergence
-        response = yield partitionContract.methods
+        response = yield partitionInterface.methods
           .presentDivergence(leftPoint)
           .send({ from: aliceAddr, gas: 1500000 })
           .on('receipt', function(receipt) {
@@ -154,13 +155,13 @@ contract('PartitionInterface', function() {
         returnValues = response.events.DivergenceFound.returnValues;
         expect(+returnValues.timeOfDivergence).to.equal(lastAggreement);
         // check if the state is DivergenceFound
-        currentState = yield partitionContract.methods
+        currentState = yield partitionInterface.methods
           .currentState().call({ from: bobAddr });
         expect(currentState).to.equal('4');
         break;
       } else {
         // send query with last queried time of aggreement
-        response = yield partitionContract.methods
+        response = yield partitionInterface.methods
           .makeQuery(lastConsensualQuery, leftPoint, rightPoint)
           .send({ from: aliceAddr, gas: 1500000 })
           .on('receipt', function(receipt) {
@@ -170,7 +171,7 @@ contract('PartitionInterface', function() {
     }
 
     // kill contract
-    response = yield partitionContract.methods.kill()
+    response = yield partitionInterface.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
   });
 
@@ -178,7 +179,7 @@ contract('PartitionInterface', function() {
     this.timeout(15000)
 
     // deploy contract and update object
-    partitionContract = yield partitionContract.deploy({
+    partitionInterface = yield partitionInterface.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
@@ -187,10 +188,10 @@ contract('PartitionInterface', function() {
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    partitionContract.setProvider(web3.currentProvider)
+    partitionInterface.setProvider(web3.currentProvider)
 
     // check if the state is WaitingHashes
-    currentState = yield partitionContract.methods
+    currentState = yield partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('1');
 
@@ -199,7 +200,7 @@ contract('PartitionInterface', function() {
                               params: [3500], id: 0});
 
     // alice claiming victory should fail
-    response = yield partitionContract.methods
+    response = yield partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: aliceAddr, gas: 1500000 })
       .catch(function(error) {
@@ -211,19 +212,19 @@ contract('PartitionInterface', function() {
                               params: [200], id: 0});
 
     // alice claiming victory should now work
-    response = yield partitionContract.methods
+    response = yield partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: aliceAddr, gas: 1500000 });
     returnValues = response.events.ChallengeEnded.returnValues;
     expect(+returnValues.theState).to.equal(2);
 
     // check if the state is ChallengerWon
-    currentState = yield partitionContract.methods
+    currentState = yield partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('2');
 
     // kill contract
-    response = yield partitionContract.methods.kill()
+    response = yield partitionInterface.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
 
   });
@@ -232,7 +233,7 @@ contract('PartitionInterface', function() {
     this.timeout(15000)
 
     // deploy contract and update object
-    partitionContract = yield partitionContract.deploy({
+    partitionInterface = yield partitionInterface.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
@@ -241,10 +242,10 @@ contract('PartitionInterface', function() {
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    partitionContract.setProvider(web3.currentProvider)
+    partitionInterface.setProvider(web3.currentProvider)
 
     // check if the state is WaitingHashes
-    currentState = yield partitionContract.methods
+    currentState = yield partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('1');
 
@@ -257,13 +258,13 @@ contract('PartitionInterface', function() {
     // get the query array and prepare response
     // (loop since solidity cannot return dynamic array from function)
     for (i = 0; i < querySize; i++) {
-        queryArray[i] = yield partitionContract.methods
+        queryArray[i] = yield partitionInterface.methods
             .queryArray(i).call({ from: bobAddr });
         replyArray[i] = bobHistory[queryArray[i]];
     }
 
     // send hashes
-    response = yield partitionContract.methods
+    response = yield partitionInterface.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: bobAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
@@ -276,7 +277,7 @@ contract('PartitionInterface', function() {
                               params: [3500], id: 0});
 
     // bob claiming victory should fail
-    response = yield partitionContract.methods
+    response = yield partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: bobAddr, gas: 1500000 })
       .catch(function(error) {
@@ -288,19 +289,19 @@ contract('PartitionInterface', function() {
                               params: [200], id: 0});
 
     // bob claiming victory should now work
-    response = yield partitionContract.methods
+    response = yield partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: bobAddr, gas: 1500000 });
     returnValues = response.events.ChallengeEnded.returnValues;
     expect(+returnValues.theState).to.equal(3);
 
     // check if the state is ClaimerWon
-    currentState = yield partitionContract.methods
+    currentState = yield partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('3');
 
     // kill contract
-    response = yield partitionContract.methods.kill()
+    response = yield partitionInterface.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
   });
 });
