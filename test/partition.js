@@ -44,16 +44,31 @@ contract('PartitionInterface', function() {
       if (i == lastAggreement)
       { bobFinalHash = web3.utils.sha3('mistake'); }
     }
+
     // create contract object
     partitionInterface = await PartitionInterface
       .new();
 
-    // another option is using a node serving in port 8545 with those users
-    // web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    // create contract object
+    partitionLibContract = new web3.eth.Contract(partitionLibAbi);
+    // create contract object
+    partitionTestContract = new web3.eth.Contract(partitionTestAbi);
   });
 
   it('Find divergence', function*() {
     this.timeout(15000)
+
+    // deploy library and update object
+    partitionLibContract = yield partitionLibContract.deploy({
+      data: partitionLibBytecode,
+      arguments: []
+    }).send({ from: aliceAddr, gas: 2000000 })
+      .on('receipt');
+
+    partitionLibAddress = partitionLibContract.options.address;
+    var re = new RegExp('__src/partition.sol:partitionLib________', 'g');
+    partitionTestBytecode = partitionTestBytecode
+      .replace(re, partitionLibAddress.substr(2));
 
     // deploy contract and update object
     partitionInterface = yield partitionInterface.deploy({
@@ -178,6 +193,18 @@ contract('PartitionInterface', function() {
   it('Claimer timeout', function*() {
     this.timeout(15000)
 
+    // deploy library and update object
+    partitionLibContract = yield partitionLibContract.deploy({
+      data: partitionLibBytecode,
+      arguments: []
+    }).send({ from: aliceAddr, gas: 2000000 })
+      .on('receipt');
+
+    partitionLibAddress = partitionLibContract.options.address;
+    var re = new RegExp('__src/partition.sol:partitionLib________', 'g');
+    partitionTestBytecode = partitionTestBytecode
+      .replace(re, partitionLibAddress.substr(2));
+
     // deploy contract and update object
     partitionInterface = yield partitionInterface.deploy({
       data: bytecode,
@@ -231,6 +258,18 @@ contract('PartitionInterface', function() {
 
   it('Challenger timeout', function*() {
     this.timeout(15000)
+
+    // deploy library and update object
+    partitionLibContract = yield partitionLibContract.deploy({
+      data: partitionLibBytecode,
+      arguments: []
+    }).send({ from: aliceAddr, gas: 2000000 })
+      .on('receipt');
+
+    partitionLibAddress = partitionLibContract.options.address;
+    var re = new RegExp('__src/partition.sol:partitionLib________', 'g');
+    partitionTestBytecode = partitionTestBytecode
+      .replace(re, partitionLibAddress.substr(2));
 
     // deploy contract and update object
     partitionInterface = yield partitionInterface.deploy({
@@ -292,6 +331,7 @@ contract('PartitionInterface', function() {
     response = yield partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: bobAddr, gas: 1500000 });
+
     returnValues = response.events.ChallengeEnded.returnValues;
     expect(+returnValues.theState).to.equal(3);
 
