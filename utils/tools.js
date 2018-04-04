@@ -9,8 +9,21 @@ function getEvent(result, eventName) {
   throw "Event not found";
 }
 
-module.exports = {
-  getEvent: getEvent
+
+function unwrap(promise) {
+   return promise.then(data => {
+      return [null, data];
+   })
+   .catch(err => [err]);
 }
 
-//export default getEvent;
+async function shouldThrow(promise) {
+  [error, response] = await unwrap(promise);
+  expect(error.message).to.have.string('VM Exception');
+}
+
+module.exports = {
+  getEvent: getEvent,
+  unwrap: unwrap,
+  shouldThrow: shouldThrow
+}
