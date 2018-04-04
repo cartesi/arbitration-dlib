@@ -8,8 +8,6 @@ var shouldThrow = require('../utils/tools.js').shouldThrow;
 
 var MMInterface = artifacts.require("./MMInterface.sol");
 
-
-
 contract('MMInterface', function(accounts) {
   it('Checking functionalities', async function() {
     // prepare memory
@@ -45,7 +43,7 @@ contract('MMInterface', function(accounts) {
       expect(wasSubmitted).to.be.false;
       // generate proof of value
       proof = myMM.generateProof(key);
-      // proving values on memory manager contract
+      // submit merkel proof to manager contract
       response = await mmInterface
         .proveValue(key, values[key], proof,
                     { from: accounts[0], gas: 2000000 });
@@ -59,16 +57,17 @@ contract('MMInterface', function(accounts) {
       expect(wasSubmitted).to.be.true;
     }
 
+    // prove that other addresses still have zeros on them
+    // we also test that false merkel proofs fail
     other_values = { '283888':               '0x0000000000000000',
                      '18446744073709551600': '0x0000000000000000',
                      '2838918800':           '0x0000000000000000'
                    };
 
-    // prove some zeros that were not inserted before and test for false proofs
     for (key in other_values) {
-      // generate proof of value
+      // generate proof of a certain value with zero
       proof = myMM.generateProof(key);
-      // prove values on memory manager contract
+      // submit merkel proof to manager contract
       response = await mmInterface
         .proveValue(key, other_values[key], proof,
                     { from: accounts[0], gas: 2000000 });
@@ -87,18 +86,18 @@ contract('MMInterface', function(accounts) {
       .proveValue(4, '0x0000000000000000', proof,
                   { from: accounts[0], gas: 2000000 }))
 
-    // other user cannot submit
+    // other users cannot submit
     proof = myMM.generateProof(888);
     shouldThrow(mmInterface
       .proveValue(888, '0x0000000000000000', proof,
                   { from: accounts[4], gas: 2000000 }))
 
-    // finishing submissions
+    // finishing submission phase
     response = await mmInterface
       .finishSubmissionPhase({ from: accounts[0], gas: 2000000 })
     expect(getEvent(response, 'FinishedSubmittions')).not.to.be.undefined;
 
-    // check if read phase
+    // check if contract is in read phase
     currentState = await mmInterface.currentState()
     expect(currentState.toNumber()).to.equal(1);
 
@@ -113,7 +112,7 @@ contract('MMInterface', function(accounts) {
       expect(response).to.equal(values[key].toString());
     }
 
-    // write some values to memory
+    // overwrite some new values to memory
     write_values = { '283888':               '0x0000000000000000',
                      '180008':               '0x0a000e000000c030',
                      '18446744073709551608': '0x00000000000f00a0',
@@ -132,7 +131,7 @@ contract('MMInterface', function(accounts) {
       .finishWritePhase({ from: accounts[1], gas: 2000000 })
     expect(getEvent(response, 'FinishedWriting')).not.to.be.undefined;
 
-    // check if update hash phase
+    // check if contract is in update hash phase
     currentState = await mmInterface.currentState();
     expect(currentState.toNumber()).to.equal(3);
 
@@ -157,6 +156,13 @@ contract('MMInterface', function(accounts) {
       expect(returnedEvent).not.to.be.undefined;
       expect(returnedEvent['valueSubmitted']).to.eql(newValue);
       myMM.setValue(addressWritten, newValue);
+
+      // check that false merkel proofs fail
+      proof[2] =
+        '0xfedc0d0dbbd855c8ead6735448f9b0960e4a5a7cf43b4ef90afe607de7618cae';
+      shouldThrow(
+        mmInterface.updateHash(proof, { from: accounts[0], gas: 2000000 })
+      );
     }
 
     // check final hash
@@ -169,7 +175,7 @@ contract('MMInterface', function(accounts) {
       .finishUpdateHashPhase({ from: accounts[0], gas: 2000000 })
     expect(getEvent(response, 'Finished')).not.to.be.undefined;
 
-    // check if we are at the finished phase
+    // check if contract is in finished state
     currentState = await mmInterface.currentState();
     expect(currentState.toNumber()).to.equal(4);
 
