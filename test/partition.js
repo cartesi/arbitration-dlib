@@ -1,52 +1,16 @@
-const fs = require('fs');
-const solc = require('solc');
-const Web3 = require('web3');
-const TestRPC = require("ethereumjs-testrpc");
-const mocha = require('mocha')
-const coMocha = require('co-mocha')
+const mm = require('../utils/mm.js');
+const BigNumber = require('bignumber.js');
 
-expect = require('chai').expect;
+var expect = require('chai').expect;
+var getEvent = require('../utils/tools.js').getEvent;
+var unwrap = require('../utils/tools.js').unwrap;
+var shouldThrow = require('../utils/tools.js').shouldThrow;
 
-coMocha(mocha)
+var PartitionInterface = artifacts.require("./PartitionInterface.sol");
 
-aliceKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
-bobKey = '0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1'
-
-aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
-bobAddr = '0xffcf8fdee72ac11b5c542428b35eef5769c409f0'
-
-// compile contract
-const contractSource = fs.readFileSync('src/partition.sol').toString();
-
-// using solc package for node
-const compiledContract = solc.compile(contractSource, 1);
-expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
-const bytecode = compiledContract.contracts[':partition'].bytecode;
-const abi = JSON.parse(compiledContract.contracts[':partition'].interface);
-
-// using solc from the command line
-// const { exec } = require('child_process');
-// exec('/home/cortex/solidity/build/solc/solc -o /home/cortex/project/contracts --abi --bin /home/cortex/contracts/src/partition.sol', (err, stdout, stderr) => {
-//     if (err) { console.log('Error compiling contract'); return; }
-//     console.log(`stdout: ${stdout}`);
-//     console.log(`stderr: ${stderr}`);
-// });
-// const bytecode = fs.readFileSync('src/partition.bin').toString();
-// const abi = JSON.parse(fs.readFileSync('src/partition.abi').toString());
-
-describe('Testing partition contract', function() {
+contract('PartitionInterface', function() {
   beforeEach(function() {
-    this.timeout(15000)
-    // testrpc
-    var testrpcParameters = {
-      "accounts":
-      [   { "balance": 100000000000000000000,
-            "secretKey": aliceKey },
-          { "balance": 100000000000000000000,
-            "secretKey": bobKey }
-      ]
-    }
-    web3 = new Web3(TestRPC.provider(testrpcParameters));
+    //this.timeout(15000)
 
     // promisify jsonRPC direct call
     sendRPC = function(param){
