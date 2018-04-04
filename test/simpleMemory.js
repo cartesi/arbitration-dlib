@@ -1,47 +1,21 @@
-const fs = require('fs');
-const solc = require('solc');
-const Web3 = require('web3');
-const TestRPC = require("ethereumjs-testrpc");
-const mocha = require('mocha')
-const coMocha = require('co-mocha')
-const mm = require('../utils/mm.js')
+const mm = require('../utils/mm.js');
 const BigNumber = require('bignumber.js');
 
-expect = require('chai').expect;
+var expect = require('chai').expect;
+var getEvent = require('../utils/tools.js').getEvent;
+var unwrap = require('../utils/tools.js').unwrap;
+var shouldThrow = require('../utils/tools.js').shouldThrow;
 
-coMocha(mocha)
+var SimpleMemoryInterface = artifacts.require("./SimpleMemoryInterface.sol");
 
-aliceKey = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
+contract('SimpleMemoryInterface', function(accounts) {
+  it('Checking functionalities', async function() {
+    // launch contract from account[2], who will be the owner
+    let simpleMemoryInterface = await SimpleMemoryInterface
+        .new({ from: accounts[2], gas: 2000000 });
 
-aliceAddr = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
-
-// compile contract
-const contractSource = fs.readFileSync('src/testMemory.sol').toString();
-
-// using solc package for node
-const compiledContract = solc.compile(contractSource, 1);
-expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
-const bytecode = compiledContract.contracts[':testMemory'].bytecode;
-const abi = JSON.parse(compiledContract.contracts[':testMemory'].interface);
-
-function hashWord(word) {
-    return web3.utils.soliditySha3({type: 'uint64', value: word});
-}
-
-describe('Testing testMemory contract', function() {
-  it('Checking functionalities', function*() {
-    this.timeout(150000)
-    // testrpc
-    var testrpcParameters = {
-      "accounts":
-      [   { "balance": 100000000000000000000,
-            "secretKey": aliceKey }
-      ]
-    }
-    web3 = new Web3(TestRPC.provider(testrpcParameters));
-
-    // create contract object
-    testMemoryContract = new web3.eth.Contract(abi);
+    // only owner should be able to kill contract
+    shouldThrow(simpleMemoryInterface.kill({ from: accounts[0], gas: 2000000 }));
 
     // prepare memory
     let values = { '0':                    '0x0000000000300000',
@@ -49,13 +23,7 @@ describe('Testing testMemory contract', function() {
                    '1808':                 '0x000000000000c000'
                  };
 
-    // deploy contract and update object
-    testMemoryContract = yield testMemoryContract.deploy({
-      data: bytecode,
-      arguments: []
-    }).send({ from: aliceAddr, gas: 1500000 })
-      .on('receipt');
-
+    /*
     // check if waiting to write values
     currentState = yield testMemoryContract.methods
       .currentState().call({ from: aliceAddr });
@@ -134,5 +102,6 @@ describe('Testing testMemory contract', function() {
     // kill contract
     response = yield testMemoryContract.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
+      */
   });
 });
