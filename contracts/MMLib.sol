@@ -25,10 +25,6 @@ library MMLib {
     state currentState;
   }
 
-  //function getWrittenAddressLength() public constant returns(uint) {
-  //  return writtenAddress.length;
-  //}
-
   event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
   event FinishedSubmittions();
@@ -49,7 +45,7 @@ library MMLib {
     self.newHash = theInitialHash;
 
     self.currentState = state.WaitingValues;
-    emit MemoryCreated(theInitialHash);
+    emit MemoryCreated(self.initialHash);
   }
 
   /// @notice Change the client of the memory for the possible situations

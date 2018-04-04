@@ -19,6 +19,7 @@ contract MMInterface is mortal {
                     bytes32 newHash);
   event Finished();
 
+
   // Getters methods
 
   function provider() public view returns (address) {
