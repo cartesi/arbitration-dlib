@@ -105,7 +105,7 @@ library MMLib {
   {
     require(self.currentState == state.Reading);
     require((theAddress & 7) == 0);
-    require(self.addressWasSubmitted[theAddress] == true);
+    require(self.addressWasSubmitted[theAddress]);
     return self.valueSubmitted[theAddress];
   }
 
@@ -116,8 +116,8 @@ library MMLib {
     public
   {
     require(msg.sender == self.client);
-    require((self.currentState == state.Writing)
-            || (self.currentState == state.Reading));
+    require((self.currentState == state.Reading)
+            || (self.currentState == state.Writing));
     require((theAddress & 7) == 0);
     require(self.addressWasSubmitted[theAddress]);
     require(!self.addressWasWritten[theAddress]);

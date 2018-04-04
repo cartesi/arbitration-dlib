@@ -8,8 +8,7 @@ contract mortal {
   }
 
   function kill() public {
-    if (msg.sender == owner) {
-      selfdestruct(owner);
-    }
+    require(msg.sender == owner);
+    selfdestruct(owner);
   }
 }
