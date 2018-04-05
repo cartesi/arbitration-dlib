@@ -153,13 +153,16 @@ library PartitionLib {
         && (now > self.timeOfLastMove + self.roundDuration)) {
       self.currentState = state.ChallengerWon;
       emit ChallengeEnded(uint8(self.currentState));
+      return;
     }
     if ((msg.sender == self.claimer)
         && (self.currentState == state.WaitingQuery)
         && (now > self.timeOfLastMove + self.roundDuration)) {
       self.currentState = state.ClaimerWon;
       emit ChallengeEnded(uint8(self.currentState));
+      return;
     }
+    require(false);
   }
 
   /// @notice Present a precise time of divergence (can only be called by
