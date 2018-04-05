@@ -10,8 +10,6 @@ var PartitionInterface = artifacts.require("./PartitionInterface.sol");
 
 contract('PartitionInterface', function() {
   beforeEach(function() {
-    //this.timeout(15000)
-
     // promisify jsonRPC direct call
     sendRPC = function(param){
       return new Promise(function(resolve, reject){
@@ -46,32 +44,12 @@ contract('PartitionInterface', function() {
     }
 
     // create contract object
-    partitionInterface = await PartitionInterface
-      .new();
-
-    // create contract object
-    partitionLibContract = new web3.eth.Contract(partitionLibAbi);
-    // create contract object
-    partitionTestContract = new web3.eth.Contract(partitionTestAbi);
+    partitionInterface = await PartitionInterface.new();
   });
 
   it('Find divergence', function*() {
-    this.timeout(15000)
-
-    // deploy library and update object
-    partitionLibContract = yield partitionLibContract.deploy({
-      data: partitionLibBytecode,
-      arguments: []
-    }).send({ from: aliceAddr, gas: 2000000 })
-      .on('receipt');
-
-    partitionLibAddress = partitionLibContract.options.address;
-    var re = new RegExp('__src/partition.sol:partitionLib________', 'g');
-    partitionTestBytecode = partitionTestBytecode
-      .replace(re, partitionLibAddress.substr(2));
-
     // deploy contract and update object
-    partitionInterface = yield partitionInterface.deploy({
+    partitionInterface = await partitionInterface.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
@@ -93,21 +71,21 @@ contract('PartitionInterface', function() {
     while (true) {
       var i;
       // check if the state is WaitingHashes
-      currentState = yield partitionInterface.methods
+      currentState = await partitionInterface.methods
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('1');
 
       // get the query array and prepare response
       // (loop since solidity cannot return dynamic array from function)
       for (i = 0; i < querySize; i++) {
-        queryArray[i] = yield partitionInterface.methods
+        queryArray[i] = await partitionInterface.methods
           .queryArray(i).call({ from: bobAddr });
         replyArray[i] = bobHistory[queryArray[i]];
       }
       //console.log(queryArray);
 
       // sending hashes from alice should fail
-      response = yield partitionInterface.methods
+      response = await partitionInterface.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: aliceAddr, gas: 1500000 })
         .catch(function(error) {
@@ -115,7 +93,7 @@ contract('PartitionInterface', function() {
         });
 
       // alice claiming victory should fail
-      response = yield partitionInterface.methods
+      response = await partitionInterface.methods
         .claimVictoryByTime()
         .send({ from: aliceAddr, gas: 1500000 })
         .catch(function(error) {
@@ -123,7 +101,7 @@ contract('PartitionInterface', function() {
         });
 
       // send hashes
-      response = yield partitionInterface.methods
+      response = await partitionInterface.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: bobAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
@@ -143,12 +121,12 @@ contract('PartitionInterface', function() {
       }
 
       // check if the state is WaitingQuery
-      currentState = yield partitionInterface.methods
+      currentState = await partitionInterface.methods
         .currentState().call({ from: bobAddr });
       expect(currentState).to.equal('0');
 
       // bob claiming victory should fail
-      response = yield partitionInterface.methods
+      response = await partitionInterface.methods
         .claimVictoryByTime()
         .send({ from: bobAddr, gas: 1500000 })
         .catch(function(error) {
@@ -161,7 +139,7 @@ contract('PartitionInterface', function() {
       // check if the interval is unitary
       if (+rightPoint == +leftPoint + 1) {
         // if the interval is unitary, present divergence
-        response = yield partitionInterface.methods
+        response = await partitionInterface.methods
           .presentDivergence(leftPoint)
           .send({ from: aliceAddr, gas: 1500000 })
           .on('receipt', function(receipt) {
@@ -170,13 +148,13 @@ contract('PartitionInterface', function() {
         returnValues = response.events.DivergenceFound.returnValues;
         expect(+returnValues.timeOfDivergence).to.equal(lastAggreement);
         // check if the state is DivergenceFound
-        currentState = yield partitionInterface.methods
+        currentState = await partitionInterface.methods
           .currentState().call({ from: bobAddr });
         expect(currentState).to.equal('4');
         break;
       } else {
         // send query with last queried time of aggreement
-        response = yield partitionInterface.methods
+        response = await partitionInterface.methods
           .makeQuery(lastConsensualQuery, leftPoint, rightPoint)
           .send({ from: aliceAddr, gas: 1500000 })
           .on('receipt', function(receipt) {
@@ -186,7 +164,7 @@ contract('PartitionInterface', function() {
     }
 
     // kill contract
-    response = yield partitionInterface.methods.kill()
+    response = await partitionInterface.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
   });
 
@@ -194,7 +172,7 @@ contract('PartitionInterface', function() {
     this.timeout(15000)
 
     // deploy library and update object
-    partitionLibContract = yield partitionLibContract.deploy({
+    partitionLibContract = await partitionLibContract.deploy({
       data: partitionLibBytecode,
       arguments: []
     }).send({ from: aliceAddr, gas: 2000000 })
@@ -206,7 +184,7 @@ contract('PartitionInterface', function() {
       .replace(re, partitionLibAddress.substr(2));
 
     // deploy contract and update object
-    partitionInterface = yield partitionInterface.deploy({
+    partitionInterface = await partitionInterface.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
@@ -218,16 +196,16 @@ contract('PartitionInterface', function() {
     partitionInterface.setProvider(web3.currentProvider)
 
     // check if the state is WaitingHashes
-    currentState = yield partitionInterface.methods
+    currentState = await partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('1');
 
     // mimic a waiting period of 3500 seconds
-    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+    response = await sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
                               params: [3500], id: 0});
 
     // alice claiming victory should fail
-    response = yield partitionInterface.methods
+    response = await partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: aliceAddr, gas: 1500000 })
       .catch(function(error) {
@@ -235,23 +213,23 @@ contract('PartitionInterface', function() {
       });
 
     // mimic a waiting period of 200 seconds
-    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+    response = await sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
                               params: [200], id: 0});
 
     // alice claiming victory should now work
-    response = yield partitionInterface.methods
+    response = await partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: aliceAddr, gas: 1500000 });
     returnValues = response.events.ChallengeEnded.returnValues;
     expect(+returnValues.theState).to.equal(2);
 
     // check if the state is ChallengerWon
-    currentState = yield partitionInterface.methods
+    currentState = await partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('2');
 
     // kill contract
-    response = yield partitionInterface.methods.kill()
+    response = await partitionInterface.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
 
   });
@@ -260,7 +238,7 @@ contract('PartitionInterface', function() {
     this.timeout(15000)
 
     // deploy library and update object
-    partitionLibContract = yield partitionLibContract.deploy({
+    partitionLibContract = await partitionLibContract.deploy({
       data: partitionLibBytecode,
       arguments: []
     }).send({ from: aliceAddr, gas: 2000000 })
@@ -272,7 +250,7 @@ contract('PartitionInterface', function() {
       .replace(re, partitionLibAddress.substr(2));
 
     // deploy contract and update object
-    partitionInterface = yield partitionInterface.deploy({
+    partitionInterface = await partitionInterface.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
                   finalTime, querySize, roundDuration]
@@ -284,7 +262,7 @@ contract('PartitionInterface', function() {
     partitionInterface.setProvider(web3.currentProvider)
 
     // check if the state is WaitingHashes
-    currentState = yield partitionInterface.methods
+    currentState = await partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('1');
 
@@ -297,13 +275,13 @@ contract('PartitionInterface', function() {
     // get the query array and prepare response
     // (loop since solidity cannot return dynamic array from function)
     for (i = 0; i < querySize; i++) {
-        queryArray[i] = yield partitionInterface.methods
+        queryArray[i] = await partitionInterface.methods
             .queryArray(i).call({ from: bobAddr });
         replyArray[i] = bobHistory[queryArray[i]];
     }
 
     // send hashes
-    response = yield partitionInterface.methods
+    response = await partitionInterface.methods
         .replyQuery(queryArray, replyArray)
         .send({ from: bobAddr, gas: 1500000 })
         .on('receipt', function(receipt) {
@@ -312,11 +290,11 @@ contract('PartitionInterface', function() {
     returnValues = response.events.HashesPosted.returnValues;
 
     // mimic a waiting period of 3500 seconds
-    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+    response = await sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
                               params: [3500], id: 0});
 
     // bob claiming victory should fail
-    response = yield partitionInterface.methods
+    response = await partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: bobAddr, gas: 1500000 })
       .catch(function(error) {
@@ -324,11 +302,11 @@ contract('PartitionInterface', function() {
       });
 
     // mimic a waiting period of 200 seconds
-    response = yield sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
+    response = await sendRPC({jsonrpc: "2.0", method: "evm_increaseTime",
                               params: [200], id: 0});
 
     // bob claiming victory should now work
-    response = yield partitionInterface.methods
+    response = await partitionInterface.methods
       .claimVictoryByTime()
       .send({ from: bobAddr, gas: 1500000 });
 
@@ -336,12 +314,12 @@ contract('PartitionInterface', function() {
     expect(+returnValues.theState).to.equal(3);
 
     // check if the state is ClaimerWon
-    currentState = yield partitionInterface.methods
+    currentState = await partitionInterface.methods
       .currentState().call({ from: bobAddr });
     expect(currentState).to.equal('3');
 
     // kill contract
-    response = yield partitionInterface.methods.kill()
+    response = await partitionInterface.methods.kill()
       .send({ from: aliceAddr, gas: 1500000 });
   });
 });
