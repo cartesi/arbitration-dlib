@@ -43,12 +43,15 @@ contract('PartitionInterface', function() {
       { bobFinalHash = web3.utils.sha3('mistake'); }
     }
 
-    // create contract object
-    partitionInterface = await PartitionInterface.new();
+    // deploy contract and update object
+    let partitionInterface = await PartitionInterface
+        .new(accounts[0], accounts[1], initialHash,
+             { from: accounts[2], gas: 2000000 });
   });
 
   it('Find divergence', function*() {
-    // deploy contract and update object
+
+
     partitionInterface = await partitionInterface.deploy({
       data: bytecode,
       arguments: [aliceAddr, bobAddr, initialHash, bobFinalHash,
