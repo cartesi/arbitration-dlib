@@ -4,7 +4,7 @@ const BigNumber = require('bignumber.js');
 var expect = require('chai').expect;
 var getEvent = require('../utils/tools.js').getEvent;
 var unwrap = require('../utils/tools.js').unwrap;
-var shouldThrow = require('../utils/tools.js').shouldThrow;
+var getError = require('../utils/tools.js').getError;
 
 var MMInterface = artifacts.require("./MMInterface.sol");
 
@@ -30,7 +30,9 @@ contract('MMInterface', function(accounts) {
              { from: accounts[2], gas: 2000000 });
 
     // only owner should be able to kill contract
-    shouldThrow(mmInterface.kill({ from: accounts[0], gas: 2000000 }));
+    expect(await getError(
+      mmInterface.kill({ from: accounts[0], gas: 2000000 }))
+          ).to.have.string('VM Exception');
 
     // contract should start waiting for values to be inserted
     currentState = await mmInterface.currentState.call();
@@ -75,22 +77,25 @@ contract('MMInterface', function(accounts) {
       // alter proof and test for error
       proof[2] =
         '0xfedc0d0dbbd855c8ead6735448f9b0960e4a5a7cf43b4ef90afe607de7618cae';
-      shouldThrow(mmInterface
-        .proveValue(key, other_values[key], proof,
-                    { from: accounts[0], gas: 2000000 }));
+      expect(await getError(
+        mmInterface.proveValue(key, other_values[key], proof,
+                               { from: accounts[0], gas: 2000000 }))
+            ).to.have.string('VM Exception');
     }
 
     // cannot submit un-aligned address
     proof = myMM.generateProof(0);
-    shouldThrow(mmInterface
-      .proveValue(4, '0x0000000000000000', proof,
-                  { from: accounts[0], gas: 2000000 }))
+    expect(await getError(
+      mmInterface.proveValue(4, '0x0000000000000000', proof,
+                             { from: accounts[0], gas: 2000000 }))
+          ).to.have.string('VM Exception');
 
     // other users cannot submit
     proof = myMM.generateProof(888);
-    shouldThrow(mmInterface
-      .proveValue(888, '0x0000000000000000', proof,
-                  { from: accounts[4], gas: 2000000 }))
+    expect(await getError(
+      mmInterface.proveValue(888, '0x0000000000000000', proof,
+                              { from: accounts[4], gas: 2000000 }))
+          ).to.have.string('VM Exception');
 
     // finishing submission phase
     response = await mmInterface
@@ -160,9 +165,9 @@ contract('MMInterface', function(accounts) {
       // check that false merkel proofs fail
       proof[2] =
         '0xfedc0d0dbbd855c8ead6735448f9b0960e4a5a7cf43b4ef90afe607de7618cae';
-      shouldThrow(
-        mmInterface.updateHash(proof, { from: accounts[0], gas: 2000000 })
-      );
+      expect(await getError(
+        mmInterface.updateHash(proof, { from: accounts[0], gas: 2000000 }))
+            ).to.have.string('VM Exception');
     }
 
     // check final hash
@@ -185,6 +190,5 @@ contract('MMInterface', function(accounts) {
     // check if contract was killed
     [error, currentState] = await unwrap(mmInterface.currentState());
     expect(error.message).to.have.string('not a contract address');;
-
   })
 })
