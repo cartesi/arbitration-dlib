@@ -17,13 +17,15 @@ function unwrap(promise) {
    .catch(err => [err]);
 }
 
-async function shouldThrow(promise) {
+async function getError(promise) {
   [error, response] = await unwrap(promise);
-  expect(error.message).to.have.string('VM Exception');
+  if (error === null) return "";
+  if (!('message' in error)) return "";
+  return error.message;
 }
 
 module.exports = {
   getEvent: getEvent,
   unwrap: unwrap,
-  shouldThrow: shouldThrow
+  getError: getError
 }

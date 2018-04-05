@@ -15,6 +15,11 @@ contract SimpleMemoryInterface is mortal {
     return simpleMemory.value[key];
   }
 
+  function currentState() public view returns (SimpleMemoryLib.state)
+  {
+    return simpleMemory.currentState;
+  }
+
   // Library functions
 
   function SimpleMemoryInterface() public
