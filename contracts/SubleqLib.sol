@@ -37,6 +37,7 @@ library SubleqLib {
                 uint64 theOutputMaxSize) public
   {
     require(theRamSize < 0x0000ffffffffffff);
+    self.owner = msg.sender;
     self.ramSize = theRamSize;
     self.inputMaxSize = theInputMaxSize;
     self.outputMaxSize = theOutputMaxSize;

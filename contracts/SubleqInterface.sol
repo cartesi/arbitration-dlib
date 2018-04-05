@@ -21,8 +21,7 @@ contract SubleqInterface is mortal {
                 theOutputMaxSize);
   }
 
-
-  function step() public returns (uint8)
+  function step() public returns (address)
   {
     return subleq.step();
   }

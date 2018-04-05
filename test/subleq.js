@@ -4,8 +4,9 @@ const BigNumber = require('bignumber.js');
 var expect = require('chai').expect;
 var getEvent = require('../utils/tools.js').getEvent;
 var unwrap = require('../utils/tools.js').unwrap;
-var shouldThrow = require('../utils/tools.js').shouldThrow;
+var getError = require('../utils/tools.js').getError;
 
+var SimpleMemoryInterface = artifacts.require("./SimpleMemoryInterface.sol");
 var SubleqInterface = artifacts.require("./SubleqInterface.sol");
 
 var echo_binary = [-1, 21, 3,
@@ -38,171 +39,131 @@ halted_state =    ("0x4000000000000018");
 initial_ic =      ("0x8000000000000000");
 initial_oc =      ("0xc000000000000000");
 
-var testrpcParameters = {
-  "accounts":
-  [   { "balance": 100000000000000000000,
-        "secretKey": aliceKey },
-      { "balance": 100000000000000000000,
-        "secretKey": machineKey }
-  ]
-}
-
-var SubleqInterface = artifacts.require("./SubleqInterface.sol");
-
-
-// compile testMemory contract
-const contractSource = fs.readFileSync('src/testMemory.sol').toString();
-const compiledContract = solc.compile(contractSource, 1);
-expect(compiledContract.errors, compiledContract.errors).to.be.undefined;
-const bytecode = compiledContract.contracts[':testMemory'].bytecode;
-const abi = JSON.parse(compiledContract.contracts[':testMemory'].interface);
-// create contract object
-testMemoryContract = new web3.eth.Contract(abi);
-
-// compile subleq contract
-const contractSource_2 = fs.readFileSync('src/subleq.sol').toString();
-const compiledContract_2 = solc.compile(contractSource_2, 1);
-expect(compiledContract_2.errors, compiledContract_2.errors).to.be.undefined;
-const bytecode_2 = compiledContract_2.contracts[':subleq'].bytecode;
-const abi_2 = JSON.parse(compiledContract_2.contracts[':subleq'].interface);
-// create contract object
-subleqContract = new web3.eth.Contract(abi_2);
-
-function hashWord(word) {
-    return web3.utils.soliditySha3({type: 'uint64', value: word});
-}
-
-describe('Testing memory manager contract', function() {
-  it('Checking functionalities', function*() {
-    this.timeout(150000)
-
-    // deploy testMemory contract and update object
-    testMemoryContract = yield testMemoryContract.deploy({
-      data: bytecode,
-      arguments: []
-    }).send({ from: aliceAddr, gas: 1500000 })
-      .on('receipt');
+contract('SubleqInterface', function(accounts) {
+  it('Checking functionalities', async function() {
+    // launch simpleMemory contract from accounts[2], who will be the owner
+    let simpleMemoryInterface = await SimpleMemoryInterface
+        .new({ from: accounts[2], gas: 2000000 });
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    testMemoryContract.setProvider(web3.currentProvider)
+    // simpleMemoryInterface.setProvider(web3.currentProvider)
 
     // check if waiting to write values
-    currentState = yield testMemoryContract.methods
-      .currentState().call({ from: aliceAddr });
-    expect(currentState).to.equal('0');
+    currentState = await simpleMemoryInterface
+      .currentState.call({ from: accounts[0] });
+    expect(currentState.toNumber()).to.equal(0);
 
     // write program to memory contract
-    console.log('write program to memory contract');
+    //console.log('write program to memory contract');
     var softwareLength = echo_binary.length;
     for (let i = 0; i < softwareLength; i++) {
       // write on memory
-      console.log(two_complement_32(echo_binary[i]));
-      response = yield testMemoryContract.methods
-        .write(8 * i, two_complement_32(echo_binary[i]))
-        .send({ from: aliceAddr, gas: 1500000 })
-        .on('receipt');
+      //console.log(two_complement_32(echo_binary[i]));
+      response = await simpleMemoryInterface
+        .write(8 * i, two_complement_32(echo_binary[i]),
+               { from: accounts[0], gas: 1500000 })
     }
 
     // write ic position
-    response = yield testMemoryContract.methods
-      .write(ic_position, initial_ic)
-      .send({ from: aliceAddr, gas: 1500000 })
-      .on('receipt');
+    response = await simpleMemoryInterface
+      .write(ic_position, initial_ic,
+             { from: accounts[0], gas: 1500000 })
 
     // write oc position
-    response = yield testMemoryContract.methods
-      .write(oc_position, initial_oc)
-      .send({ from: aliceAddr, gas: 1500000 })
-      .on('receipt');
+    response = await simpleMemoryInterface
+      .write(oc_position, initial_oc,
+             { from: accounts[0], gas: 1500000 })
 
     // write input in memory contract
-    console.log('write input in memory contract');
+    //console.log('write input in memory contract');
     var inputLength = input_string.length;
     for (let i = 0; i < inputLength; i++) {
       // write on memory
-      console.log(two_complement_32(input_string[i]));
-      response = yield testMemoryContract.methods
-        .write(BigNumber(initial_ic).plus(8 * i),
-               two_complement_32(input_string[i]))
-        .send({ from: aliceAddr, gas: 1500000 })
-        .on('receipt');
+      response = await simpleMemoryInterface
+        .write(BigNumber(initial_ic).plus(8 * i).toString(),
+               two_complement_32(input_string[i]),
+               { from: accounts[0], gas: 1500000 })
     }
 
     // finishing writing
-    response = yield testMemoryContract.methods
-      .finishWritePhase()
-      .send({ from: aliceAddr, gas: 1500000 })
-      .on('receipt');
+    response = await simpleMemoryInterface
+      .finishWritePhase({ from: accounts[0], gas: 1500000 })
 
-    // deploy subleq contract and update object
-    subleqContract = yield subleqContract.deploy({
-      data: bytecode_2,
-      arguments: [testMemoryContract.options.address,
-                  1000000, 1000000, 1000000]
-    }).send({ from: aliceAddr, gas: 1500000 })
-      .on('receipt');
+    // launch subleq from accounts[2], who will be the owner
+    let subleqInterface = await SubleqInterface
+        .new(simpleMemoryInterface.address, 1000000, 1000000, 1000000,
+             { from: accounts[2], gas: 2000000 });
 
     // this line should leave after they fix this bug
     // https://github.com/ethereum/web3.js/issues/1266
-    subleqContract.setProvider(web3.currentProvider)
+    //subleqInterface.setProvider(web3.currentProvider)
 
     // check if waiting to read values
-    currentState = yield testMemoryContract.methods
-      .currentState().call({ from: aliceAddr });
-    expect(currentState).to.equal('1');
+    currentState = await simpleMemoryInterface.currentState.call();
+    expect(currentState.toNumber()).to.equal(1);
 
-    let running = '0';
+    let running = 0;
 
-    while (running === '0') {
+    while (running === 0) {
       // print machine state for debugging
-      // response = yield testMemoryContract.methods
+      // response = await simpleMemoryInterface
       //   .read(pc_position)
-      //   .call({ from: aliceAddr, gas: 1500000 });
+      //   .call({ from: accounts[0], gas: 1500000 });
       // console.log("pc = " + response);
       // for (let j = 0; j < 10; j++) {
-      //   response = yield testMemoryContract.methods
+      //   response = await simpleMemoryInterface
       //     .read(8 * j)
-      //     .call({ from: aliceAddr, gas: 1500000 });
+      //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("hd at: " + j + " = " + response);
       // }
       // for (let j = 0; j < 10; j++) {
-      //   response = yield testMemoryContract.methods
+      //   response = await simpleMemoryInterface
       //     .read(BigNumber(initial_ic).add(8 * j))
-      //     .call({ from: aliceAddr, gas: 1500000 });
+      //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("input at: " + j + " = " + response);
       // }
       // for (let j = 0; j < 10; j++) {
-      //   response = yield testMemoryContract.methods
+      //   response = await simpleMemoryInterface
       //     .read(BigNumber(initial_oc).add(8 * j))
-      //     .call({ from: aliceAddr, gas: 1500000 });
+      //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("output at: " + j + " = " + response);
       // }
-      response = yield subleqContract.methods
-        .step()
-        .send({ from: aliceAddr, gas: 1500000 })
-        .on('receipt', function(receipt) {
-          expect(receipt.events.StepGiven).not.to.be.undefined;
-        });
-      running = response.events.StepGiven.returnValues.exitCode;
-      console.log(running);
+      //console.log(await subleqInterface.owner());
+      //console.log(accounts[2]);
+      //console.log("RRR");
+      response = await subleqInterface.step({ from: accounts[2], gas: 1500000 })
+      //console.log("EEE");
+      //expect(getEvent(response, 'Bla')).not.to.be.undefined;
+      //console.log(getEvent(response, 'Bla'));
+      expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
+      //console.log(getEvent(response, 'StepGiven'));
+      running = getEvent(response, 'StepGiven').exitCode.toNumber();
+      //console.log(running);
     }
 
     let j = 0;
     // verifying output
     while (true) {
-      response = yield testMemoryContract.methods
-        .read(BigNumber(initial_oc).plus(8 * j))
-        .call({ from: aliceAddr, gas: 1500000 });
-      console.log(response);
+      response = await simpleMemoryInterface
+        .read.call(BigNumber(initial_oc).plus(8 * j).toString(),
+                   { from: accounts[0], gas: 1500000 });
+      //console.log(response);
       expect(response).to.equal(two_complement_32(input_string[j]));
       if (response == '0xffffffffffffffff') break;
       j++;
     }
+
     // kill contracts
-    response = yield testMemoryContract.methods.kill()
-      .send({ from: aliceAddr, gas: 1500000 });
-    response = yield subleqContract.methods.kill()
-      .send({ from: aliceAddr, gas: 1500000 });
+    response = await simpleMemoryInterface
+      .kill({ from: accounts[2], gas: 1500000 });
+    response = await subleqInterface
+      .kill({ from: accounts[2], gas: 1500000 });
+
+    // check if contracts were killed
+    [error, currentState] = await unwrap(simpleMemoryInterface.currentState());
+    expect(error.message).to.have.string('not a contract address');;
+    [error, currentState] = await unwrap(subleqInterface.step());
+    expect(error.message).to.have.string('not a contract address');;
   });
 });
