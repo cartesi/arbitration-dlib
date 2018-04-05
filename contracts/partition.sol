@@ -1,12 +1,12 @@
 /// @title Partition contract
 pragma solidity ^0.4.18;
 
-library partitionLib {
+library PartitionLib {
 
   enum state { WaitingQuery, WaitingHashes,
                ChallengerWon, ClaimerWon, DivergenceFound }
 
-  struct partitionCtx {
+  struct PartitionCtx {
     address challenger;
     address claimer;
     uint finalTime; // hashes provided between 0 and finalTime (inclusive)
@@ -31,7 +31,7 @@ library partitionLib {
   event DivergenceFound(uint timeOfDivergence, bytes32 hashAtDivergenceTime,
                         bytes32 hashRigthAfterDivergenceTime);
 
-  function init(partitionCtx storage self, address theChallenger,
+  function init(PartitionCtx storage self, address theChallenger,
                 address theClaimer, bytes32 theInitialHash,
                 bytes32 theClaimerFinalHash, uint theFinalTime,
                 uint theQuerySize, uint theRoundDuration) public
@@ -66,7 +66,7 @@ library partitionLib {
 
   // split an interval using (querySize) points (placed in queryArray)
   // leftPoint rightPoint are always the first and last points in queryArray.
-  function slice(partitionCtx storage self, uint leftPoint,
+  function slice(PartitionCtx storage self, uint leftPoint,
                  uint rightPoint) internal
   {
     require(rightPoint > leftPoint);
@@ -99,7 +99,7 @@ library partitionLib {
   /// been queried.
   /// @param postedHashes An array (of size querySize) with the hashes
   /// corresponding to the queried times
-  function replyQuery(partitionCtx storage self, uint[] postedTimes,
+  function replyQuery(PartitionCtx storage self, uint[] postedTimes,
                       bytes32[] postedHashes) public
   {
     require(msg.sender == self.claimer);
@@ -127,7 +127,7 @@ library partitionLib {
   /// split. Should be an aggreement point.
   /// @param leftPoint confirmation of the rightPoint of the interval to be
   /// split. Should be a disagreement point.
-  function makeQuery(partitionCtx storage self, uint queryPiece,
+  function makeQuery(PartitionCtx storage self, uint queryPiece,
                      uint leftPoint, uint rightPoint) public
   {
     require(msg.sender == self.challenger);
@@ -146,7 +146,7 @@ library partitionLib {
   }
 
   /// @notice Claim victory for opponent timeout.
-  function claimVictoryByTime(partitionCtx storage self) public
+  function claimVictoryByTime(PartitionCtx storage self) public
   {
     if ((msg.sender == self.challenger)
         && (self.currentState == state.WaitingHashes)
@@ -167,7 +167,7 @@ library partitionLib {
   /// @param theDivergenceTime The time when the divergence happended. It
   /// should be a point of aggreement, while theDivergenceTime + 1 should be a
   /// point of disagreement (both queried).
-  function presentDivergence(partitionCtx storage self,
+  function presentDivergence(PartitionCtx storage self,
                              uint theDivergenceTime) public
   {
     require(msg.sender == self.challenger);
