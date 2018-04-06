@@ -1,5 +1,5 @@
 const mocha = require('mocha')
-const mm = require('../utils/mm.js')
+const mm = require('../../utils/mm.js')
 //var Uint64BE = require("int64-buffer").Uint64BE;
 const BigNumber = require('bignumber.js');
 
