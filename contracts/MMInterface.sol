@@ -2,12 +2,12 @@
 pragma solidity ^0.4.18;
 
 import "./mortal.sol";
-import "./mm.sol";
+import "./MMLib.sol";
 
-contract mmTest is mortal {
+contract MMInterface is mortal {
 
-  using mmLib for mmLib.mmCtx;
-  mmLib.mmCtx mm;
+  using MMLib for MMLib.MMCtx;
+  MMLib.MMCtx mm;
 
   event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
@@ -20,7 +20,25 @@ contract mmTest is mortal {
   event Finished();
 
 
-  function currentState() public view returns (mmLib.state) {
+  // Getters methods
+
+  function provider() public view returns (address) {
+    return mm.provider;
+  }
+
+  function client() public view returns (address) {
+    return mm.client;
+  }
+
+  function initialHash() public view returns (bytes32) {
+    return mm.initialHash;
+  }
+
+  function newHash() public view returns (bytes32) {
+    return mm.newHash;
+  }
+
+  function currentState() public view returns (MMLib.state) {
     return mm.currentState;
   }
 
@@ -28,8 +46,16 @@ contract mmTest is mortal {
     return mm.addressWasSubmitted[key];
   }
 
+  function valueSubmitted(uint64 key) public view returns (bytes8) {
+    return mm.valueSubmitted[key];
+  }
+
   function writtenAddress(uint64 position) public view returns (uint64) {
     return mm.writtenAddress[position];
+  }
+
+  function addressWasWritten(uint64 addr) public view returns (bool) {
+    return mm.addressWasWritten[addr];
   }
 
   function valueWritten(uint64 addr) public view returns (bytes8) {
@@ -40,13 +66,13 @@ contract mmTest is mortal {
     return mm.writtenAddress.length;
   }
 
-  function newHash() public view returns (bytes32) {
-    return mm.newHash;
-  }
+  // Library functions
 
-  function mmTest(address theProvider, address theClient,
-                  bytes32 theInitialHash) public
+  function MMInterface(address theProvider, address theClient,
+                       bytes32 theInitialHash) public
   {
+    require(owner != theProvider);
+    require(owner != theClient);
     mm.init(theProvider, theClient, theInitialHash);
   }
 
@@ -87,6 +113,5 @@ contract mmTest is mortal {
   {
     mm.finishUpdateHashPhase();
   }
-
 }
 
