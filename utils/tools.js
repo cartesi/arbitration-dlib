@@ -24,29 +24,20 @@ const getError = async function(promise) {
   return error.message;
 }
 
-const timeTravel = function (time) {
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.sendAsync({
-      jsonrpc: '2.0',
-      method: 'evm_increaseTime',
-      params: [time],
-      id: new Date().getSeconds()
-    }, (err, resp) => {
-      if (!err) {
-        web3.currentProvider.send({
-          jsonrpc: '2.0',
-          method: 'evm_mine',
-          params: [],
-          id: new Date().getSeconds()
-        })
-      }
+// promisify jsonRPC direct call
+sendRPC = function(web3, param){
+  let web3Instance = web3
+  return new Promise(function(resolve, reject) {
+    web3Instance.givenProvider.send(param, function(err, data){
+      if(err !== null) return reject(err);
+      resolve(data);
     });
-  })
+  });
 }
 
 module.exports = {
   getEvent: getEvent,
   unwrap: unwrap,
   getError: getError,
-  timeTravel:timeTravel
+  sendRPC: sendRPC
 }
