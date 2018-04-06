@@ -1,13 +1,8 @@
-const mocha = require('mocha')
+//const mocha = require('mocha')
 const mm = require('../../utils/mm.js')
-//var Uint64BE = require("int64-buffer").Uint64BE;
-const BigNumber = require('bignumber.js');
+var BigNumber = require('bignumber.js');
 
-
-const chai = require("chai");
-chai.config.includeStack = true;
-const expect = chai.expect;
-const assert = chai.assert;
+const expect = require("chai").expect;
 
 describe('Testing memory manager', function() {
   it('Basic tests', function() {
