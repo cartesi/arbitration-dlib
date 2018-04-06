@@ -1,10 +1,10 @@
-const mm = require('../utils/mm.js');
-//const BigNumber = require('bignumber.js');
+const BigNumber = require('bignumber.js');
 
-var expect = require('chai').expect;
-var getEvent = require('../utils/tools.js').getEvent;
-var unwrap = require('../utils/tools.js').unwrap;
-var getError = require('../utils/tools.js').getError;
+const mm = require('../utils/mm.js');
+const expect = require('chai').expect;
+const getEvent = require('../utils/tools.js').getEvent;
+const unwrap = require('../utils/tools.js').unwrap;
+const getError = require('../utils/tools.js').getError;
 
 var SimpleMemoryInterface = artifacts.require("./SimpleMemoryInterface.sol");
 var SubleqInterface = artifacts.require("./SubleqInterface.sol");
@@ -121,13 +121,13 @@ contract('SubleqInterface', function(accounts) {
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("output at: " + j + " = " + response);
       // }
-       console.log(await subleqInterface.owner());
-       console.log(accounts[2]);
+      // console.log(await subleqInterface.owner());
+      // console.log(accounts[2]);
       response = await subleqInterface.step({ from: accounts[2], gas: 1500000 })
       expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
-       console.log(getEvent(response, 'StepGiven'));
+      // console.log(getEvent(response, 'StepGiven'));
       running = getEvent(response, 'StepGiven').exitCode.toNumber();
-       console.log(running);
+      // console.log(running);
     }
 
     let j = 0;

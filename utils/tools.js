@@ -35,9 +35,18 @@ sendRPC = function(web3, param){
   });
 }
 
+twoComplement32 = function(decimal) {
+  if (decimal >= 0) {
+    return "0x" + ("000000000000000" + decimal.toString(16)).substr(-16);
+  }
+  low_bits = (decimal < 0 ? (0xFFFFFFFF + decimal + 1) : decimal).toString(16);
+  return "0xffffffff" + low_bits;
+}
+
 module.exports = {
   getEvent: getEvent,
   unwrap: unwrap,
   getError: getError,
-  sendRPC: sendRPC
+  sendRPC: sendRPC,
+  twoComplement32: twoComplement32
 }

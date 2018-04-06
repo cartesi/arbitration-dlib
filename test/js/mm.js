@@ -1,4 +1,3 @@
-//const mocha = require('mocha')
 const mm = require('../../utils/mm.js')
 var BigNumber = require('bignumber.js');
 
