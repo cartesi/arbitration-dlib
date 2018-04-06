@@ -1,13 +1,14 @@
-const mocha = require('mocha')
-const mm = require('../utils/mm.js')
-const subleq = require('../utils/subleq.js')
+//const mocha = require('mocha')
+const mm = require('../../utils/mm.js')
+const subleq = require('../../utils/subleq.js')
 //var Uint64BE = require("int64-buffer").Uint64BE;
-const BigNumber = require('bignumber.js');
+var BigNumber = require('bignumber.js');
 
-const chai = require("chai");
-chai.config.includeStack = true;
-const expect = chai.expect;
-const assert = chai.assert;
+const expect = require("chai").expect;
+//chai.config.includeStack = true;
+//const expect = chai.expect;
+
+/*
 
 hd_position = BigNumber("0x0000000000000000");
 pc_position = BigNumber("0x4000000000000000");
@@ -39,7 +40,7 @@ function two_complement_32(decimal) {
   return "0xffffffff" + low_bits;
 };
 
-describe('Testing memory manager', function() {
+describe('Testing subleq', function() {
   it('Basic tests', function() {
     let myMM = new mm.MemoryManager();
     let mySubleq = new subleq.Subleq(myMM);
@@ -49,6 +50,7 @@ describe('Testing memory manager', function() {
     for (let i = 0; i < softwareLength; i++) {
       myMM.setValue(8 * i, two_complement_32(echo_binary[i]));
     }
+
     // write ic position
     myMM.setValue(ic_position, initial_ic);
     expect(myMM.getWord(ic_position)).to.equal(initial_ic);
@@ -70,7 +72,7 @@ describe('Testing memory manager', function() {
     let response;
     // verifying output
     while (true) {
-      response = myMM.getWord(BigNumber(initial_oc).plus(8 * j));
+      response = myMM.getWord(BigNumber(initial_oc).plus(8 * j).toString());
       expect(response).to.equal(two_complement_32(input_string[j]));
       if (response == '0xffffffffffffffff') break;
       j++;
@@ -78,5 +80,5 @@ describe('Testing memory manager', function() {
   });
 });
 
-
+*/
 

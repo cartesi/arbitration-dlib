@@ -1,5 +1,5 @@
 const mm = require('../utils/mm.js');
-const BigNumber = require('bignumber.js');
+//const BigNumber = require('bignumber.js');
 
 var expect = require('chai').expect;
 var getEvent = require('../utils/tools.js').getEvent;
@@ -44,10 +44,6 @@ contract('SubleqInterface', function(accounts) {
     // launch simpleMemory contract from accounts[2], who will be the owner
     let simpleMemoryInterface = await SimpleMemoryInterface
         .new({ from: accounts[2], gas: 2000000 });
-
-    // this line should leave after they fix this bug
-    // https://github.com/ethereum/web3.js/issues/1266
-    // simpleMemoryInterface.setProvider(web3.currentProvider)
 
     // check if waiting to write values
     currentState = await simpleMemoryInterface
@@ -95,10 +91,6 @@ contract('SubleqInterface', function(accounts) {
         .new(simpleMemoryInterface.address, 1000000, 1000000, 1000000,
              { from: accounts[2], gas: 2000000 });
 
-    // this line should leave after they fix this bug
-    // https://github.com/ethereum/web3.js/issues/1266
-    //subleqInterface.setProvider(web3.currentProvider)
-
     // check if waiting to read values
     currentState = await simpleMemoryInterface.currentState.call();
     expect(currentState.toNumber()).to.equal(1);
@@ -129,17 +121,13 @@ contract('SubleqInterface', function(accounts) {
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("output at: " + j + " = " + response);
       // }
-      //console.log(await subleqInterface.owner());
-      //console.log(accounts[2]);
-      //console.log("RRR");
+       console.log(await subleqInterface.owner());
+       console.log(accounts[2]);
       response = await subleqInterface.step({ from: accounts[2], gas: 1500000 })
-      //console.log("EEE");
-      //expect(getEvent(response, 'Bla')).not.to.be.undefined;
-      //console.log(getEvent(response, 'Bla'));
       expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
-      //console.log(getEvent(response, 'StepGiven'));
+       console.log(getEvent(response, 'StepGiven'));
       running = getEvent(response, 'StepGiven').exitCode.toNumber();
-      //console.log(running);
+       console.log(running);
     }
 
     let j = 0;
