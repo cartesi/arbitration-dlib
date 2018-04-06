@@ -49,9 +49,9 @@ contract('MMInterface', function(accounts) {
       response = await mmInterface
         .proveValue(key, values[key], proof,
                     { from: accounts[0], gas: 2000000 });
-      returnValues = getEvent(response, 'ValueSubmitted');
-      expect(returnValues.addressSubmitted.toString()).to.equal(key);
-      expect(returnValues.valueSubmitted.toString()).to.equal(values[key]);
+      event = getEvent(response, 'ValueSubmitted');
+      expect(event.addressSubmitted.toString()).to.equal(key);
+      expect(event.valueSubmitted.toString()).to.equal(values[key]);
       // check that key was marked as submitted
       wasSubmitted = await mmInterface
         .addressWasSubmitted
@@ -157,9 +157,9 @@ contract('MMInterface', function(accounts) {
       proof = myMM.generateProof(addressWritten);
       response = await mmInterface
         .updateHash(proof, { from: accounts[0], gas: 2000000 })
-      let returnedEvent = getEvent(response, 'HashUpdated');
-      expect(returnedEvent).not.to.be.undefined;
-      expect(returnedEvent['valueSubmitted']).to.eql(newValue);
+      event = getEvent(response, 'HashUpdated');
+      expect(event).not.to.be.undefined;
+      expect(event.valueSubmitted).to.eql(newValue);
       myMM.setValue(addressWritten, newValue);
 
       // check that false merkel proofs fail
