@@ -1,10 +1,10 @@
-const mm = require('../utils/mm.js');
 const BigNumber = require('bignumber.js');
+const expect = require('chai').expect;
 
-var expect = require('chai').expect;
-var getEvent = require('../utils/tools.js').getEvent;
-var unwrap = require('../utils/tools.js').unwrap;
-var getError = require('../utils/tools.js').getError;
+const mm = require('../utils/mm.js');
+const getEvent = require('../utils/tools.js').getEvent;
+const unwrap = require('../utils/tools.js').unwrap;
+const getError = require('../utils/tools.js').getError;
 
 var MMInterface = artifacts.require("./MMInterface.sol");
 
