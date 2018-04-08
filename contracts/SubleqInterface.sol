@@ -13,12 +13,9 @@ contract SubleqInterface is mortal {
 
   // Library functions
 
-  function SubleqInterface(address memoryManagerAddress,
-                           uint64 theRamSize, uint64 theInputMaxSize,
-                           uint64 theOutputMaxSize) public
+  function SubleqInterface(address memoryManagerAddress) public
   {
-    subleq.init(memoryManagerAddress, theRamSize, theInputMaxSize,
-                theOutputMaxSize);
+    subleq.init(memoryManagerAddress);
   }
 
   function step() public returns (address)

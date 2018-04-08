@@ -28,16 +28,18 @@ function two_complement_32(decimal) {
   return "0xffffffff" + low_bits;
 };
 
-hd_position =     ("0x0000000000000000");
-pc_position =     ("0x4000000000000000");
+pcPosition =     ("0x4000000000000000");
 // input counter
-ic_position =     ("0x4000000000000008");
+icPosition =     ("0x4000000000000008");
 // output counter
-oc_position =     ("0x4000000000000010");
+ocPosition =     ("0x4000000000000010");
 // address for halted state
-halted_state =    ("0x4000000000000018");
-initial_ic =      ("0x8000000000000000");
-initial_oc =      ("0xc000000000000000");
+rSizePosition =    ("0x4000000000000020");
+iSizePosition =    ("0x4000000000000028");
+oSizePosition =    ("0x4000000000000030");
+
+icInitial =      ("0x8000000000000000");
+ocInitial =      ("0xc000000000000000");
 
 contract('SubleqInterface', function(accounts) {
   it('Checking functionalities', async function() {
@@ -61,23 +63,28 @@ contract('SubleqInterface', function(accounts) {
                { from: accounts[0], gas: 1500000 })
     }
 
-    // write ic position
+    // write ic
+    response = await simpleMemoryInterface.write(icPosition, icInitial)
+    // write oc
+    response = await simpleMemoryInterface.write(ocPosition, ocInitial)
+    // write rSize
     response = await simpleMemoryInterface
-      .write(ic_position, initial_ic,
-             { from: accounts[0], gas: 1500000 })
-
-    // write oc position
+      .write(rSizePosition, "0x0000000000100000")
+    // write iSize
     response = await simpleMemoryInterface
-      .write(oc_position, initial_oc,
-             { from: accounts[0], gas: 1500000 })
+      .write(iSizePosition, "0x0000000000100000")
+    // write oSize
+    response = await simpleMemoryInterface
+      .write(oSizePosition, "0x0000000000100000")
 
     // write input in memory contract
     //console.log('write input in memory contract');
+
     var inputLength = input_string.length;
     for (let i = 0; i < inputLength; i++) {
       // write on memory
       response = await simpleMemoryInterface
-        .write(BigNumber(initial_ic).plus(8 * i).toString(),
+        .write(BigNumber(icInitial).plus(8 * i).toString(),
                two_complement_32(input_string[i]),
                { from: accounts[0], gas: 1500000 })
     }
@@ -88,7 +95,7 @@ contract('SubleqInterface', function(accounts) {
 
     // launch subleq from accounts[2], who will be the owner
     let subleqInterface = await SubleqInterface
-        .new(simpleMemoryInterface.address, 1000000, 1000000, 1000000,
+        .new(simpleMemoryInterface.address,
              { from: accounts[2], gas: 2000000 });
 
     // check if waiting to read values
@@ -100,7 +107,7 @@ contract('SubleqInterface', function(accounts) {
     while (running === 0) {
       // print machine state for debugging
       // response = await simpleMemoryInterface
-      //   .read(pc_position)
+      //   .read(pcPosition)
       //   .call({ from: accounts[0], gas: 1500000 });
       // console.log("pc = " + response);
       // for (let j = 0; j < 10; j++) {
@@ -111,30 +118,33 @@ contract('SubleqInterface', function(accounts) {
       // }
       // for (let j = 0; j < 10; j++) {
       //   response = await simpleMemoryInterface
-      //     .read(BigNumber(initial_ic).add(8 * j))
+      //     .read(BigNumber(icInitial).add(8 * j))
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("input at: " + j + " = " + response);
       // }
       // for (let j = 0; j < 10; j++) {
       //   response = await simpleMemoryInterface
-      //     .read(BigNumber(initial_oc).add(8 * j))
+      //     .read(BigNumber(ocInitial).add(8 * j))
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("output at: " + j + " = " + response);
       // }
       // console.log(await subleqInterface.owner());
       // console.log(accounts[2]);
+
       response = await subleqInterface.step({ from: accounts[2], gas: 1500000 })
       expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
       // console.log(getEvent(response, 'StepGiven'));
+
       running = getEvent(response, 'StepGiven').exitCode.toNumber();
-      // console.log(running);
+      //console.log(running);
     }
+    expect(running).to.equal(7);
 
     let j = 0;
     // verifying output
     while (true) {
       response = await simpleMemoryInterface
-        .read.call(BigNumber(initial_oc).plus(8 * j).toString(),
+        .read.call(BigNumber(ocInitial).plus(8 * j).toString(),
                    { from: accounts[0], gas: 1500000 });
       //console.log(response);
       expect(response).to.equal(two_complement_32(input_string[j]));
