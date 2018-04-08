@@ -19,11 +19,17 @@ library SubleqLib {
     uint64 pcPosition;
     uint64 icPosition;
     uint64 ocPosition;
-    uint64 haltedState;
-    uint64 pc;
-    uint64 ic;
-    uint64 oc;
-    uint64 hs;
+    uint64 hsPosition;
+    uint64 rSizePosition;
+    uint64 iSizePosition;
+    uint64 oSizePosition;
+    uint64 pc;    // program counter
+    uint64 ic;    // input counter
+    uint64 oc;    // output counter
+    uint64 hs;    // halt state flag
+    uint64 rSize; // max size of ram
+    uint64 iSize; // max size of input
+    uint64 oSize; // max size of output
     int64 memAddrA;
     int64 memAddrB;
     int64 memAddrC;
@@ -32,15 +38,9 @@ library SubleqLib {
     uint64 outputMaxSize;
   }
 
-  function init(SubleqCtx storage self, address memoryManagerAddress,
-                uint64 theRamSize, uint64 theInputMaxSize,
-                uint64 theOutputMaxSize) public
+  function init(SubleqCtx storage self, address memoryManagerAddress) public
   {
-    require(theRamSize < 0x0000ffffffffffff);
     self.owner = msg.sender;
-    self.ramSize = theRamSize;
-    self.inputMaxSize = theInputMaxSize;
-    self.outputMaxSize = theOutputMaxSize;
     self.memoryManager = mmContract(memoryManagerAddress);
   }
 
@@ -50,7 +50,8 @@ library SubleqLib {
   {
     // Architecture
     // +----------------+----------------+----------------+----------------+
-    // | ram            | pc ic oc       | input          | output         |
+    // | ram            | pc ic oc hs    | input          | output         |
+    // |                | rs is os       |                |                |
     // +----------------+----------------+----------------+----------------+
     // Exit codes:
     // 0  - Success
@@ -72,14 +73,25 @@ library SubleqLib {
     self.pcPosition = 0x4000000000000000;
     self.icPosition = 0x4000000000000008;
     self.ocPosition = 0x4000000000000010;
-    self.haltedState = 0x4000000000000018;
+    self.hsPosition = 0x4000000000000018;
+    self.rSizePosition = 0x4000000000000020;
+    self.iSizePosition = 0x4000000000000028;
+    self.oSizePosition = 0x4000000000000030;
     self.pc = uint64(self.memoryManager.read(self.pcPosition));
     self.ic = uint64(self.memoryManager.read(self.icPosition));
     self.oc = uint64(self.memoryManager.read(self.ocPosition));
-    self.hs = uint64(self.memoryManager.read(self.haltedState));
+    self.hs = uint64(self.memoryManager.read(self.hsPosition));
+    self.rSize = uint64(self.memoryManager.read(self.rSizePosition));
+    self.iSize = uint64(self.memoryManager.read(self.iSizePosition));
+    self.oSize = uint64(self.memoryManager.read(self.oSizePosition));
     self.memAddrA = int64(self.memoryManager.read(self.pc));
     self.memAddrB = int64(self.memoryManager.read(self.pc + 8));
     self.memAddrC = int64(self.memoryManager.read(self.pc + 16));
+
+    // require the sizes of ram, input and output to be reasonable
+    require(self.rSize < 0x0000ffffffffffff);
+    require(self.iSize < 0x0000ffffffffffff);
+    require(self.oSize < 0x0000ffffffffffff);
 
     // if first or second operator are < -1, throw
     if (self.hs != 0x0000000000000000) { emit StepGiven(1); return 1; }
@@ -87,14 +99,14 @@ library SubleqLib {
     if (self.memAddrB < -1) { emit StepGiven(3); return 3; }
     if (self.memAddrA == -1 && self.memAddrB == -1)
       { emit StepGiven(4); return 4; }
-    if (self.memAddrA >= 0 && uint64(self.memAddrA) > self.ramSize)
+    if (self.memAddrA >= 0 && uint64(self.memAddrA) > self.rSize)
        { emit StepGiven(5); return 5; }
-    if (self.memAddrB >= 0 && uint64(self.memAddrB) > self.ramSize)
+    if (self.memAddrB >= 0 && uint64(self.memAddrB) > self.rSize)
        { emit StepGiven(6); return 6; }
     // if first operator is -1, read from input
     if (self.memAddrA == -1) {
       // test if input is out of range
-      if (self.ic - 0x8000000000000000 > self.inputMaxSize) {
+      if (self.ic - 0x8000000000000000 > self.iSize) {
         emit StepGiven(8); return 8;
       }
       // read input at ic
@@ -114,7 +126,7 @@ library SubleqLib {
     // write to output
     if (self.memAddrB == -1) {
       // test if output is out of range
-      if (self.oc - 0xc000000000000000 > self.outputMaxSize) {
+      if (self.oc - 0xc000000000000000 > self.oSize) {
         emit StepGiven(9); return 9;
       }
       // write contents addressed by first operator into output
@@ -125,7 +137,7 @@ library SubleqLib {
       self.memoryManager.write(self.pcPosition, bytes8(self.pc + 24));
       self.memoryManager.finishWritePhase();
       // cancelling this rule of halting on negative write
-      // if (int64(valueA) < 0) { memoryManager.write(haltedState, 1); }
+      // if (int64(valueA) < 0) { memoryManager.write(hsPosition, 1); }
       emit StepGiven(0);
       return 0;
     }
@@ -135,10 +147,10 @@ library SubleqLib {
     // write subtraction to memory addressed by second operator
     self.memoryManager.write(uint64(self.memAddrB) * 8, subtraction);
     if (int64(subtraction) <= 0) {
-      if (uint64(self.memAddrC) > self.ramSize) { emit StepGiven(7); return 7; }
+      if (uint64(self.memAddrC) > self.rSize) { emit StepGiven(7); return 7; }
       if (self.memAddrC < 0) {
         // halt machine
-        self.memoryManager.write(self.haltedState, 1);
+        self.memoryManager.write(self.hsPosition, 1);
         self.memoryManager.finishWritePhase();
         emit StepGiven(0);
         return 0;
