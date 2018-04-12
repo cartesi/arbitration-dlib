@@ -25,7 +25,7 @@ library MMLib {
     state currentState;
   }
 
-  event MemoryCreated(bytes32 theInitialHash);
+  event MemoryCreated(bytes32 _initialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
   event FinishedSubmittions();
   event FinishedReading();
@@ -35,14 +35,14 @@ library MMLib {
                     bytes32 newHash);
   event Finished();
 
-  function init(MMCtx storage self, address theProvider, address theClient,
-                bytes32 theInitialHash) public
+  function init(MMCtx storage self, address _provider, address _client,
+                bytes32 _initialHash) public
   {
-    require(theProvider != theClient);
-    self.provider = theProvider;
-    self.client = theClient;
-    self.initialHash = theInitialHash;
-    self.newHash = theInitialHash;
+    require(_provider != _client);
+    self.provider = _provider;
+    self.client = _client;
+    self.initialHash = _initialHash;
+    self.newHash = _initialHash;
 
     self.currentState = state.WaitingValues;
     emit MemoryCreated(self.initialHash);
@@ -50,39 +50,39 @@ library MMLib {
 
   /// @notice Change the client of the memory for the possible situations
   /// where the client was not known at time of creation
-  /// @param theNewClient the address of the new client
-  /* function changeClient(address theNewClient) public { */
+  /// @param _newClient the address of the new client
+  /* function changeClient(address _newClient) public { */
   /*   if (msg.sender == owner) { */
-  /*     client = theNewClient; */
+  /*     client = _newClient; */
   /*   } */
   /* } */
 
   /// @notice Proves that a certain value in initial memory is correct
-  /// @param theAddress The address of the value to be confirmed
-  /// @param theValue The value in that address to be confirmed
+  /// @param _address The address of the value to be confirmed
+  /// @param _value The value in that address to be confirmed
   /// @param proof The proof that this value is correct
-  function proveValue(MMCtx storage self, uint64 theAddress, bytes8 theValue,
+  function proveValue(MMCtx storage self, uint64 _address, bytes8 _value,
                       bytes32[] proof) public
   {
     require(msg.sender == self.provider);
     require(self.currentState == state.WaitingValues);
-    require((theAddress & 7) == 0);
+    require((_address & 7) == 0);
     require(proof.length == 61);
-    bytes32 runningHash = keccak256(theValue);
+    bytes32 runningHash = keccak256(_value);
     // iterate the hash with the uncle subtree provided in proof
     uint64 eight = 8;
     for (uint i = 0; i < 61; i++) {
-      if ((theAddress & (eight << i)) == 0) {
+      if ((_address & (eight << i)) == 0) {
         runningHash = keccak256(runningHash, proof[i]);
       } else {
         runningHash = keccak256(proof[i], runningHash);
       }
     }
     require (runningHash == self.initialHash);
-    self.addressWasSubmitted[theAddress] = true;
-    self.valueSubmitted[theAddress] = theValue;
+    self.addressWasSubmitted[_address] = true;
+    self.valueSubmitted[_address] = _value;
 
-    emit ValueSubmitted(theAddress, theValue);
+    emit ValueSubmitted(_address, _value);
   }
 
   /// @notice Stop memory insertion and start read and write phase
@@ -95,36 +95,36 @@ library MMLib {
 
   /// @notice reads a slot in memory that has been proved to be correct
   /// according to initial hash
-  /// @param theAddress of the desired memory
-  function read(MMCtx storage self, uint64 theAddress)
+  /// @param _address of the desired memory
+  function read(MMCtx storage self, uint64 _address)
     public view returns (bytes8)
   {
     require(self.currentState == state.Reading);
-    require((theAddress & 7) == 0);
-    require(self.addressWasSubmitted[theAddress]);
-    return self.valueSubmitted[theAddress];
+    require((_address & 7) == 0);
+    require(self.addressWasSubmitted[_address]);
+    return self.valueSubmitted[_address];
   }
 
   /// @notice writes on a slot of memory during read and write phase
-  /// @param theAddress of the write
-  /// @param theValue to be written
-  function write(MMCtx storage self, uint64 theAddress, bytes8 theValue)
+  /// @param _address of the write
+  /// @param _value to be written
+  function write(MMCtx storage self, uint64 _address, bytes8 _value)
     public
   {
     require(msg.sender == self.client);
     require((self.currentState == state.Reading)
             || (self.currentState == state.Writing));
-    require((theAddress & 7) == 0);
-    require(self.addressWasSubmitted[theAddress]);
-    require(!self.addressWasWritten[theAddress]);
+    require((_address & 7) == 0);
+    require(self.addressWasSubmitted[_address]);
+    require(!self.addressWasWritten[_address]);
     if (self.currentState == state.Reading) {
       self.currentState = state.Writing;
       emit FinishedReading();
     }
-    self.addressWasWritten[theAddress] = true;
-    self.valueWritten[theAddress] = theValue;
-    self.writtenAddress.push(theAddress);
-    emit ValueWritten(theAddress, theValue);
+    self.addressWasWritten[_address] = true;
+    self.valueWritten[_address] = _value;
+    self.writtenAddress.push(_address);
+    emit ValueWritten(_address, _value);
   }
 
   /// @notice Stop write phase
@@ -142,18 +142,18 @@ library MMLib {
     require(msg.sender == self.provider);
     require(self.currentState == state.UpdatingHashes);
     require(self.writtenAddress.length > 0);
-    uint64 theAddress = self.writtenAddress[self.writtenAddress.length - 1];
-    require((theAddress & 7) == 0);
-    require(self.addressWasSubmitted[theAddress]);
-    require(self.addressWasWritten[theAddress]);
+    uint64 _address = self.writtenAddress[self.writtenAddress.length - 1];
+    require((_address & 7) == 0);
+    require(self.addressWasSubmitted[_address]);
+    require(self.addressWasWritten[_address]);
     require(proof.length == 61);
-    bytes8 oldValue = self.valueSubmitted[theAddress];
-    bytes8 newValue = self.valueWritten[theAddress];
+    bytes8 oldValue = self.valueSubmitted[_address];
+    bytes8 newValue = self.valueWritten[_address];
     // verifying the proof of the old value
     bytes32 runningHash = keccak256(oldValue);
     uint64 eight = 8;
     for (uint i = 0; i < 61; i++) {
-      if ((theAddress & (eight << i)) == 0) {
+      if ((_address & (eight << i)) == 0) {
         runningHash = keccak256(runningHash, proof[i]);
       } else {
         runningHash = keccak256(proof[i], runningHash);
@@ -163,7 +163,7 @@ library MMLib {
     // find out new hash after write
     runningHash = keccak256(newValue);
     for (i = 0; i < 61; i++) {
-      if ((theAddress & (eight << i)) == 0) {
+      if ((_address & (eight << i)) == 0) {
         runningHash = keccak256(runningHash, proof[i]);
       } else {
         runningHash = keccak256(proof[i], runningHash);
@@ -171,7 +171,7 @@ library MMLib {
     }
     self.newHash = runningHash;
     self.writtenAddress.length = self.writtenAddress.length - 1;
-    emit HashUpdated(theAddress, newValue, self.newHash);
+    emit HashUpdated(_address, newValue, self.newHash);
   }
 
   /// @notice Finishes updating the hash

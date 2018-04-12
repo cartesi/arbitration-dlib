@@ -27,16 +27,16 @@ contract SimpleMemoryInterface is mortal {
     simpleMemory.init();
   }
 
-  function read(uint64 theAddress)
+  function read(uint64 _address)
     public view returns (bytes8)
   {
-    return simpleMemory.read(theAddress);
+    return simpleMemory.read(_address);
   }
 
-  function write(uint64 theAddress, bytes8 theValue)
+  function write(uint64 _address, bytes8 _value)
     public
   {
-    simpleMemory.write(theAddress, theValue);
+    simpleMemory.write(_address, _value);
   }
 
   function finishWritePhase() public

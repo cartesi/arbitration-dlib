@@ -9,11 +9,11 @@ contract DepthInterface is mortal {
   using DepthLib for DepthLib.DepthCtx;
   DepthLib.DepthCtx depth;
 
-  event QueryPosted(uint8 theCurrentDepth, uint64 theCurrentAddress);
-  event HashesPosted(bytes32 theLeftHash, bytes32 theRightHash);
-  event ChallengeEnded(uint8 theState);
+  event QueryPosted(uint8 _currentDepth, uint64 _currentAddress);
+  event HashesPosted(bytes32 _leftHash, bytes32 _rightHash);
+  event ChallengeEnded(uint8 _state);
   event ControversialPhrasePosted(uint64 addressStartingDivergence,
-                                  bytes32 theControversialPhraseOfClaimer);
+                                  bytes32 _controversialPhraseOfClaimer);
 
   // Getters methods
 
@@ -63,14 +63,14 @@ contract DepthInterface is mortal {
 
   // Library functions
 
-  function DepthInterface(address theChallenger,
-                          address theClaimer, bytes32 theClaimerHashOfRoot,
-                          uint theRoundDuration) public
+  function DepthInterface(address _challenger,
+                          address _claimer, bytes32 _claimerHashOfRoot,
+                          uint _roundDuration) public
   {
-    require(owner != theChallenger);
-    require(owner != theClaimer);
-    depth.init(theChallenger, theClaimer, theClaimerHashOfRoot,
-               theRoundDuration);
+    require(owner != _challenger);
+    require(owner != _claimer);
+    depth.init(_challenger, _claimer, _claimerHashOfRoot,
+               _roundDuration);
   }
 
   function replyQuery(bytes32 leftHash, bytes32 rightHash) public

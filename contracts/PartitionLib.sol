@@ -25,31 +25,31 @@ library PartitionLib {
     uint divergenceTime;
   }
 
-  event QueryPosted(uint[] theQueryTimes);
-  event HashesPosted(uint[] thePostedTimes, bytes32[] thePostedHashes);
-  event ChallengeEnded(uint8 theState);
+  event QueryPosted(uint[] _queryTimes);
+  event HashesPosted(uint[] _postedTimes, bytes32[] _postedHashes);
+  event ChallengeEnded(uint8 _state);
   event DivergenceFound(uint timeOfDivergence, bytes32 hashAtDivergenceTime,
                         bytes32 hashRigthAfterDivergenceTime);
 
-  function init(PartitionCtx storage self, address theChallenger,
-                address theClaimer, bytes32 theInitialHash,
-                bytes32 theClaimerFinalHash, uint theFinalTime,
-                uint theQuerySize, uint theRoundDuration) public
+  function init(PartitionCtx storage self, address _challenger,
+                address _claimer, bytes32 _initialHash,
+                bytes32 _claimerFinalHash, uint _finalTime,
+                uint _querySize, uint _roundDuration) public
   {
-    require(theChallenger != theClaimer);
-    self.challenger = theChallenger;
-    self.claimer = theClaimer;
-    require(theFinalTime > 0);
-    self.finalTime = theFinalTime;
+    require(_challenger != _claimer);
+    self.challenger = _challenger;
+    self.claimer = _claimer;
+    require(_finalTime > 0);
+    self.finalTime = _finalTime;
 
     self.timeSubmitted[0] = true;
     self.timeSubmitted[self.finalTime] = true;
-    self.timeHash[0] = theInitialHash;
-    self.timeHash[self.finalTime] = theClaimerFinalHash;
+    self.timeHash[0] = _initialHash;
+    self.timeHash[self.finalTime] = _claimerFinalHash;
 
-    require(theQuerySize > 2);
-    require(theQuerySize < 100);
-    self.querySize = theQuerySize;
+    require(_querySize > 2);
+    require(_querySize < 100);
+    self.querySize = _querySize;
     for (uint i = 0; i < self.querySize; i++) {
       self.queryArray.push(0);
     }
@@ -57,7 +57,7 @@ library PartitionLib {
     // slice the interval, placing the separators in queryArray
     slice(self, 0, self.finalTime);
 
-    self.roundDuration = theRoundDuration;
+    self.roundDuration = _roundDuration;
     self.timeOfLastMove = now;
 
     self.currentState = state.WaitingHashes;
@@ -167,17 +167,17 @@ library PartitionLib {
 
   /// @notice Present a precise time of divergence (can only be called by
   /// challenger).
-  /// @param theDivergenceTime The time when the divergence happended. It
-  /// should be a point of aggreement, while theDivergenceTime + 1 should be a
+  /// @param _divergenceTime The time when the divergence happended. It
+  /// should be a point of aggreement, while _divergenceTime + 1 should be a
   /// point of disagreement (both queried).
   function presentDivergence(PartitionCtx storage self,
-                             uint theDivergenceTime) public
+                             uint _divergenceTime) public
   {
     require(msg.sender == self.challenger);
-    require(theDivergenceTime < self.finalTime);
-    require(self.timeSubmitted[theDivergenceTime]);
-    require(self.timeSubmitted[theDivergenceTime + 1]);
-    self.divergenceTime = theDivergenceTime;
+    require(_divergenceTime < self.finalTime);
+    require(self.timeSubmitted[_divergenceTime]);
+    require(self.timeSubmitted[_divergenceTime + 1]);
+    self.divergenceTime = _divergenceTime;
     self.currentState = state.DivergenceFound;
     emit ChallengeEnded(uint8(self.currentState));
     emit DivergenceFound(self.divergenceTime,
