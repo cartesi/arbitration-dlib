@@ -9,7 +9,7 @@ contract MMInterface is mortal {
   using MMLib for MMLib.MMCtx;
   MMLib.MMCtx mm;
 
-  event MemoryCreated(bytes32 theInitialHash);
+  event MemoryCreated(bytes32 _initialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
   event FinishedSubmittions();
   event FinishedReading();
@@ -68,18 +68,18 @@ contract MMInterface is mortal {
 
   // Library functions
 
-  function MMInterface(address theProvider, address theClient,
-                       bytes32 theInitialHash) public
+  function MMInterface(address _provider, address _client,
+                       bytes32 _initialHash) public
   {
-    require(owner != theProvider);
-    require(owner != theClient);
-    mm.init(theProvider, theClient, theInitialHash);
+    require(owner != _provider);
+    require(owner != _client);
+    mm.init(_provider, _client, _initialHash);
   }
 
-  function proveValue(uint64 theAddress, bytes8 theValue,
+  function proveValue(uint64 _address, bytes8 _value,
                       bytes32[] proof) public
   {
-    mm.proveValue(theAddress, theValue, proof);
+    mm.proveValue(_address, _value, proof);
   }
 
   function finishSubmissionPhase() public
@@ -87,16 +87,16 @@ contract MMInterface is mortal {
     mm.finishSubmissionPhase();
   }
 
-  function read(uint64 theAddress)
+  function read(uint64 _address)
     public view returns (bytes8)
   {
-    return mm.read(theAddress);
+    return mm.read(_address);
   }
 
-  function write(uint64 theAddress, bytes8 theValue)
+  function write(uint64 _address, bytes8 _value)
     public
   {
-    mm.write(theAddress, theValue);
+    mm.write(_address, _value);
   }
 
   function finishWritePhase() public

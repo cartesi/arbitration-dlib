@@ -9,9 +9,9 @@ contract PartitionInterface is mortal {
   using PartitionLib for PartitionLib.PartitionCtx;
   PartitionLib.PartitionCtx partition;
 
-  event QueryPosted(uint[] theQueryTimes);
-  event HashesPosted(uint[] thePostedTimes, bytes32[] thePostedHashes);
-  event ChallengeEnded(uint8 theState);
+  event QueryPosted(uint[] _queryTimes);
+  event HashesPosted(uint[] _postedTimes, bytes32[] _postedHashes);
+  event ChallengeEnded(uint8 _state);
   event DivergenceFound(uint timeOfDivergence, bytes32 hashAtDivergenceTime,
                         bytes32 hashRigthAfterDivergenceTime);
 
@@ -63,16 +63,16 @@ contract PartitionInterface is mortal {
 
   // Library functions
 
-  function PartitionInterface(address theChallenger, address theClaimer,
-                              bytes32 theInitialHash,
-                              bytes32 theClaimerFinalHash, uint theFinalTime,
-                              uint theQuerySize, uint theRoundDuration) public
+  function PartitionInterface(address _challenger, address _claimer,
+                              bytes32 _initialHash,
+                              bytes32 _claimerFinalHash, uint _finalTime,
+                              uint _querySize, uint _roundDuration) public
   {
-    require(owner != theChallenger);
-    require(owner != theClaimer);
-    partition.init(theChallenger, theClaimer, theInitialHash,
-                   theClaimerFinalHash, theFinalTime, theQuerySize,
-                   theRoundDuration);
+    require(owner != _challenger);
+    require(owner != _claimer);
+    partition.init(_challenger, _claimer, _initialHash,
+                   _claimerFinalHash, _finalTime, _querySize,
+                   _roundDuration);
   }
 
   function replyQuery(uint[] postedTimes, bytes32[] postedHashes) public
@@ -90,9 +90,9 @@ contract PartitionInterface is mortal {
     partition.claimVictoryByTime();
   }
 
-  function presentDivergence(uint theDivergenceTime) public
+  function presentDivergence(uint _divergenceTime) public
   {
-    partition.presentDivergence(theDivergenceTime);
+    partition.presentDivergence(_divergenceTime);
   }
 }
 

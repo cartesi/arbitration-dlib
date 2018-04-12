@@ -25,11 +25,11 @@ library DepthLib {
     state currentState;
   }
 
-  event QueryPosted(uint8 theCurrentDepth, uint64 theCurrentAddress);
-  event HashesPosted(bytes32 theLeftHash, bytes32 theRightHash);
-  event ChallengeEnded(uint8 theState);
+  event QueryPosted(uint8 _currentDepth, uint64 _currentAddress);
+  event HashesPosted(bytes32 _leftHash, bytes32 _rightHash);
+  event ChallengeEnded(uint8 _state);
   event ControversialPhrasePosted(uint64 addressStartingDivergence,
-                                  bytes32 theControversialPhraseOfClaimer);
+                                  bytes32 _controversialPhraseOfClaimer);
 
   // Suppose two agents have distinct memory states, of course with different
   // Merkel-tree hashes. This contract helps them find the exact point where
@@ -52,17 +52,17 @@ library DepthLib {
   //              |
   //            ContFound
 
-  function init(DepthCtx storage self, address theChallenger,
-                address theClaimer, bytes32 theClaimerHashOfRoot,
-                uint theRoundDuration) public
+  function init(DepthCtx storage self, address _challenger,
+                address _claimer, bytes32 _claimerHashOfRoot,
+                uint _roundDuration) public
   {
-    require(theChallenger != theClaimer);
-    self.challenger = theChallenger;
-    self.claimer = theClaimer;
-    self.claimerCurrentHash = theClaimerHashOfRoot;
+    require(_challenger != _claimer);
+    self.challenger = _challenger;
+    self.claimer = _claimer;
+    self.claimerCurrentHash = _claimerHashOfRoot;
     self.currentDepth = 0;
     self.currentAddress = 0;
-    self.roundDuration = theRoundDuration;
+    self.roundDuration = _roundDuration;
     self.timeOfLastMove = now;
     self.currentState = state.WaitingHashes;
     emit QueryPosted(self.currentDepth, self.currentAddress);

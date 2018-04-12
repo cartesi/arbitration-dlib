@@ -2,8 +2,8 @@
 pragma solidity ^0.4.18;
 
 contract mmContract {
-  function read(uint64 theAddress) public view returns (bytes8);
-  function write(uint64 theAddress, bytes8 theValue) public;
+  function read(uint64 _address) public view returns (bytes8);
+  function write(uint64 _address, bytes8 _value) public;
   function finishWritePhase() public;
 }
 
