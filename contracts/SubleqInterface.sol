@@ -4,8 +4,8 @@ pragma solidity ^0.4.18;
 import "./mortal.sol";
 import "./SubleqLib.sol";
 
-contract SubleqInterface is mortal {
-
+contract SubleqInterface is mortal
+{
   using SubleqLib for SubleqLib.SubleqCtx;
   SubleqLib.SubleqCtx subleq;
 
@@ -23,4 +23,3 @@ contract SubleqInterface is mortal {
     return subleq.step();
   }
 }
-

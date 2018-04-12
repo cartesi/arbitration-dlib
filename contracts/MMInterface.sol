@@ -66,6 +66,10 @@ contract MMInterface is mortal {
     return mm.writtenAddress.length;
   }
 
+  function isReading() public view returns (bool) {
+    return mm.currentState == MMLib.state.Reading;
+  }
+
   // Library functions
 
   function MMInterface(address _provider, address _client,

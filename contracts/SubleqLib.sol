@@ -44,6 +44,11 @@ library SubleqLib {
     self.memoryManager = mmContract(memoryManagerAddress);
   }
 
+  function getAddress(SubleqCtx storage) public view returns (address)
+  {
+    return address(this);
+  }
+
   /// @notice Performs one step of the subleq machine on memory
   /// @return false indicates a halted machine or invalid instruction
   function step(SubleqCtx storage self) public returns (uint8)

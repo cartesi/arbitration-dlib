@@ -4,8 +4,8 @@ pragma solidity ^0.4.18;
 import "./mortal.sol";
 import "./PartitionLib.sol";
 
-contract PartitionInterface is mortal {
-
+contract PartitionInterface is mortal
+{
   using PartitionLib for PartitionLib.PartitionCtx;
   PartitionLib.PartitionCtx partition;
 
