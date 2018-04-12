@@ -78,7 +78,7 @@ contract Token is ERC20Interface {
     decimals = 18;
     _totalSupply = 1000000000 * 10**uint(decimals);
     balances[msg.sender] = _totalSupply;
-    Transfer(address(0), msg.sender, _totalSupply);
+    emit Transfer(address(0), msg.sender, _totalSupply);
   }
 
 
@@ -106,7 +106,7 @@ contract Token is ERC20Interface {
   function transfer(address to, uint tokens) public returns (bool success) {
     balances[msg.sender] = balances[msg.sender].sub(tokens);
     balances[to] = balances[to].add(tokens);
-    Transfer(msg.sender, to, tokens);
+    emit Transfer(msg.sender, to, tokens);
     return true;
   }
 
@@ -121,7 +121,7 @@ contract Token is ERC20Interface {
   // ------------------------------------------------------------------------
   function approve(address spender, uint tokens) public returns (bool success) {
     allowed[msg.sender][spender] = tokens;
-    Approval(msg.sender, spender, tokens);
+    emit Approval(msg.sender, spender, tokens);
     return true;
   }
 
@@ -139,7 +139,7 @@ contract Token is ERC20Interface {
     balances[from] = balances[from].sub(tokens);
     allowed[from][msg.sender] = allowed[from][msg.sender].sub(tokens);
     balances[to] = balances[to].add(tokens);
-    Transfer(from, to, tokens);
+    emit Transfer(from, to, tokens);
     return true;
   }
 
