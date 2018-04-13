@@ -9,7 +9,7 @@ contract MMInterface is mortal {
   using MMLib for MMLib.MMCtx;
   MMLib.MMCtx mm;
 
-  event MemoryCreated(bytes32 _initialHash);
+  event MemoryCreated(bytes32 theInitialHash);
   event ValueSubmitted(uint64 addressSubmitted, bytes8 valueSubmitted);
   event FinishedSubmittions();
   event FinishedReading();

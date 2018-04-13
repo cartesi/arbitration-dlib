@@ -9,11 +9,11 @@ contract DepthInterface is mortal {
   using DepthLib for DepthLib.DepthCtx;
   DepthLib.DepthCtx depth;
 
-  event QueryPosted(uint8 _currentDepth, uint64 _currentAddress);
-  event HashesPosted(bytes32 _leftHash, bytes32 _rightHash);
-  event ChallengeEnded(uint8 _state);
+  event QueryPosted(uint8 theCurrentDepth, uint64 theCurrentAddress);
+  event HashesPosted(bytes32 theLeftHash, bytes32 theRightHash);
+  event ChallengeEnded(uint8 theState);
   event ControversialPhrasePosted(uint64 addressStartingDivergence,
-                                  bytes32 _controversialPhraseOfClaimer);
+                                  bytes32 theControversialPhraseOfClaimer);
 
   // Getters methods
 
@@ -96,4 +96,3 @@ contract DepthInterface is mortal {
     depth.claimVictoryByTime();
   }
 }
-
