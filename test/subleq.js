@@ -9,16 +9,6 @@ const getError = require('../utils/tools.js').getError;
 var SimpleMemoryInterface = artifacts.require("./SimpleMemoryInterface.sol");
 var SubleqInterface = artifacts.require("./SubleqInterface.sol");
 
-var echo_binary = [-1, 21, 3,
-                   21, -1, 6,
-                   21, 22, 9,
-                   22, 23, -1,
-                   21, 21, 15,
-                   22, 22, 18,
-                   23, 23, 0,
-                   0, 0, 0]
-
-var input_string = [2, 4, 8, 16, 32, 64, -1];
 
 function two_complement_32(decimal) {
   if (decimal >= 0) {
@@ -28,20 +18,34 @@ function two_complement_32(decimal) {
   return "0xffffffff" + low_bits;
 };
 
-pcPosition =     ("0x4000000000000000");
-// input counter
-icPosition =     ("0x4000000000000008");
-// output counter
-ocPosition =     ("0x4000000000000010");
-// address for halted state
-rSizePosition =    ("0x4000000000000020");
-iSizePosition =    ("0x4000000000000028");
-oSizePosition =    ("0x4000000000000030");
-
-icInitial =      ("0x8000000000000000");
-ocInitial =      ("0xc000000000000000");
 
 contract('SubleqInterface', function(accounts) {
+  let echo_binary = [-1, 21, 3,
+                     21, -1, 6,
+                     21, 22, 9,
+                     22, 23, -1,
+                     21, 21, 15,
+                     22, 22, 18,
+                     23, 23, 0,
+                     0, 0, 0]
+
+  let input_string = [2, 4, 8, 16, 32, 64, -1];
+
+
+  let pcPosition =     ("0x4000000000000000");
+  // input counter
+  let icPosition =     ("0x4000000000000008");
+  // output counter
+  let ocPosition =     ("0x4000000000000010");
+  // address for halted state
+  let rSizePosition =    ("0x4000000000000020");
+  let iSizePosition =    ("0x4000000000000028");
+  let oSizePosition =    ("0x4000000000000030");
+
+  let icInitial =      ("0x8000000000000000");
+  let ocInitial =      ("0xc000000000000000");
+
+
   it('Checking functionalities', async function() {
     // launch simpleMemory contract from accounts[2], who will be the owner
     let simpleMemoryInterface = await SimpleMemoryInterface
@@ -62,6 +66,7 @@ contract('SubleqInterface', function(accounts) {
         .write(8 * i, two_complement_32(echo_binary[i]),
                { from: accounts[0], gas: 1500000 })
     }
+
 
     // write ic
     response = await simpleMemoryInterface.write(icPosition, icInitial)

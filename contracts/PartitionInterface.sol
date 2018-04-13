@@ -9,9 +9,9 @@ contract PartitionInterface is mortal
   using PartitionLib for PartitionLib.PartitionCtx;
   PartitionLib.PartitionCtx partition;
 
-  event QueryPosted(uint[] _queryTimes);
-  event HashesPosted(uint[] _postedTimes, bytes32[] _postedHashes);
-  event ChallengeEnded(uint8 _state);
+  event QueryPosted(uint[] theQueryTimes);
+  event HashesPosted(uint[] thePostedTimes, bytes32[] thePostedHashes);
+  event ChallengeEnded(uint8 theState);
   event DivergenceFound(uint timeOfDivergence, bytes32 hashAtDivergenceTime,
                         bytes32 hashRigthAfterDivergenceTime);
 

@@ -40,7 +40,7 @@ class MemoryManager {
         return 0;
     }
 
-    setValue(position, value) {
+  setValue(position, value) {
         if (BigNumber(position).mod(8) != 0) throw "Position should be word-aligned";
         if (BigNumber(position).isLessThan(0)) throw "Setting negative value"
         if (BigNumber(position).isGreaterThanOrEqualTo(
@@ -196,4 +196,3 @@ class MemoryManager {
 }
 
 module.exports = { MemoryManager: MemoryManager };
-
