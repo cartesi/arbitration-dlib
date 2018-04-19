@@ -1,7 +1,7 @@
 /// @title Betting contract
 pragma solidity ^0.4.0;
 
-import "./MMLib.sol";
+//import "./MMLib.sol";
 import "./SubleqLib.sol";
 import "./PartitionLib.sol";
 import "./lib/bokkypoobah/Token.sol";

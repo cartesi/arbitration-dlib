@@ -1,7 +1,7 @@
 /// @title An instantiator of memory managers
 pragma solidity ^0.4.18;
 
-library MMInstantiator {
+contract MMInstantiator {
   uint32 currentIndex = 0;
 
   enum state { WaitingValues, Reading, Writing, UpdatingHashes,
@@ -35,26 +35,23 @@ library MMInstantiator {
                        bytes8 _valueSubmitted);
   event FinishedSubmittions(uint32 _index);
   event FinishedReading(uint32 _index);
-  event ValueWritten(uint32 _index, uint64 addressSubmitted,
-                     bytes8 valueSubmitted);
+  event ValueWritten(uint32 _index, uint64 _addressSubmitted,
+                     bytes8 _valueSubmitted);
   event FinishedWriting(uint32 _index);
-  event HashUpdated(uint32 _index, uint64 addressSubmitted,
-                    bytes8 valueSubmitted,
-                    bytes32 newHash);
+  event HashUpdated(uint32 _index, uint64 _addressSubmitted,
+                    bytes8 _valueSubmitted,
+                    bytes32 _newHash);
   event FinishedUpdating(uint32 _index);
 
   function instantiate(address _provider, address _client,
                        bytes32 _initialHash) public
   {
     require(_provider != _client);
-    instances[currentIndex] = MMCtx
-      ({
-        provider: _provider,
-        client: _client,
-        initialHahs: _initialHash,
-        newHash: _initialHash,
-        currentState: state.WaitingValues
-      });
+    instances[currentIndex].provider = _provider;
+    instances[currentIndex].client = _client;
+    instances[currentIndex].initialHash = _initialHash;
+    instances[currentIndex].newHash = _initialHash;
+    instances[currentIndex].currentState = state.WaitingValues;
     emit MemoryCreated(currentIndex, _initialHash);
     currentIndex++;
   }
@@ -185,6 +182,63 @@ library MMInstantiator {
     require(instances[_index].writtenAddress.length == 0);
     instances[_index].currentState = state.FinishedUpdating;
     emit FinishedUpdating(_index);
+  }
+
+  // getter methods
+  function provider(uint32 _index) public view returns (address) {
+    return instances[_index].provider;
+  }
+
+  function client(uint32 _index) public view returns (address) {
+    return instances[_index].client;
+  }
+
+  function initialHash(uint32 _index) public view returns (bytes32) {
+    return instances[_index].initialHash;
+  }
+
+  function newHash(uint32 _index) public view returns (bytes32) {
+    return instances[_index].newHash;
+  }
+
+  function currentState(uint32 _index) public view
+    returns (MMInstantiator.state)
+  {
+    return instances[_index].currentState;
+  }
+
+  function addressWasSubmitted(uint32 _index, uint64 key) public view
+    returns (bool)
+  {
+    return instances[_index].addressWasSubmitted[key];
+  }
+
+  function valueSubmitted(uint32 _index, uint64 key) public view
+    returns (bytes8)
+  {
+    return instances[_index].valueSubmitted[key];
+  }
+
+  function writtenAddress(uint32 _index, uint64 position) public view
+    returns (uint64)
+  {
+    return instances[_index].writtenAddress[position];
+  }
+
+  function addressWasWritten(uint32 _index, uint64 addr) public view
+    returns (bool)
+  {
+    return instances[_index].addressWasWritten[addr];
+  }
+
+  function valueWritten(uint32 _index, uint64 addr) public view
+    returns (bytes8)
+  {
+    return instances[_index].valueWritten[addr];
+  }
+
+  function getWrittenAddressLength(uint32 _index) public view returns (uint) {
+    return instances[_index].writtenAddress.length;
   }
 }
 
