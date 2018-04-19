@@ -19,7 +19,7 @@ library SimpleMemoryLib {
   /// @notice writes on a slot of memory during read and write phase
   /// @param _address of the write
   /// @param _value to be written
-  function write(SimpleMemoryCtx storage self, uint64 _address,
+  function write(SimpleMemoryCtx storage self, uint32, uint64 _address,
                  bytes8 _value) public {
     require((self.currentState == state.Writing)
             || (self.currentState == state.Reading));
@@ -28,7 +28,7 @@ library SimpleMemoryLib {
   }
 
   /// @notice Stop write phase and restart read phase
-  function finishWritePhase(SimpleMemoryCtx storage self) public
+  function finishWritePhase(SimpleMemoryCtx storage self, uint32) public
   {
     require((self.currentState == state.Writing)
             || (self.currentState == state.Reading));
@@ -37,7 +37,7 @@ library SimpleMemoryLib {
 
   /// @notice reads a slot in memory
   /// @param _address of the desired memory
-  function read(SimpleMemoryCtx storage self, uint64 _address)
+  function read(SimpleMemoryCtx storage self, uint32, uint64 _address)
     public view returns (bytes8)
   {
     require(self.currentState == state.Reading);

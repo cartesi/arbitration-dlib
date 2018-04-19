@@ -11,11 +11,11 @@ contract SimpleMemoryInterface is mortal {
 
   // Getters methods
 
-  function value(uint64 key) public view returns (bytes8) {
+  function value(uint32, uint64 key) public view returns (bytes8) {
     return simpleMemory.value[key];
   }
 
-  function currentState() public view returns (SimpleMemoryLib.state)
+  function currentState(uint32) public view returns (SimpleMemoryLib.state)
   {
     return simpleMemory.currentState;
   }
@@ -27,21 +27,21 @@ contract SimpleMemoryInterface is mortal {
     simpleMemory.init();
   }
 
-  function read(uint64 _address)
+  function read(uint32, uint64 _address)
     public view returns (bytes8)
   {
-    return simpleMemory.read(_address);
+    return simpleMemory.read(0, _address);
   }
 
-  function write(uint64 _address, bytes8 _value)
+  function write(uint32, uint64 _address, bytes8 _value)
     public
   {
-    simpleMemory.write(_address, _value);
+    simpleMemory.write(0, _address, _value);
   }
 
-  function finishWritePhase() public
+  function finishWritePhase(uint32) public
   {
-    simpleMemory.finishWritePhase();
+    simpleMemory.finishWritePhase(0);
   }
 }
 

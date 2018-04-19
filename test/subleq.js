@@ -36,15 +36,17 @@ contract('SubleqInterface', function(accounts) {
   let icInitial =      ("0x8000000000000000");
   let ocInitial =      ("0xc000000000000000");
 
+  let mmAddress;
 
   it('Checking functionalities', async function() {
     // launch simpleMemory contract from accounts[2], who will be the owner
     let simpleMemoryInterface = await SimpleMemoryInterface
         .new({ from: accounts[2], gas: 2000000 });
+    mmAddress = simpleMemoryInterface.address;
 
     // check if waiting to write values
     currentState = await simpleMemoryInterface
-      .currentState.call({ from: accounts[0] });
+      .currentState.call(0, { from: accounts[0] });
     expect(currentState.toNumber()).to.equal(0);
 
     // write program to memory contract
@@ -54,24 +56,23 @@ contract('SubleqInterface', function(accounts) {
       // write on memory
       //console.log(twoComplement32(echo_binary[i]));
       response = await simpleMemoryInterface
-        .write(8 * i, twoComplement32(echo_binary[i]),
+        .write(0, 8 * i, twoComplement32(echo_binary[i]),
                { from: accounts[0], gas: 1500000 })
     }
 
-
     // write ic
-    response = await simpleMemoryInterface.write(icPosition, icInitial)
+    response = await simpleMemoryInterface.write(0, icPosition, icInitial)
     // write oc
-    response = await simpleMemoryInterface.write(ocPosition, ocInitial)
+    response = await simpleMemoryInterface.write(0, ocPosition, ocInitial)
     // write rSize
     response = await simpleMemoryInterface
-      .write(rSizePosition, "0x0000000000100000")
+      .write(0, rSizePosition, "0x0000000000100000")
     // write iSize
     response = await simpleMemoryInterface
-      .write(iSizePosition, "0x0000000000100000")
+      .write(0, iSizePosition, "0x0000000000100000")
     // write oSize
     response = await simpleMemoryInterface
-      .write(oSizePosition, "0x0000000000100000")
+      .write(0, oSizePosition, "0x0000000000100000")
 
     // write input in memory contract
     //console.log('write input in memory contract');
@@ -80,14 +81,14 @@ contract('SubleqInterface', function(accounts) {
     for (let i = 0; i < inputLength; i++) {
       // write on memory
       response = await simpleMemoryInterface
-        .write(BigNumber(icInitial).plus(8 * i).toString(),
+        .write(0, BigNumber(icInitial).plus(8 * i).toString(),
                twoComplement32(input_string[i]),
                { from: accounts[0], gas: 1500000 })
     }
 
     // finishing writing
     response = await simpleMemoryInterface
-      .finishWritePhase({ from: accounts[0], gas: 1500000 })
+      .finishWritePhase(0, { from: accounts[0], gas: 1500000 })
 
     // launch subleq from accounts[2], who will be the owner
     let subleqInterface = await SubleqInterface
@@ -95,7 +96,7 @@ contract('SubleqInterface', function(accounts) {
              { from: accounts[2], gas: 2000000 });
 
     // check if waiting to read values
-    currentState = await simpleMemoryInterface.currentState.call();
+    currentState = await simpleMemoryInterface.currentState.call(0);
     expect(currentState.toNumber()).to.equal(1);
 
     let running = 0;
@@ -127,7 +128,9 @@ contract('SubleqInterface', function(accounts) {
       // console.log(await subleqInterface.owner());
       // console.log(accounts[2]);
 
-      response = await subleqInterface.step({ from: accounts[2], gas: 1500000 })
+      response = await subleqInterface.step(
+        mmAddress, 0,
+        { from: accounts[2], gas: 1500000 })
       expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
       // console.log(getEvent(response, 'StepGiven'));
 
@@ -140,24 +143,12 @@ contract('SubleqInterface', function(accounts) {
     // verifying output
     while (true) {
       response = await simpleMemoryInterface
-        .read.call(BigNumber(ocInitial).plus(8 * j).toString(),
+        .read.call(0, BigNumber(ocInitial).plus(8 * j).toString(),
                    { from: accounts[0], gas: 1500000 });
       //console.log(response);
       expect(response).to.equal(twoComplement32(input_string[j]));
       if (response == '0xffffffffffffffff') break;
       j++;
     }
-
-    // kill contracts
-    response = await simpleMemoryInterface
-      .kill({ from: accounts[2], gas: 1500000 });
-    response = await subleqInterface
-      .kill({ from: accounts[2], gas: 1500000 });
-
-    // check if contracts were killed
-    [error, currentState] = await unwrap(simpleMemoryInterface.currentState());
-    expect(error.message).to.have.string('not a contract address');;
-    [error, currentState] = await unwrap(subleqInterface.step());
-    expect(error.message).to.have.string('not a contract address');;
   });
 });
