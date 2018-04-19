@@ -5,19 +5,10 @@ const expect = require('chai').expect;
 const getEvent = require('../utils/tools.js').getEvent;
 const unwrap = require('../utils/tools.js').unwrap;
 const getError = require('../utils/tools.js').getError;
+const twoComplement32 = require('../utils/tools.js').twoComplement32;
 
 var SimpleMemoryInterface = artifacts.require("./SimpleMemoryInterface.sol");
 var SubleqInterface = artifacts.require("./SubleqInterface.sol");
-
-
-function two_complement_32(decimal) {
-  if (decimal >= 0) {
-    return "0x" + ("000000000000000" + decimal.toString(16)).substr(-16);
-  }
-  low_bits = (decimal < 0 ? (0xFFFFFFFF + decimal + 1) : decimal).toString(16);
-  return "0xffffffff" + low_bits;
-};
-
 
 contract('SubleqInterface', function(accounts) {
   let echo_binary = [-1, 21, 3,
@@ -61,9 +52,9 @@ contract('SubleqInterface', function(accounts) {
     var softwareLength = echo_binary.length;
     for (let i = 0; i < softwareLength; i++) {
       // write on memory
-      //console.log(two_complement_32(echo_binary[i]));
+      //console.log(twoComplement32(echo_binary[i]));
       response = await simpleMemoryInterface
-        .write(8 * i, two_complement_32(echo_binary[i]),
+        .write(8 * i, twoComplement32(echo_binary[i]),
                { from: accounts[0], gas: 1500000 })
     }
 
@@ -90,7 +81,7 @@ contract('SubleqInterface', function(accounts) {
       // write on memory
       response = await simpleMemoryInterface
         .write(BigNumber(icInitial).plus(8 * i).toString(),
-               two_complement_32(input_string[i]),
+               twoComplement32(input_string[i]),
                { from: accounts[0], gas: 1500000 })
     }
 
@@ -152,7 +143,7 @@ contract('SubleqInterface', function(accounts) {
         .read.call(BigNumber(ocInitial).plus(8 * j).toString(),
                    { from: accounts[0], gas: 1500000 });
       //console.log(response);
-      expect(response).to.equal(two_complement_32(input_string[j]));
+      expect(response).to.equal(twoComplement32(input_string[j]));
       if (response == '0xffffffffffffffff') break;
       j++;
     }
