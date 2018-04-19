@@ -8,6 +8,7 @@ var PartitionLib = artifacts.require("./PartitionLib.sol");
 var PartitionInterface = artifacts.require("./PartitionInterface.sol");
 var DepthLib = artifacts.require("./DepthLib.sol");
 var DepthInterface = artifacts.require("./DepthInterface.sol");
+var MCProtocol = artifacts.require("./MCProtocol.sol");
 
 module.exports = function(deployer) {
   deployer.deploy(MMLib);
@@ -20,4 +21,8 @@ module.exports = function(deployer) {
   deployer.link(PartitionLib, PartitionInterface);
   deployer.deploy(DepthLib);
   deployer.link(DepthLib, DepthInterface);
+  deployer.link(MMLib, MCProtocol);
+  deployer.link(SubleqLib, MCProtocol);
+  deployer.link(PartitionLib, MCProtocol);
+  deployer.deploy(MCProtocol);
 };
