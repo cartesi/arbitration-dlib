@@ -1,10 +1,10 @@
 /// @title Subleq machine contract
 pragma solidity ^0.4.18;
 
-contract mmContract {
-  function read(uint64 _address) public view returns (bytes8);
-  function write(uint64 _address, bytes8 _value) public;
-  function finishWritePhase() public;
+contract mmInterface {
+  function read(uint32 _index, uint64 _address) public view returns (bytes8);
+  function write(uint32 _index, uint64 _address, bytes8 _value) public;
+  function finishWritePhase(uint32 _index) public;
 }
 
 library SubleqLib {
@@ -12,9 +12,6 @@ library SubleqLib {
   event StepGiven(uint8 exitCode);
 
   struct SubleqCtx {
-    mmContract memoryManager;
-    address owner;
-
     // use storage because of solidity's problem with locals ("Stack too deep")
     uint64 pcPosition;
     uint64 icPosition;
@@ -38,12 +35,6 @@ library SubleqLib {
     uint64 outputMaxSize;
   }
 
-  function init(SubleqCtx storage self, address memoryManagerAddress) public
-  {
-    self.owner = msg.sender;
-    self.memoryManager = mmContract(memoryManagerAddress);
-  }
-
   function getAddress(SubleqCtx storage) public view returns (address)
   {
     return address(this);
@@ -51,7 +42,8 @@ library SubleqLib {
 
   /// @notice Performs one step of the subleq machine on memory
   /// @return false indicates a halted machine or invalid instruction
-  function step(SubleqCtx storage self) public returns (uint8)
+  function step(SubleqCtx storage self, address _mmAddress, uint32 _index)
+    public returns (uint8)
   {
     // Architecture
     // +----------------+----------------+----------------+----------------+
@@ -73,7 +65,8 @@ library SubleqLib {
     // 11 -
     // 12 -
     // 13 -
-    require(msg.sender == self.owner);
+    //require(msg.sender == self.owner);
+    mmInterface mm = mmInterface(_mmAddress);
 
     self.pcPosition = 0x4000000000000000;
     self.icPosition = 0x4000000000000008;
@@ -82,16 +75,16 @@ library SubleqLib {
     self.rSizePosition = 0x4000000000000020;
     self.iSizePosition = 0x4000000000000028;
     self.oSizePosition = 0x4000000000000030;
-    self.pc = uint64(self.memoryManager.read(self.pcPosition));
-    self.ic = uint64(self.memoryManager.read(self.icPosition));
-    self.oc = uint64(self.memoryManager.read(self.ocPosition));
-    self.hs = uint64(self.memoryManager.read(self.hsPosition));
-    self.rSize = uint64(self.memoryManager.read(self.rSizePosition));
-    self.iSize = uint64(self.memoryManager.read(self.iSizePosition));
-    self.oSize = uint64(self.memoryManager.read(self.oSizePosition));
-    self.memAddrA = int64(self.memoryManager.read(self.pc));
-    self.memAddrB = int64(self.memoryManager.read(self.pc + 8));
-    self.memAddrC = int64(self.memoryManager.read(self.pc + 16));
+    self.pc = uint64(mm.read(_index, self.pcPosition));
+    self.ic = uint64(mm.read(_index, self.icPosition));
+    self.oc = uint64(mm.read(_index, self.ocPosition));
+    self.hs = uint64(mm.read(_index, self.hsPosition));
+    self.rSize = uint64(mm.read(_index, self.rSizePosition));
+    self.iSize = uint64(mm.read(_index, self.iSizePosition));
+    self.oSize = uint64(mm.read(_index, self.oSizePosition));
+    self.memAddrA = int64(mm.read(_index, self.pc));
+    self.memAddrB = int64(mm.read(_index, self.pc + 8));
+    self.memAddrC = int64(mm.read(_index, self.pc + 16));
 
     // require the sizes of ram, input and output to be reasonable
     require(self.rSize < 0x0000ffffffffffff);
@@ -115,18 +108,18 @@ library SubleqLib {
         emit StepGiven(8); return 8;
       }
       // read input at ic
-      bytes8 loaded = self.memoryManager.read(self.ic);
-      self.memoryManager.write(uint64(self.memAddrB) * 8, loaded);
+      bytes8 loaded = mm.read(_index, self.ic);
+      mm.write(_index, uint64(self.memAddrB) * 8, loaded);
       // increment ic
-      self.memoryManager.write(self.icPosition, bytes8(self.ic + 8));
+      mm.write(_index, self.icPosition, bytes8(self.ic + 8));
       // increment pc by three words
-      self.memoryManager.write(self.pcPosition, bytes8(self.pc + 24));
-      self.memoryManager.finishWritePhase();
+      mm.write(_index, self.pcPosition, bytes8(self.pc + 24));
+      mm.finishWritePhase(_index);
       emit StepGiven(0);
       return 0;
     }
     // if first operator is non-negative, load the memory address
-    bytes8 valueA = self.memoryManager.read(uint64(self.memAddrA) * 8);
+    bytes8 valueA = mm.read(_index, uint64(self.memAddrA) * 8);
     // if first operator is non-negative, but second operator is -1,
     // write to output
     if (self.memAddrB == -1) {
@@ -135,37 +128,37 @@ library SubleqLib {
         emit StepGiven(9); return 9;
       }
       // write contents addressed by first operator into output
-      self.memoryManager.write(self.oc, valueA);
+      mm.write(_index, self.oc, valueA);
       // increment oc
-      self.memoryManager.write(self.ocPosition, bytes8(self.oc+ 8));
+      mm.write(_index, self.ocPosition, bytes8(self.oc+ 8));
       // increment pc by three words
-      self.memoryManager.write(self.pcPosition, bytes8(self.pc + 24));
-      self.memoryManager.finishWritePhase();
+      mm.write(_index, self.pcPosition, bytes8(self.pc + 24));
+      mm.finishWritePhase(_index);
       // cancelling this rule of halting on negative write
       // if (int64(valueA) < 0) { memoryManager.write(hsPosition, 1); }
       emit StepGiven(0);
       return 0;
     }
     // if valueB is non-negative, make the subleq operation
-    bytes8 valueB = self.memoryManager.read(uint64(self.memAddrB) * 8);
+    bytes8 valueB = mm.read(_index, uint64(self.memAddrB) * 8);
     bytes8 subtraction = bytes8(int64(valueB) - int64(valueA));
     // write subtraction to memory addressed by second operator
-    self.memoryManager.write(uint64(self.memAddrB) * 8, subtraction);
+    mm.write(_index, uint64(self.memAddrB) * 8, subtraction);
     if (int64(subtraction) <= 0) {
       if (uint64(self.memAddrC) > self.rSize) { emit StepGiven(7); return 7; }
       if (self.memAddrC < 0) {
         // halt machine
-        self.memoryManager.write(self.hsPosition, 1);
-        self.memoryManager.finishWritePhase();
+        mm.write(_index, self.hsPosition, 1);
+        mm.finishWritePhase(_index);
         emit StepGiven(0);
         return 0;
       }
-      self.memoryManager.write(self.pcPosition, bytes8(self.memAddrC * 8));
-      self.memoryManager.finishWritePhase();
+      mm.write(_index, self.pcPosition, bytes8(self.memAddrC * 8));
+      mm.finishWritePhase(_index);
       emit StepGiven(0);
       return 0;
     }
-    self.memoryManager.write(self.pcPosition, bytes8(self.pc + 24));
+    mm.write(_index, self.pcPosition, bytes8(self.pc + 24));
     emit StepGiven(0);
     return 0;
   }

@@ -13,13 +13,13 @@ contract SubleqInterface is mortal
 
   // Library functions
 
-  function SubleqInterface(address memoryManagerAddress) public
-  {
-    subleq.init(memoryManagerAddress);
-  }
+  //function SubleqInterface(address memoryManagerAddress) public
+  // {
+    //subleq.init(memoryManagerAddress);
+  //}
 
-  function step() public returns (address)
+  function step(address _mm, uint32 _index) public returns (address)
   {
-    return subleq.step();
+    return subleq.step(_mm, _index);
   }
 }
