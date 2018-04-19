@@ -118,4 +118,3 @@ contract MMInterface is mortal {
     mm.finishUpdateHashPhase();
   }
 }
-
