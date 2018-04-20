@@ -1,17 +1,17 @@
 /// @title An instantiator of memory managers
 pragma solidity ^0.4.18;
 
-contract MMInstantiator {
-  uint32 private currentIndex = 0;
+import "./MMInterface.sol";
 
-  enum state { WaitingValues, Reading, Writing, UpdatingHashes,
-               FinishedUpdating }
+contract MMInstantiator is MMInterface {
+  uint32 private currentIndex = 0;
 
   // the privider will fill the memory for the client to read and write
   // memory starts with hash and all values that are inserted are first verified
   // then client can read inserted values and write some more
   // finally the provider has to update the hash to account for writes
 
+  // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
   struct MMCtx {
     address provider;
     address client;
@@ -41,7 +41,7 @@ contract MMInstantiator {
   event FinishedUpdating(uint32 _index);
 
   function instantiate(address _provider, address _client,
-                       bytes32 _initialHash) public
+                       bytes32 _initialHash) public returns (uint32)
   {
     require(_provider != _client);
     instance[currentIndex].provider = _provider;
@@ -51,6 +51,7 @@ contract MMInstantiator {
     instance[currentIndex].currentState = state.WaitingValues;
     emit MemoryCreated(currentIndex, _initialHash);
     currentIndex++;
+    return(currentIndex - 1);
   }
 
   /// @notice Proves that a certain value in initial memory is correct
