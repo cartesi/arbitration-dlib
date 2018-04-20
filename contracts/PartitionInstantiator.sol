@@ -183,47 +183,49 @@ contract PartitionInstantiator {
   // Getters methods
 
   function challenger(uint32 _index) public view returns (address) {
-    return partition.challenger;
+    return instance[_index].challenger;
   }
 
   function claimer(uint32 _index) public view returns (address) {
-    return partition.claimer;
+    return instance[_index].claimer;
   }
 
   function finalTime(uint32 _index) public view returns (uint) {
-    return partition.finalTime;
+    return instance[_index].finalTime;
   }
 
   function timeSubmitted(uint32 _index, uint key) public view returns (bool) {
-    return partition.timeSubmitted[key];
+    return instance[_index].timeSubmitted[key];
   }
 
   function timeHash(uint32 _index, uint key) public view returns (bytes32) {
-    return partition.timeHash[key];
+    return instance[_index].timeHash[key];
   }
 
   function querySize(uint32 _index) public view returns (uint) {
-    return partition.querySize;
+    return instance[_index].querySize;
   }
 
   function queryArray(uint32 _index, uint i) public view returns (uint) {
-    return partition.queryArray[i];
+    return instance[_index].queryArray[i];
   }
 
   function timeOfLastMove(uint32 _index) public view returns (uint) {
-    return partition.timeOfLastMove;
+    return instance[_index].timeOfLastMove;
   }
 
   function roundDuration(uint32 _index) public view returns (uint) {
-    return partition.roundDuration;
+    return instance[_index].roundDuration;
   }
 
-  function currentState(uint32 _index) public view returns (PartitionLib.state) {
-    return partition.currentState;
+  function currentState(uint32 _index) public view
+    returns (PartitionInstantiator.state)
+  {
+    return instance[_index].currentState;
   }
 
   function divergenceTime(uint32 _index) public view returns (uint) {
-    return partition.divergenceTime;
+    return instance[_index].divergenceTime;
   }
 }
 
