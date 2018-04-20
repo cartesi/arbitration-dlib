@@ -1,12 +1,12 @@
 /// @title Partition instantiator
 pragma solidity ^0.4.18;
 
-contract PartitionInstantiator {
+import "./PartitionInterface.sol";
+
+contract PartitionInstantiator is PartitionInterface {
   uint32 private currentIndex = 0;
 
-  enum state { WaitingQuery, WaitingHashes,
-               ChallengerWon, ClaimerWon, DivergenceFound }
-
+  // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
   struct PartitionCtx {
     address challenger;
     address claimer;
@@ -35,6 +35,7 @@ contract PartitionInstantiator {
                        address _claimer, bytes32 _initialHash,
                        bytes32 _claimerFinalHash, uint _finalTime,
                        uint _querySize, uint _roundDuration) public
+    returns(uint32)
   {
     require(_challenger != _claimer);
     require(_finalTime > 0);
@@ -60,6 +61,7 @@ contract PartitionInstantiator {
     emit PartitionCreated(currentIndex);
     emit QueryPosted(currentIndex, instance[currentIndex].queryArray);
     currentIndex++;
+    return(currentIndex - 1);
   }
 
   // split an interval using (querySize) points (placed in queryArray)
@@ -180,6 +182,7 @@ contract PartitionInstantiator {
                          instance[_index].timeHash[instance[_index].divergenceTime],
                          instance[_index].timeHash[instance[_index].divergenceTime + 1]);
   }
+
   // Getters methods
 
   function challenger(uint32 _index) public view returns (address) {
