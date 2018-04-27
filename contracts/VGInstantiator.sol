@@ -1,4 +1,4 @@
-/// @title Verification game instantiator
+// @title Verification game instantiator
 pragma solidity ^0.4.0;
 
 import "./PartitionInterface.sol";
@@ -46,11 +46,11 @@ contract VGInstantiator is SubleqInterface
                   uint _valueETH, uint _valueXYZ, uint _roundDuration,
                   bytes32 _initialHash, bytes32 _claimerFinalHash,
                   uint _finalTime, uint32 _partitionInstance);
-  event PartitionDivergenceFound();
-  event MachineStepGiven();
-  event VGFinished(state);
+  event PartitionDivergenceFound(uint32 _index, uint32 _mmInstance);
+  event MemoryWriten(uint32 _index);
+  event VGFinished(state _finalState);
 
-  function VGInstantiator(address _tokenContractAddress,
+  constructor(address _tokenContractAddress,
                           address _partitionInstantiatorAddress,
                           address _mmInstantiatorAddress) public {
     tokenContract = Token(_tokenContractAddress);
@@ -95,10 +95,11 @@ contract VGInstantiator is SubleqInterface
     uint32 partitionIndex = instance[_index].partitionInstance;
     if (partition.currentState(partitionIndex)
         == PartitionInterface.state.ChallengerWon)
-      { challengerWins(_index); }
+      { challengerWins(_index); return; }
     if (partition.currentState(partitionIndex)
         == PartitionInterface.state.ClaimerWon)
-      { claimerWins(_index); }
+      { claimerWins(_index); return; }
+    require(false);
   }
 
   /// @notice After the partition challenge has lead to a divergence in the hash
@@ -122,6 +123,7 @@ contract VGInstantiator is SubleqInterface
                      instance[_index].hashBeforeDivergence);
     instance[_index].timeOfLastMove = now;
     instance[_index].currentState = state.WaitMemoryProveValues;
+    emit PartitionDivergenceFound(_index, instance[_index].mmInstance);
   }
 
   /// @notice After having filled the memory manager with the necessary data,
@@ -134,6 +136,7 @@ contract VGInstantiator is SubleqInterface
     subleq.step(address(mm), instance[_index].mmInstance);
     instance[_index].timeOfLastMove = now;
     instance[_index].currentState = state.WaitMemoryUpdateValues;
+    emit MemoryWriten(_index);
   }
 
   /// @notice After having updated to memory to account for the addresses
@@ -164,21 +167,29 @@ contract VGInstantiator is SubleqInterface
   {
       tokenContract.transfer(instance[_index].challenger,
                              instance[_index].valueXYZ);
-      balanceOf[instance[_index].challenger].add(instance[_index].valueETH);
+      balanceOf[instance[_index].challenger]
+        = balanceOf[instance[_index].challenger].add(instance[_index].valueETH);
       instance[_index].currentState = state.FinishedChallengerWon;
+      emit VGFinished(instance[_index].currentState);
   }
 
   function claimerWins(uint32 _index) private
   {
       tokenContract.transfer(instance[_index].claimer,
                              instance[_index].valueXYZ);
-      balanceOf[instance[_index].claimer].add(instance[_index].valueETH);
+      balanceOf[instance[_index].claimer]
+        = balanceOf[instance[_index].claimer].add(instance[_index].valueETH);
       instance[_index].currentState = state.FinishedClaimerWon;
+      emit VGFinished(instance[_index].currentState);
   }
 
   function withdraw() public {
     uint amount = balanceOf[msg.sender];
     balanceOf[msg.sender] = 0;
     msg.sender.transfer(amount);
+  }
+
+  function getBalanceOf(address _client) public view returns (uint) {
+    return balanceOf[_client];
   }
 }

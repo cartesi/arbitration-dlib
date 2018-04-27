@@ -1,9 +1,13 @@
 var BigNumber = require('bignumber.js');
 
-pcPosition = BigNumber("0x4000000000000000");
-icPosition = BigNumber("0x4000000000000008");
-ocPosition = BigNumber("0x4000000000000010");
-haltedState = BigNumber("0x4000000000000018");
+let pcPosition = BigNumber("0x4000000000000000");
+let icPosition = BigNumber("0x4000000000000008");
+let ocPosition = BigNumber("0x4000000000000010");
+let haltedState = BigNumber("0x4000000000000018");
+let ram_size_position = BigNumber("0x4000000000000020");
+let input_size_position = BigNumber("0x4000000000000028");
+let output_size_position = BigNumber("0x4000000000000030");
+
 
 function pad(n, width, z) {
   z = z || '0';
@@ -31,9 +35,9 @@ function two_complement_32_inverse(hexa) {
   throw "Not 32 bits conversion";
 }
 
-const ramSize = 100000;
-const inputMaxSize = 100000;
-const outputMaxSize = 100000;
+//const ramSize = 100000;
+//const inputMaxSize = 100000;
+//const outputMaxSize = 100000;
 
 class Subleq {
 
@@ -44,6 +48,7 @@ class Subleq {
   // Architecture
   // +----------------+----------------+----------------+----------------+
   // | ram            | pc ic oc       | input          | output         |
+  // |                | rs is os       |                |                |
   // +----------------+----------------+----------------+----------------+
   // Exit codes:
   // 0  - Success
@@ -66,6 +71,9 @@ class Subleq {
     let ic = this.mm.getWord(icPosition);
     let oc = this.mm.getWord(ocPosition);
     let hs = this.mm.getWord(haltedState);
+    let ramSize = this.mm.getWord(ram_size_position);
+    let inputMaxSize = this.mm.getWord(input_size_position);
+    let outputMaxSize = this.mm.getWord(output_size_position);
     let memAddrA = two_complement_32_inverse(this.mm.getWord(pc));
     let memAddrB = two_complement_32_inverse(this.mm.getWord(
       BigNumber(pc).plus(8)));
@@ -83,7 +91,8 @@ class Subleq {
        { return 6; }
     // if first operator is -1, read from input
     if (memAddrA == -1) {
-      if (BigNumber(ic).minus("0x8000000000000000") > inputMaxSize) {
+      if (BigNumber(ic).minus("0x8000000000000000")
+          > inputMaxSize) {
         return 8;
       }
       // read input at ic
@@ -101,7 +110,8 @@ class Subleq {
     if (memAddrB == -1) {
       // write contents addressed by first operator into output
       this.mm.setValue(oc, valueA);
-      if (BigNumber(oc).minus("0xc000000000000000") > outputMaxSize) {
+      if (BigNumber(oc).minus("0xc000000000000000") >
+          outputMaxSize) {
         return 9;
       }
       // increment oc

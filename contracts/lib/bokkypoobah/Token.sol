@@ -91,10 +91,7 @@ contract Token is ERC20Interface {
   mapping(address => mapping(address => uint)) allowed;
 
 
-  // ------------------------------------------------------------------------
-  // Constructor
-  // ------------------------------------------------------------------------
-  function Token() public {
+  constructor() public {
     symbol = "THM";
     name = "Fixed Supply Token";
     decimals = 18;
