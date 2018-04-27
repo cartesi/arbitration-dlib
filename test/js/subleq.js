@@ -26,6 +26,10 @@ describe('Testing subleq', function() {
     let oc_position = BigNumber("0x4000000000000010");
     // address for halted state
     let halted_state = BigNumber("0x4000000000000018");
+    let rSizePosition = BigNumber("0x4000000000000020");
+    let iSizePosition = BigNumber("0x4000000000000028");
+    let oSizePosition = BigNumber("0x4000000000000030");
+
     let initial_ic = BigNumber("0x8000000000000000");
     let initial_oc = BigNumber("0xc000000000000000");
 
@@ -45,6 +49,12 @@ describe('Testing subleq', function() {
 
     // write oc position
     myMM.setValue(oc_position, initial_oc);
+    // write rSize
+    myMM.setValue(rSizePosition, 100000)
+    // write iSize
+    myMM.setValue(iSizePosition, 100000)
+    // write oSize
+    myMM.setValue(oSizePosition, 100000)
     // write input in memory contract
     var inputLength = input_string.length;
     for (let i = 0; i < inputLength; i++) {
@@ -55,6 +65,7 @@ describe('Testing subleq', function() {
     }
 
     mySubleq.run(300);
+
 
     let j = 0;
     let response;
