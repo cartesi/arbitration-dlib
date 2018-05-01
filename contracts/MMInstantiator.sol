@@ -1,5 +1,5 @@
 /// @title An instantiator of memory managers
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.21;
 
 import "./MMInterface.sol";
 
@@ -36,24 +36,13 @@ contract MMInstantiator is MMInterface {
   mapping(uint32 => MMCtx) private instance;
 
   event MemoryCreated(uint32 _index, bytes32 _initialHash);
-
   event ValueProved(uint32 _index, bool _wasRead, uint64 _position,
                     bytes8 _value);
+  event ValueRead(uint32 _index, uint64 _position, bytes8 _value);
+  event ValueWritten(uint32 _index, uint64 _position, bytes8 _value);
   event FinishedProofs(uint32 _index);
   event FinishedReplay(uint32 _index);
-/*
-  event ValueSubmitted(uint32 _index, uint64 _addressSubmitted,
-                       bytes8 _valueSubmitted);
-  event FinishedSubmittions(uint32 _index);
-  event FinishedReading(uint32 _index);
-  event ValueWritten(uint32 _index, uint64 _addressSubmitted,
-                     bytes8 _valueSubmitted);
-  event FinishedWriting(uint32 _index);
-  event HashUpdated(uint32 _index, uint64 _addressSubmitted,
-                    bytes8 _valueSubmitted,
-                    bytes32 _newHash);
-  event FinishedUpdating(uint32 _index);
-*/
+
   function instantiate(address _provider, address _client,
                        bytes32 _initialHash) public returns (uint32)
   {
@@ -70,9 +59,9 @@ contract MMInstantiator is MMInterface {
   }
 
   /// @notice Proves that a certain value in current memory is correct
-  /// @param _position The address of the value to be confirmed
-  /// @param _value The value in that address to be confirmed
-  /// @param proof The proof that this value is correct
+  // @param _position The address of the value to be confirmed
+  // @param _value The value in that address to be confirmed
+  // @param proof The proof that this value is correct
   function proveRead(uint32 _index, uint64 _position, bytes8 _value,
                      bytes32[] proof) public
   {
@@ -104,9 +93,13 @@ contract MMInstantiator is MMInterface {
                       bytes _oldValue, bytes8 _newValue,
                       bytes32[] proof) public {
     require(msg.sender == instance[_index].provider);
+    // "Only provider can proveWrite");
     require(instance[_index].currentState == state.WaitingProofs);
+    // "proveWrite needs WaitingProofs state");
     require((_position & 7) == 0);
+    // "proveWrite needs aligned addresses");
     require(proof.length == 61);
+    // "proveWrite needs proofs with length 61");
     // verifying the proof of the old value
     bytes32 runningHash = keccak256(_oldValue);
     uint64 eight = 8;
@@ -117,7 +110,8 @@ contract MMInstantiator is MMInterface {
         runningHash = keccak256(proof[i], runningHash);
       }
     }
-    require (runningHash == instance[_index].newHash);
+    require(runningHash == instance[_index].newHash);
+    // "proveWrite detected false proof");
     // find out new hash after write
     runningHash = keccak256(_newValue);
     for (i = 0; i < 61; i++) {
@@ -153,9 +147,11 @@ contract MMInstantiator is MMInterface {
     uint pointer = instance[_index].historyPointer;
     require(instance[_index].history[pointer].wasRead);
     require(instance[_index].history[pointer].position == _position);
+    bytes8 value = instance[_index].history[pointer].value;
     delete(instance[_index].history[pointer]);
     instance[_index].historyPointer++;
-    return instance[_index].history[pointer].value;
+    emit ValueRead(_index, _position, value);
+    return value;
   }
 
   /// @notice Replays a write in memory that was proved correct
@@ -173,6 +169,7 @@ contract MMInstantiator is MMInterface {
     require(instance[_index].history[pointer].value == _value);
     delete(instance[_index].history[pointer]);
     instance[_index].historyPointer++;
+    emit ValueWritten(_index, _position, _value);
   }
 
   /// @notice Stop write (or read) phase

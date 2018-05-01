@@ -37,7 +37,7 @@ class MemoryManager {
         if (position in this.memoryMap) {
             return this.memoryMap[position];
         }
-        return 0;
+        return "0x0000000000000000";
     }
 
   setValue(position, value) {
