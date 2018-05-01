@@ -18,7 +18,7 @@ contract VGInstantiator is SubleqInterface
 
   mapping (address => uint) private balanceOf;
 
-  enum state { WaitPartition, WaitMemoryProveValues, WaitMemoryUpdateValues,
+  enum state { WaitPartition, WaitMemoryProveValues,
                FinishedClaimerWon, FinishedChallengerWon }
 
   // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
@@ -126,24 +126,15 @@ contract VGInstantiator is SubleqInterface
 
   /// @notice After having filled the memory manager with the necessary data,
   /// the provider calls this function to instantiate the machine and perform
-  /// one step on it. The machine will write to memory now. Later, the
-  /// provider will be expected to update the memory hash accordingly.
-  function continueMachineRunChallenge(uint32 _index) public {
-    require(msg.sender == instance[_index].challenger);
-    require(instance[_index].currentState == state.WaitMemoryProveValues);
-    subleq.step(address(mm), instance[_index].mmInstance);
-    instance[_index].timeOfLastMove = now;
-    instance[_index].currentState = state.WaitMemoryUpdateValues;
-  }
-
-  /// @notice After having updated to memory to account for the addresses
-  /// that were written by the machine, the provider now calls this function
-  /// to settle the challenge in his favour.
+  /// one step on it. The machine will write to memory and we will find out
+  /// who is correct
   function settleVerificationGame(uint32 _index) public {
     require(msg.sender == instance[_index].challenger);
-    require(instance[_index].currentState == state.WaitMemoryUpdateValues);
+    require(instance[_index].currentState == state.WaitMemoryProveValues);
     uint32 mmIndex = instance[_index].mmInstance;
-    require(mm.currentState(mmIndex) == MMInterface.state.FinishedUpdating);
+    require(mm.currentState(mmIndex) == MMInterface.state.WaitingReplay);
+    subleq.step(address(mm), mmIndex);
+    require(mm.currentState(mmIndex) == MMInterface.state.FinishedReplay);
     require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence);
     challengerWins(_index);
   }
@@ -153,8 +144,7 @@ contract VGInstantiator is SubleqInterface
   function claimVictoryByDeadline(uint32 _index) public
   {
     require(msg.sender == instance[_index].claimer);
-    require((instance[_index].currentState == state.WaitMemoryProveValues) ||
-            (instance[_index].currentState == state.WaitMemoryUpdateValues));
+    require(instance[_index].currentState == state.WaitMemoryProveValues);
     require(now > instance[_index].timeOfLastMove
             + instance[_index].roundDuration);
     claimerWins(_index);
