@@ -1,13 +1,12 @@
 var BigNumber = require('bignumber.js');
 
-let pcPosition = BigNumber("0x4000000000000000");
-let icPosition = BigNumber("0x4000000000000008");
-let ocPosition = BigNumber("0x4000000000000010");
-let haltedState = BigNumber("0x4000000000000018");
-let ram_size_position = BigNumber("0x4000000000000020");
-let input_size_position = BigNumber("0x4000000000000028");
-let output_size_position = BigNumber("0x4000000000000030");
-
+let pcPosition = "0x4000000000000000";
+let icPosition = "0x4000000000000008";
+let ocPosition = "0x4000000000000010";
+let haltedState = "0x4000000000000018";
+let ram_size_position = "0x4000000000000020";
+let input_size_position = "0x4000000000000028";
+let output_size_position = "0x4000000000000030";
 
 function pad(n, width, z) {
   z = z || '0';
@@ -34,10 +33,6 @@ function two_complement_32_inverse(hexa) {
   }
   throw "Not 32 bits conversion";
 }
-
-//const ramSize = 100000;
-//const inputMaxSize = 100000;
-//const outputMaxSize = 100000;
 
 class Subleq {
 
@@ -92,16 +87,16 @@ class Subleq {
     // if first operator is -1, read from input
     if (memAddrA == -1) {
       if (BigNumber(ic).minus("0x8000000000000000")
-          > inputMaxSize) {
+          .isGreaterThan(BigNumber(inputMaxSize))) {
         return 8;
       }
       // read input at ic
       let loaded = this.mm.getWord(ic);
-      this.mm.setValue(memAddrB * 8, loaded);
+      this.mm.setWord(memAddrB * 8, loaded);
       // increment ic;
-      this.mm.setValue(icPosition, BigNumber(ic).plus(8));
+      this.mm.setWord(icPosition, BigNumber(ic).plus(8));
       // increment pc by three words
-      this.mm.setValue(pcPosition, BigNumber(pc).plus(24));
+      this.mm.setWord(pcPosition, BigNumber(pc).plus(24));
       return 0;
     }
     // if valueA is non-negative, load the memory address
@@ -109,15 +104,15 @@ class Subleq {
     // if first operator is positive but second operator is -1, write output
     if (memAddrB == -1) {
       // write contents addressed by first operator into output
-      this.mm.setValue(oc, valueA);
-      if (BigNumber(oc).minus("0xc000000000000000") >
-          outputMaxSize) {
+      this.mm.setWord(oc, valueA);
+      if (BigNumber(oc).minus("0xc000000000000000")
+          .isGreaterThan(BigNumber(outputMaxSize))) {
         return 9;
       }
       // increment oc
-      this.mm.setValue(ocPosition, BigNumber(oc).plus(8));
+      this.mm.setWord(ocPosition, BigNumber(oc).plus(8));
       // increment pc by three words
-      this.mm.setValue(pcPosition, BigNumber(pc).plus(24));
+      this.mm.setWord(pcPosition, BigNumber(pc).plus(24));
       // cancelling this rule of halting on negative write
       // if (two_complement_32_inverse(valueA) < 0) { return 1; }
       return 0;
@@ -127,19 +122,19 @@ class Subleq {
     let subtraction = (two_complement_32_inverse(valueB)
                        - two_complement_32_inverse(valueA));
     // write subtraction to memory addressed by second operator
-    this.mm.setValue(memAddrB * 8, two_complement_32(subtraction));
+    this.mm.setWord(memAddrB * 8, two_complement_32(subtraction));
     if (subtraction <= 0) {
       if (memAddrC < 0) {
         // halt machine
-        this.mm.setValue(haltedState, two_complement_32(1));
+        this.mm.setWord(haltedState, two_complement_32(1));
         return 0;
       }
       if (memAddrC > ramSize)
         { return 7; }
-      this.mm.setValue(pcPosition, memAddrC * 8);
+      this.mm.setWord(pcPosition, memAddrC * 8);
       return 0;
     }
-    this.mm.setValue(pcPosition, BigNumber(pc).plus(24));
+    this.mm.setWord(pcPosition, BigNumber(pc).plus(24));
     return 0;
   }
 
@@ -147,6 +142,7 @@ class Subleq {
     var a;
     for(var i = 0; i < maxTime; i++) {
       a = this.step();
+      //console.log(a);
       if (a != 0) break;
     }
   }

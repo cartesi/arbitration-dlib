@@ -37,10 +37,10 @@ contract('DepthInterface', function(accounts) {
       '18446744073709551384': '0x1111111111111111'
     }
     for (key in values) {
-      aliceMM.setValue(key, values[key]);
-      bobMM.setValue(key, values[key]);
+      aliceMM.setWord(key, values[key]);
+      bobMM.setWord(key, values[key]);
     }
-    bobMM.setValue('18446744073709551368', '0x1111111111111112');
+    bobMM.setWord('18446744073709551368', '0x1111111111111112');
 
     roundDuration = 3600;
   });

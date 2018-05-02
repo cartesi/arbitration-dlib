@@ -14,6 +14,11 @@ function hashWord(word) {
   return w3.utils.soliditySha3({type: 'uint64', value: word});
 }
 
+function toHex(value) {
+  return "0x" + ("000000000000000" +
+                 BigNumber(value).toString(16)).substr(-16);
+}
+
 class MemoryManager {
 
   constructor() {
@@ -31,25 +36,26 @@ class MemoryManager {
     //     value: word content at address (assumed zero if not present)
     this.memoryMap = {};
     this.isRecording = false;
-    this.recordedReads = [];
-    this.recordedWrites = [];
+    this.recorded = [];
   }
 
 
   getWord(position) {
     position = BigNumber(position);
     if (position.mod(8) != 0) throw "Position should be word-aligned";
+    position = toHex(position);
     if (position in this.memoryMap) {
       if (this.isRecording) {
-        let a = "0x" + ("000000000000000" +
-                        BigNumber(this.memoryMap[position]).toString(16)).substr(-16);
-        this.recordedReads.push([position, a]);
+        this.recorded.push([true, position, this.memoryMap[position]]);
       }
+      // console.log("Getting at: " + position + " the value "
+      //             + this.memoryMap[position]);
       return this.memoryMap[position];
     }
     if (this.isRecording) {
-      this.recordedReads.push([position, "0x0000000000000000"]);
+      this.recorded.push([true, position, "0x0000000000000000"]);
     }
+    // console.log("Getting at: " + position + " the value 0x0000000000000000");
     return "0x0000000000000000";
   }
 
@@ -71,31 +77,25 @@ class MemoryManager {
 
   stopRecording() {
     this.isRecording = false;
-    this.recordedReads = [];
-    this.recordedWritess = [];
+    this.recorded = [];
   }
 
-  getRecordedReads() {
-    return this.recordedReads.slice();
+  getRecorded() {
+    return this.recorded.slice();
   }
 
-  getRecordedWrites() {
-    return this.recordedWrites.slice();
-  }
-
-  setValue(position, value) {
+  setWord(position, value) {
     if (BigNumber(position).mod(8) != 0) throw "Position should be word-aligned";
     if (BigNumber(position).isLessThan(0)) throw "Setting negative value"
     if (BigNumber(position).isGreaterThanOrEqualTo(
       BigNumber(2).pow(64))) throw "Setting value too large"
+    position = toHex(position);
+    value = toHex(value);
+    // console.log("Setting: " + position + " to " + value);
     if (this.isRecording) {
-      let a = "0x" + ("000000000000000" +
-                      BigNumber(value).toString(16)).substr(-16);
-      this.recordedWrites.push([position, a]);
-      this.memoryMap[position] = value;
-    } else {
-      this.memoryMap[position] = value;
+      this.recorded.push([false, position, value]);
     }
+    this.memoryMap[position] = value;
   }
 
   // function returns the merkel hash of a sub-interval in memory.
@@ -103,6 +103,7 @@ class MemoryManager {
   //   log2length - the log 2 of the length (in words) of the sub-interval
   // recall that if a key is not present, the value is assumed to be zero.
   subMerkel(memory, begin, log2length) {
+    //console.log("begin: " + toHex(begin) + ", log: " + log2length);
     if (!(begin instanceof BigNumber)) throw "Begin should be big number";
     // if begin is not an aligned word, throw
     if (begin.mod(8) != 0) throw "Begin should be word-aligned";
@@ -111,8 +112,8 @@ class MemoryManager {
     if (isEmpty(memory)) return this.iteratedZeroHashes[log2length];
     // if memory is not empty, but length = 1 return the hash of the word
     if (log2length === 0)
-      if (begin in memory) {
-        return hashWord(memory[begin]);
+      if (toHex(begin) in memory) {
+        return hashWord(memory[toHex(begin)]);
       } else {
         return hashWord(0);
       }
@@ -138,9 +139,9 @@ class MemoryManager {
     //      + " for (" + (begin.plus(BigNumber(2).pow(log2length + 2)))
     //      + ", " + (begin.plus(BigNumber(2).pow(log2length + 3))) + ")");
     return w3.utils.sha3(
-      this.subMerkel(mem1, begin, log2length - 1) +
-        this.subMerkel(mem2, begin.plus(BigNumber(2).pow(log2length + 2)),
-                       log2length - 1).replace(/^0x/, '')
+      this.subMerkel(mem1, begin, log2length - 1)
+        + this.subMerkel(mem2, begin.plus(BigNumber(2).pow(log2length + 2)),
+                         log2length - 1).replace(/^0x/, '')
     );
   }
 
@@ -156,7 +157,7 @@ class MemoryManager {
       BigNumber(2).pow(64))) throw "Proving position too large"
 
     //console.log("position " + position);
-    var value = this.getWord(position);
+    var value = this.getWord(position.toString());
     //console.log("value " + value);
     var proof = [];
     for (var i = 0; i < 61; i++) {
@@ -241,7 +242,10 @@ class MemoryManager {
     return (running_hash == this.merkel());
   }
 
-  merkel() { return this.subMerkel(this.memoryMap, BigNumber(0), 61) }
+  merkel() {
+    // console.log(this.memoryMap);
+    return this.subMerkel(this.memoryMap, BigNumber(0), 61);
+  }
 }
 
 module.exports = { MemoryManager: MemoryManager };

@@ -35,7 +35,7 @@ contract('MMInstantiator', function(accounts) {
     ]
 
     for (key in initialValues) {
-      myMM.setValue(key, initialValues[key])
+      myMM.setWord(key, initialValues[key])
     }
     initialHash = myMM.merkel()
 
@@ -91,7 +91,7 @@ contract('MMInstantiator', function(accounts) {
         expect(event._wasRead).to.be.false;
         expect(event._position.toString()).to.equal(u.position);
         expect(event._value.toString()).to.equal(u.value);
-        myMM.setValue(u.position, u.value);
+        myMM.setWord(u.position, u.value);
         response = await mmInstantiator.newHash.call(index);
         expect(response).to.equal(myMM.merkel());
       }
@@ -99,7 +99,7 @@ contract('MMInstantiator', function(accounts) {
 
     let replayMM = new mm.MemoryManager();
     for (key in initialValues) {
-      replayMM.setValue(key, initialValues[key])
+      replayMM.setWord(key, initialValues[key])
     }
 
     // finish proof phase
@@ -121,7 +121,7 @@ contract('MMInstantiator', function(accounts) {
           replayMM.getWord(u.position));
       } else {
         // submit write
-        replayMM.setValue(u.position, u.value);
+        replayMM.setWord(u.position, u.value);
         response = await mmInstantiator
           .write(index, u.position,
                  twoComplement32(u.value),

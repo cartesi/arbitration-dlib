@@ -7,8 +7,8 @@ const unwrap = require('../utils/tools.js').unwrap;
 const getError = require('../utils/tools.js').getError;
 const twoComplement32 = require('../utils/tools.js').twoComplement32;
 
-var SimpleMemoryInterface = artifacts.require("./SimpleMemoryInterface.sol");
 var SubleqInterface = artifacts.require("./SubleqInterface.sol");
+var SimpleMemoryInstantiator = artifacts.require("./SimpleMemoryInstantiator.sol");
 
 contract('SubleqInterface', function(accounts) {
   let echo_binary = [-1, 21, 3,
@@ -40,14 +40,9 @@ contract('SubleqInterface', function(accounts) {
 
   it('Checking functionalities', async function() {
     // launch simpleMemory contract from accounts[2], who will be the owner
-    let simpleMemoryInterface = await SimpleMemoryInterface
+    let simpleMemoryInstantiator = await SimpleMemoryInstantiator
         .new({ from: accounts[2], gas: 2000000 });
-    mmAddress = simpleMemoryInterface.address;
-
-    // check if waiting to write values
-    currentState = await simpleMemoryInterface
-      .currentState.call(0, { from: accounts[0] });
-    expect(currentState.toNumber()).to.equal(0);
+    mmAddress = simpleMemoryInstantiator.address;
 
     // write program to memory contract
     //console.log('write program to memory contract');
@@ -55,23 +50,23 @@ contract('SubleqInterface', function(accounts) {
     for (let i = 0; i < softwareLength; i++) {
       // write on memory
       //console.log(twoComplement32(echo_binary[i]));
-      response = await simpleMemoryInterface
+      response = await simpleMemoryInstantiator
         .write(0, 8 * i, twoComplement32(echo_binary[i]),
                { from: accounts[0], gas: 1500000 })
     }
 
     // write ic
-    response = await simpleMemoryInterface.write(0, icPosition, icInitial)
+    response = await simpleMemoryInstantiator.write(0, icPosition, icInitial)
     // write oc
-    response = await simpleMemoryInterface.write(0, ocPosition, ocInitial)
+    response = await simpleMemoryInstantiator.write(0, ocPosition, ocInitial)
     // write rSize
-    response = await simpleMemoryInterface
+    response = await simpleMemoryInstantiator
       .write(0, rSizePosition, "0x0000000000100000")
     // write iSize
-    response = await simpleMemoryInterface
+    response = await simpleMemoryInstantiator
       .write(0, iSizePosition, "0x0000000000100000")
     // write oSize
-    response = await simpleMemoryInterface
+    response = await simpleMemoryInstantiator
       .write(0, oSizePosition, "0x0000000000100000")
 
     // write input in memory contract
@@ -80,47 +75,39 @@ contract('SubleqInterface', function(accounts) {
     var inputLength = input_string.length;
     for (let i = 0; i < inputLength; i++) {
       // write on memory
-      response = await simpleMemoryInterface
+      response = await simpleMemoryInstantiator
         .write(0, BigNumber(icInitial).plus(8 * i).toString(),
                twoComplement32(input_string[i]),
                { from: accounts[0], gas: 1500000 })
     }
 
-    // finishing writing
-    response = await simpleMemoryInterface
-      .finishWritePhase(0, { from: accounts[0], gas: 1500000 })
-
     // launch subleq from accounts[2], who will be the owner
     let subleqInterface = await SubleqInterface
-        .new(simpleMemoryInterface.address,
+        .new(simpleMemoryInstantiator.address,
              { from: accounts[2], gas: 2000000 });
-
-    // check if waiting to read values
-    currentState = await simpleMemoryInterface.currentState.call(0);
-    expect(currentState.toNumber()).to.equal(1);
 
     let running = 0;
 
     while (running === 0) {
       // print machine state for debugging
-      // response = await simpleMemoryInterface
+      // response = await simpleMemoryInstantiator
       //   .read(pcPosition)
       //   .call({ from: accounts[0], gas: 1500000 });
       // console.log("pc = " + response);
       // for (let j = 0; j < 10; j++) {
-      //   response = await simpleMemoryInterface
+      //   response = await simpleMemoryInstantiator
       //     .read(8 * j)
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("hd at: " + j + " = " + response);
       // }
       // for (let j = 0; j < 10; j++) {
-      //   response = await simpleMemoryInterface
+      //   response = await simpleMemoryInstantiator
       //     .read(BigNumber(icInitial).add(8 * j))
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("input at: " + j + " = " + response);
       // }
       // for (let j = 0; j < 10; j++) {
-      //   response = await simpleMemoryInterface
+      //   response = await simpleMemoryInstantiator
       //     .read(BigNumber(ocInitial).add(8 * j))
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("output at: " + j + " = " + response);
@@ -128,6 +115,7 @@ contract('SubleqInterface', function(accounts) {
       // console.log(await subleqInterface.owner());
       // console.log(accounts[2]);
 
+      //
       response = await subleqInterface.step(
         mmAddress, 0,
         { from: accounts[2], gas: 1500000 })
@@ -142,7 +130,7 @@ contract('SubleqInterface', function(accounts) {
     let j = 0;
     // verifying output
     while (true) {
-      response = await simpleMemoryInterface
+      response = await simpleMemoryInstantiator
         .read.call(0, BigNumber(ocInitial).plus(8 * j).toString(),
                    { from: accounts[0], gas: 1500000 });
       //console.log(response);

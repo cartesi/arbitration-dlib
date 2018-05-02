@@ -46,16 +46,16 @@ contract('VGInstantiator', function(accounts) {
 
     let input_string = [2, 4, 8, 16, 32, 64, -1];
 
-    let hd_position = BigNumber("0x0000000000000000");
-    let pc_position = BigNumber("0x4000000000000000");
-    let ic_position = BigNumber("0x4000000000000008");
-    let oc_position = BigNumber("0x4000000000000010");
-    let halted_state = BigNumber("0x4000000000000018");
-    let ram_size_position = BigNumber("0x4000000000000020");
-    let input_size_position = BigNumber("0x4000000000000028");
-    let output_size_position = BigNumber("0x4000000000000030");
-    let initial_ic = BigNumber("0x8000000000000000");
-    let initial_oc = BigNumber("0xc000000000000000");
+    let hd_position = "0x0000000000000000";
+    let pc_position = "0x4000000000000000";
+    let ic_position = "0x4000000000000008";
+    let oc_position = "0x4000000000000010";
+    let halted_state = "0x4000000000000018";
+    let ram_size_position = "0x4000000000000020";
+    let input_size_position = "0x4000000000000028";
+    let output_size_position = "0x4000000000000030";
+    let initial_ic = "0x8000000000000000";
+    let initial_oc = "0xc000000000000000";
     aliceMM = new mm.MemoryManager();
     bobMM = new mm.MemoryManager();
     aliceSubleq = new subleq.Subleq(aliceMM)
@@ -65,21 +65,21 @@ contract('VGInstantiator', function(accounts) {
       // write program to memory contract
       var softwareLength = echo_binary.length;
       for (let i = 0; i < softwareLength; i++) {
-        mm.setValue(8 * i, twoComplement32(echo_binary[i]));
+        mm.setWord(8 * i, twoComplement32(echo_binary[i]));
       }
       // write ic position
-      mm.setValue(ic_position, initial_ic);
+      mm.setWord(ic_position, initial_ic);
       expect(mm.getWord(ic_position)).to.equal(initial_ic);
       // write oc position
-      mm.setValue(oc_position, initial_oc);
+      mm.setWord(oc_position, initial_oc);
       // write sizes
-      mm.setValue(ram_size_position, "0x0000000000010000");
-      mm.setValue(input_size_position, "0x0000000000010000");
-      mm.setValue(output_size_position, "0x0000000000010000");
+      mm.setWord(ram_size_position, "0x0000000000010000");
+      mm.setWord(input_size_position, "0x0000000000010000");
+      mm.setWord(output_size_position, "0x0000000000010000");
       // write input in memory contract
       var inputLength = input_string.length;
       for (let i = 0; i < inputLength; i++) {
-        mm.setValue(initial_ic.plus(8 * i),
+        mm.setWord(BigNumber(initial_ic).plus(8 * i),
                     twoComplement32(input_string[i]));
         expect(mm.getWord(BigNumber(initial_ic).plus(8 * i)))
           .to.equal(twoComplement32(input_string[i]));
@@ -98,7 +98,7 @@ contract('VGInstantiator', function(accounts) {
       bobHistory.push(bobMM.merkel());
       aliceSubleq.step();
       bobSubleq.step();
-      if (i == lastAggreement) { bobMM.setValue(ic_position, initial_ic); }
+      if (i == lastAggreement) { bobMM.setWord(ic_position, initial_ic); }
     }
     claimerFinalHash = bobMM.merkel();
   });
@@ -228,79 +228,50 @@ contract('VGInstantiator', function(accounts) {
     freshMM.snapshot();
     freshMM.startRecording();
     freshSubleq.step();
-    let recordedReads = freshMM.getRecordedReads();
-    let recordedWrites = freshMM.getRecordedWrites();
+    let recorded = freshMM.getRecorded();
     let finalHash = freshMM.merkel();
     freshMM.restore();
-    for (let i = 0; i < recordedReads.length; i++)
+    for (let i = 0; i < recorded.length; i++)
     {
-      proof = freshMM.generateProof(recordedReads[i][0]);
-      response = await mmInstantiator
-        .proveValue(mmIndex, recordedReads[i][0].toString(),
-                    recordedReads[i][1], proof,
-                    { from: accounts[0], gas: 2000000 });
-    }
-    // finish phase of proving values in memory
-    response = await mmInstantiator
-      .finishSubmissionPhase(mmIndex,
-                             { from: accounts[0], gas: 2000000 });
-    // check if memory is in reading phase
-    currentState = await mmInstantiator.currentState.call(mmIndex);
-    expect(currentState.toNumber()).to.equal(1);
-    // run the machine for one step
-    response = await vgInstantiator.continueMachineRunChallenge(
-      vgIndex, { from: accounts[0], gas: 3000000 });
-    // check if memory is in update hash phase
-    currentState = await mmInstantiator.currentState.call(mmIndex);
-    expect(currentState.toNumber()).to.equal(3);
-    // check how many values were writen
-    sizeWriteArray = await mmInstantiator
-      .getWrittenAddressLength(mmIndex, { from: accounts[0] });
-    expect(sizeWriteArray.toNumber()).to.equal(recordedWrites.length);
-    // update each hash that was written
-    for(let i = sizeWriteArray - 1; i >=0; i--) {
-      // address writen
-      addressWritten = await mmInstantiator
-        .writtenAddress.call(mmIndex, i, { from: accounts[0] });
-      oldValue = freshMM.getWord(addressWritten);
-      newValue = await mmInstantiator
-        .valueWritten.call(mmIndex, addressWritten, { from: accounts[0] });
-      proof = freshMM.generateProof(addressWritten);
-      response = await mmInstantiator
-        .updateHash(mmIndex, proof, { from: accounts[0], gas: 2000000 })
-      event = getEvent(response, 'HashUpdated');
-      expect(event).not.to.be.undefined;
-      expect(event._valueSubmitted).to.equal(newValue);
-      freshMM.setValue(addressWritten, newValue);
-      // check that false merkel proofs fail
-      proof[2] =
-        '0xfedc0d0dbbd855c8ead6735448f9b0960e4a5a7cf43b4ef90afe607de7618cae';
-      expect(await getError(
-        mmInstantiator.updateHash(mmIndex, proof,
-                                  { from: accounts[0], gas: 2000000 }))
-            ).to.have.string('VM Exception');
+      proof = freshMM.generateProof(recorded[i][1]);
+      if (recorded[i][0]) {
+        response = await mmInstantiator
+          .proveRead(mmIndex, recorded[i][1].toString(),
+                     recorded[i][2], proof,
+                     { from: accounts[0], gas: 2000000 });
+      } else {
+        response = await mmInstantiator
+          .proveWrite(mmIndex, recorded[i][1].toString(),
+                      freshMM.getWord(recorded[i][1]).toString(),
+                      recorded[i][2], proof,
+                      { from: accounts[0], gas: 2000000 });
+        freshMM.setWord(recorded[i][1], recorded[i][2]);
+      }
     }
     // check final hash
     remoteFinalHash = await mmInstantiator.newHash.call(mmIndex);
-    expect(finalHash).to.equal(remoteFinalHash);
-    // finishing update hash phase
-    response = await mmInstantiator
-      .finishUpdateHashPhase(mmIndex, { from: accounts[0], gas: 2000000 })
-    expect(getEvent(response, 'FinishedUpdating')).not.to.be.undefined;
-    // check if memory is in finished state
+    expect(remoteFinalHash).to.equal(finalHash);
+    // check if memory is still waiting proofs
     currentState = await mmInstantiator.currentState.call(mmIndex);
-    expect(currentState.toNumber()).to.equal(4);
+    expect(currentState.toNumber()).to.equal(0);
     // check that alice has no balance in ether and no tokens
     response = await vgInstantiator.getBalanceOf.call(accounts[0]);
     expect(response.toNumber()).to.equal(0);
     response = await token.balanceOf(accounts[0]);
     expect(response.toNumber()).to.equal(0);
     let aliceInitialBalance = await web3.eth.getBalance(accounts[0]);
+    // finish proof phase for memory manager
+    response = await mmInstantiator.finishProofPhase(mmIndex);
+    event = getEvent(response, 'FinishedProofs');
+    expect(event).not.to.be.undefined;
+    // check if memory is still waiting proofs
+    currentState = await mmInstantiator.currentState.call(mmIndex);
+    expect(currentState.toNumber()).to.equal(1);
     // finish challange
     response = await vgInstantiator.settleVerificationGame(
       vgIndex, { from: accounts[0], gas: 3000000 });
     event = getEvent(response, "VGFinished");
-    expect(event._finalState.toNumber()).to.equal(4);
+    expect(event._finalState.toNumber()).to.equal(3);
     // check that alice has a tokens
     response = await token.balanceOf(accounts[0]);
     expect(response.toNumber()).to.equal(1000);
