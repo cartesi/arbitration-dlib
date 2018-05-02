@@ -35,6 +35,7 @@ class MemoryManager {
     this.recordedWrites = [];
   }
 
+
   getWord(position) {
     position = BigNumber(position);
     if (position.mod(8) != 0) throw "Position should be word-aligned";
@@ -49,7 +50,7 @@ class MemoryManager {
     if (this.isRecording) {
       this.recordedReads.push([position, "0x0000000000000000"]);
     }
-    return 0;
+    return "0x0000000000000000";
   }
 
   snapshot() {
