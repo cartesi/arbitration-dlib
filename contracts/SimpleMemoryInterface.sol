@@ -1,11 +1,10 @@
 /// @title Memory manager contract
 pragma solidity ^0.4.18;
 
-import "./mortal.sol";
-import "./SimpleMemoryLib.sol";
+//import "./SimpleMemoryLib.sol";
 
-contract SimpleMemoryInterface is mortal {
-
+contract SimpleMemoryInterface {
+  /*
   using SimpleMemoryLib for SimpleMemoryLib.SimpleMemoryCtx;
   SimpleMemoryLib.SimpleMemoryCtx simpleMemory;
 
@@ -15,14 +14,9 @@ contract SimpleMemoryInterface is mortal {
     return simpleMemory.value[key];
   }
 
-  function currentState(uint32) public view returns (SimpleMemoryLib.state)
-  {
-    return simpleMemory.currentState;
-  }
-
   // Library functions
 
-  function SimpleMemoryInterface() public
+  constructor() public
   {
     simpleMemory.init();
   }
@@ -38,10 +32,6 @@ contract SimpleMemoryInterface is mortal {
   {
     simpleMemory.write(0, _address, _value);
   }
-
-  function finishWritePhase(uint32) public
-  {
-    simpleMemory.finishWritePhase(0);
-  }
+  */
 }
 

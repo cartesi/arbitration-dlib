@@ -1,7 +1,7 @@
 /// @title Subleq machine contract
 pragma solidity ^0.4.18;
 
-contract mmInstantiator {
+contract mmInterface {
   function read(uint32 _index, uint64 _address) public view returns (bytes8);
   function write(uint32 _index, uint64 _address, bytes8 _value) public;
   function finishReplayPhase(uint32 _index) public;
@@ -73,8 +73,7 @@ library SubleqLib {
     // 11 -
     // 12 -
     // 13 -
-    mmInstantiator mm = mmInstantiator(_mmAddress);
-
+    mmInterface mm = mmInterface(_mmAddress);
     self.pcPosition = 0x4000000000000000;
     self.icPosition = 0x4000000000000008;
     self.ocPosition = 0x4000000000000010;

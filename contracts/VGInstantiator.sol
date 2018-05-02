@@ -130,18 +130,6 @@ contract VGInstantiator is SubleqInterface
   /// the provider calls this function to instantiate the machine and perform
   /// one step on it. The machine will write to memory now. Later, the
   /// provider will be expected to update the memory hash accordingly.
-  function continueMachineRunChallenge(uint32 _index) public {
-    require(msg.sender == instance[_index].challenger);
-    require(instance[_index].currentState == state.WaitMemoryProveValues);
-    subleq.step(address(mm), instance[_index].mmInstance);
-    instance[_index].timeOfLastMove = now;
-    instance[_index].currentState = state.WaitMemoryUpdateValues;
-    emit MemoryWriten(_index);
-  }
-
-  /// @notice After having updated to memory to account for the addresses
-  /// that were written by the machine, the provider now calls this function
-  /// to settle the challenge in his favour.
   function settleVerificationGame(uint32 _index) public {
     require(msg.sender == instance[_index].challenger);
     require(instance[_index].currentState == state.WaitMemoryProveValues);
@@ -149,7 +137,7 @@ contract VGInstantiator is SubleqInterface
     require(mm.currentState(mmIndex) == MMInterface.state.WaitingReplay);
     subleq.step(address(mm), mmIndex);
     require(mm.currentState(mmIndex) == MMInterface.state.FinishedReplay);
-    require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence);
+    //require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence);
     challengerWins(_index);
   }
 
