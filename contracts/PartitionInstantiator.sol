@@ -23,6 +23,31 @@ contract PartitionInstantiator is PartitionInterface {
 
   mapping(uint32 => PartitionCtx) private instance;
 
+  // These are the possible states and transitions of the contract.
+  //
+  //          +---+
+  //          |   |
+  //          +---+
+  //            |
+  //            | instantiate
+  //            v
+  //          +---------------+  claimVictoryByTimeout  +---------------+
+  //          | WaitingHashes |------------------------>| ChallengerWon |
+  //          +---------------+                         +---------------+
+  //            |  ^
+  // replyQuery |  | makeQuery
+  //            v  |
+  //          +--------------+                          +------------+
+  //          | WaitingQuery |------------------------->| ClaimerWon |
+  //          +--------------+   claimVictoryByTimeout  +------------+
+  //            |
+  //            | presentDivergence
+  //            v
+  //          +-----------------+
+  //          | DivergenceFound |
+  //          +-----------------+
+  //
+
   event PartitionCreated(uint32 _index);
   event QueryPosted(uint32 _index, uint[] _queryTimes);
   event HashesPosted(uint32 _index, uint[] _postedTimes, bytes32[] _postedHashes);
@@ -231,4 +256,3 @@ contract PartitionInstantiator is PartitionInterface {
     return instance[_index].divergenceTime;
   }
 }
-
