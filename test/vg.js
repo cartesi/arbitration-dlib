@@ -45,7 +45,6 @@ contract('VGInstantiator', function(accounts) {
                        0, 0, 0]
 
     let input_string = [2, 4, 8, 16, 32, 64, -1];
-
     let hd_position = "0x0000000000000000";
     let pc_position = "0x4000000000000000";
     let ic_position = "0x4000000000000008";
@@ -85,15 +84,14 @@ contract('VGInstantiator', function(accounts) {
           .to.equal(twoComplement32(input_string[i]));
       }
     }
-
     initMachine(aliceMM);
     initMachine(bobMM);
     initialHash = aliceMM.merkel();
-    finalTime = 300;
+    finalTime = 60;
 
     aliceHistory = [];
     bobHistory = [];
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < finalTime; i++) {
       aliceHistory.push(aliceMM.merkel());
       bobHistory.push(bobMM.merkel());
       aliceSubleq.step();
@@ -118,15 +116,16 @@ contract('VGInstantiator', function(accounts) {
       { from: accounts[2], gas: 2000000 });
     event = getEvent(response, 'Approval');
     expect(event).not.to.be.undefined;
-    // instantiate a partition
+    // instantiate a verification game
     response = await vgInstantiator.instantiate(
-      accounts[0], accounts[1], web3.utils.toWei('1', 'ether'),
-      1000, 3600, initialHash, claimerFinalHash, finalTime,
-      { from: accounts[2], gas: 2000000,
-        value: web3.utils.toWei('1', 'ether') });
+      accounts[0], accounts[1], 1000, 3600, initialHash, claimerFinalHash,
+      finalTime, { from: accounts[2], gas: 2000000 });
     event = getEvent(response, 'VGCreated');
     vgIndex = event._index.toNumber();
-    partitionIndex = event._partitionInstance.toNumber();
+    // check if the state is WaitSale
+    currentState = await vgInstantiator
+      .currentState.call(vgIndex);
+    expect(currentState.toNumber()).to.equal(0);
     // alice attempting to win by partition timeout should fail
     expect(await getError(
       vgInstantiator
@@ -137,6 +136,14 @@ contract('VGInstantiator', function(accounts) {
       vgInstantiator
         .startMachineRunChallenge(vgIndex, { from: accounts[0], gas: 1500000 }))
           ).to.have.string('VM Exception');
+    // mimic a waiting period equivalent to the sale phase
+    response = await sendRPC(web3, { jsonrpc: "2.0",
+                                     method: "evm_increaseTime",
+                                     params: [5 * 3650], id: Date.now() });
+    // finish sale phase
+    response = await vgInstantiator.finishSalePhase(vgIndex);
+    event = getEvent(response, 'StartChallenge');
+    partitionIndex = event._partitionInstance.toNumber();
     // create empty arrays for query and reply
     queryArray = [];
     replyArray = [];
@@ -254,9 +261,7 @@ contract('VGInstantiator', function(accounts) {
     // check if memory is still waiting proofs
     currentState = await mmInstantiator.currentState.call(mmIndex);
     expect(currentState.toNumber()).to.equal(0);
-    // check that alice has no balance in ether and no tokens
-    response = await vgInstantiator.getBalanceOf.call(accounts[0]);
-    expect(response.toNumber()).to.equal(0);
+    // check that alice has no tokens
     response = await token.balanceOf(accounts[0]);
     expect(response.toNumber()).to.equal(0);
     let aliceInitialBalance = await web3.eth.getBalance(accounts[0]);
@@ -271,23 +276,10 @@ contract('VGInstantiator', function(accounts) {
     response = await vgInstantiator.settleVerificationGame(
       vgIndex, { from: accounts[0], gas: 3000000 });
     event = getEvent(response, "VGFinished");
-    expect(event._finalState.toNumber()).to.equal(3);
+    expect(event._finalState.toNumber()).to.equal(4);
     // check that alice has a tokens
     response = await token.balanceOf(accounts[0]);
     expect(response.toNumber()).to.equal(1000);
-    // check that alice has one ether in vg balance
-    response = await vgInstantiator.getBalanceOf.call(accounts[0]);
-    expect(response.toString()).to.equal(web3.utils.toWei('1', 'ether'));
-    // withdraw alice's balance
-    await vgInstantiator.withdraw({ from: accounts[0] });
-    // check that alice has no ether in vg balance
-    response = await vgInstantiator.getBalanceOf.call(accounts[0]);
-    expect(response.toNumber()).to.equal(0);
-    // check that alice has one ether in her wallet
-    let aliceFinalBalance = await web3.eth.getBalance(accounts[0]);
-    expect(Number(aliceFinalBalance))
-      .to.be.above(Number(aliceInitialBalance)
-                   + Number(web3.utils.toWei('0.9', 'ether')));
   });
 /*
   it('Claimer timeout', async function() {
