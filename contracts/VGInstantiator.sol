@@ -1,5 +1,5 @@
 // @title Verification game instantiator
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.23;
 
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
@@ -16,9 +16,7 @@ contract VGInstantiator is SubleqInterface
   PartitionInterface private partition;
   MMInterface private mm;
 
-  mapping (address => uint) private balanceOf;
-
-  enum state { WaitPartition, WaitMemoryProveValues,
+  enum state { WaitSale, WaitPartition, WaitMemoryProveValues,
                FinishedClaimerWon, FinishedChallengerWon }
 
   // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
@@ -26,8 +24,9 @@ contract VGInstantiator is SubleqInterface
   {
     address challenger; // the two parties involved in each instance
     address claimer;
-    uint valueETH; // the value given to the winner in Ether
     uint valueXYZ; // the value given to the winner in XYZ
+    uint challengerPriceXYZ; // price if someone wants to buy from challenger
+    uint claimerPriceXYZ; // price if someone wants to buy from claimer
     uint roundDuration; // time interval to interact with this contract
     bytes32 initialHash; // hash of machine memory that both aggree uppon
     bytes32 claimerFinalHash; // hash claimer commited for machine after running
@@ -43,48 +42,109 @@ contract VGInstantiator is SubleqInterface
   mapping(uint32 => VGCtx) private instance;
 
   event VGCreated(uint32 _index, address _challenger, address _claimer,
-                  uint _valueETH, uint _valueXYZ, uint _roundDuration,
-                  bytes32 _initialHash, bytes32 _claimerFinalHash,
-                  uint _finalTime, uint32 _partitionInstance);
+                  uint _valueXYZ, uint _roundDuration, bytes32 _initialHash,
+                  bytes32 _claimerFinalHash, uint _finalTime,
+                  uint32 _partitionInstance);
+  event DoubleDown(uint32 _index, uint _value);
+  event StartChallenge(uint32 _index, uint32 _partitionInstance);
   event PartitionDivergenceFound(uint32 _index, uint32 _mmInstance);
   event MemoryWriten(uint32 _index);
   event VGFinished(state _finalState);
 
   constructor(address _tokenContractAddress,
-                          address _partitionInstantiatorAddress,
-                          address _mmInstantiatorAddress) public {
+              address _partitionInstantiatorAddress,
+              address _mmInstantiatorAddress) public {
     tokenContract = Token(_tokenContractAddress);
     partition = PartitionInterface(_partitionInstantiatorAddress);
     mm = MMInterface(_mmInstantiatorAddress);
   }
 
-  function instantiate(address _challenger, address _claimer, uint _valueETH,
-                       uint _valueXYZ, uint _roundDuration,
-                       bytes32 _initialHash, bytes32 _claimerFinalHash,
-                       uint _finalTime) public payable
-    returns (uint32)
+  function instantiate(address _challenger, address _claimer, uint _valueXYZ,
+                       uint _roundDuration, bytes32 _initialHash,
+                       bytes32 _claimerFinalHash, uint _finalTime)
+    public returns (uint32)
   {
-    require(msg.value >= _valueETH);
     require(tokenContract.transferFrom(msg.sender, address(this), _valueXYZ));
     require(_finalTime > 0);
     instance[currentIndex].challenger = _challenger;
     instance[currentIndex].claimer = _claimer;
-    instance[currentIndex].valueETH = _valueETH;
     instance[currentIndex].valueXYZ = _valueXYZ;
+    instance[currentIndex].challengerPriceXYZ = _valueXYZ;
+    instance[currentIndex].claimerPriceXYZ = _valueXYZ;
     instance[currentIndex].roundDuration = _roundDuration;
     instance[currentIndex].initialHash = _initialHash;
     instance[currentIndex].claimerFinalHash = _claimerFinalHash;
     instance[currentIndex].finalTime = _finalTime;
-    instance[currentIndex].partitionInstance =
-      partition.instantiate(_challenger, _claimer, _initialHash,
-                            _claimerFinalHash, _finalTime, 10, _roundDuration);
     instance[currentIndex].timeOfLastMove = now;
-    instance[currentIndex].currentState = state.WaitPartition;
-    emit VGCreated(currentIndex, _challenger, _claimer, _valueETH, _valueXYZ,
+    instance[currentIndex].currentState = state.WaitSale;
+    emit VGCreated(currentIndex, _challenger, _claimer, _valueXYZ,
                    _roundDuration, _initialHash, _claimerFinalHash, _finalTime,
                    instance[currentIndex].partitionInstance);
     currentIndex++;
     return(currentIndex - 1);
+  }
+
+  /// @notice During sale phase, anyone can increase the value of an instance
+  /// this can be used to signal to buyers that the player is convinced of the
+  /// victory and incentivise them to execute the verification off-chain.
+  /// Be careful to increase the price before if needed.
+  function doubleDown(uint32 _index, uint _value) public {
+    require(instance[_index].currentState == state.WaitSale);
+    require(tokenContract.transferFrom(msg.sender, address(this), _value));
+    emit DoubleDown(_index, _value);
+  }
+
+  function setChallengerPrice(uint32 _index, uint _newPrice) public {
+    require(instance[_index].currentState == state.WaitSale);
+    require(msg.sender == instance[_index].challenger);
+    instance[_index].challengerPriceXYZ = _newPrice;
+  }
+
+  function setClaimerPrice(uint32 _index, uint _newPrice) public {
+    require(instance[_index].currentState == state.WaitSale);
+    require(msg.sender == instance[_index].claimer);
+    instance[_index].claimerPriceXYZ = _newPrice;
+  }
+
+  /// @notice During sale phase, anyone can buy this instance from challenger
+  function buyInstanceFromChallenger(uint32 _index) public {
+    require(instance[_index].currentState == state.WaitSale);
+    require(tokenContract.transferFrom(msg.sender, address(this),
+                                       instance[_index].challengerPriceXYZ));
+    require(tokenContract.transfer(instance[_index].challenger,
+                                   instance[_index].challengerPriceXYZ));
+    instance[_index].challenger = msg.sender;
+    instance[_index].challengerPriceXYZ = instance[_index].valueXYZ;
+  }
+
+  /// @notice During sale phase, anyone can buy this instance from claimer
+  function buyInstanceFromClaimer(uint32 _index) public {
+    require(instance[_index].currentState == state.WaitSale);
+    require(tokenContract.transferFrom(msg.sender, address(this),
+                                       instance[_index].claimerPriceXYZ));
+    require(tokenContract.transfer(instance[_index].claimer,
+                                   instance[_index].claimerPriceXYZ));
+    instance[_index].claimer = msg.sender;
+    instance[_index].claimerPriceXYZ = instance[_index].valueXYZ;
+  }
+
+  /// @notice After five times the round duration, the sale phase can be
+  /// finished by anyone.
+  function finishSalePhase(uint32 _index) public {
+    require(instance[_index].currentState == state.WaitSale);
+    require(now > instance[_index].timeOfLastMove
+            + 5 * instance[_index].roundDuration);
+    instance[_index].timeOfLastMove = now;
+    instance[_index].partitionInstance =
+      partition.instantiate(instance[_index].challenger,
+                            instance[_index].claimer,
+                            instance[_index].initialHash,
+                            instance[_index].claimerFinalHash,
+                            instance[_index].finalTime,
+                            10,
+                            instance[_index].roundDuration);
+    instance[_index].currentState = state.WaitPartition;
+    emit StartChallenge(_index, instance[_index].partitionInstance);
   }
 
   /// @notice In case one of the parties wins the partition challenge by
@@ -156,8 +216,6 @@ contract VGInstantiator is SubleqInterface
   {
       tokenContract.transfer(instance[_index].challenger,
                              instance[_index].valueXYZ);
-      balanceOf[instance[_index].challenger]
-        = balanceOf[instance[_index].challenger].add(instance[_index].valueETH);
       instance[_index].currentState = state.FinishedChallengerWon;
       emit VGFinished(instance[_index].currentState);
   }
@@ -166,19 +224,14 @@ contract VGInstantiator is SubleqInterface
   {
       tokenContract.transfer(instance[_index].claimer,
                              instance[_index].valueXYZ);
-      balanceOf[instance[_index].claimer]
-        = balanceOf[instance[_index].claimer].add(instance[_index].valueETH);
       instance[_index].currentState = state.FinishedClaimerWon;
       emit VGFinished(instance[_index].currentState);
   }
 
-  function withdraw() public {
-    uint amount = balanceOf[msg.sender];
-    balanceOf[msg.sender] = 0;
-    msg.sender.transfer(amount);
+  function currentState(uint32 _index) public view
+    returns (VGInstantiator.state)
+  {
+    return instance[_index].currentState;
   }
 
-  function getBalanceOf(address _client) public view returns (uint) {
-    return balanceOf[_client];
-  }
 }
