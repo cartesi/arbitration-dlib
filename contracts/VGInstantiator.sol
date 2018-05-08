@@ -27,6 +27,7 @@ contract VGInstantiator is SubleqInterface
     uint valueXYZ; // the value given to the winner in XYZ
     uint challengerPriceXYZ; // price if someone wants to buy from challenger
     uint claimerPriceXYZ; // price if someone wants to buy from claimer
+    uint salesDuration; // time interval to sell the instance
     uint roundDuration; // time interval to interact with this contract
     bytes32 initialHash; // hash of machine memory that both aggree uppon
     bytes32 claimerFinalHash; // hash claimer commited for machine after running
@@ -60,8 +61,9 @@ contract VGInstantiator is SubleqInterface
   }
 
   function instantiate(address _challenger, address _claimer, uint _valueXYZ,
-                       uint _roundDuration, bytes32 _initialHash,
-                       bytes32 _claimerFinalHash, uint _finalTime)
+                       uint _roundDuration, uint _salesDuration,
+                       bytes32 _initialHash, bytes32 _claimerFinalHash,
+                       uint _finalTime)
     public returns (uint32)
   {
     require(tokenContract.transferFrom(msg.sender, address(this), _valueXYZ));
@@ -71,6 +73,7 @@ contract VGInstantiator is SubleqInterface
     instance[currentIndex].valueXYZ = _valueXYZ;
     instance[currentIndex].challengerPriceXYZ = _valueXYZ;
     instance[currentIndex].claimerPriceXYZ = _valueXYZ;
+    instance[currentIndex].salesDuration = _salesDuration;
     instance[currentIndex].roundDuration = _roundDuration;
     instance[currentIndex].initialHash = _initialHash;
     instance[currentIndex].claimerFinalHash = _claimerFinalHash;
@@ -133,7 +136,7 @@ contract VGInstantiator is SubleqInterface
   function finishSalePhase(uint32 _index) public {
     require(instance[_index].currentState == state.WaitSale);
     require(now > instance[_index].timeOfLastMove
-            + 5 * instance[_index].roundDuration);
+            + instance[_index].salesDuration);
     instance[_index].timeOfLastMove = now;
     instance[_index].partitionInstance =
       partition.instantiate(instance[_index].challenger,

@@ -36,4 +36,3 @@ contract SimpleMemoryInstantiator {
 
   function finishReplayPhase(uint32) pure public { }
 }
-

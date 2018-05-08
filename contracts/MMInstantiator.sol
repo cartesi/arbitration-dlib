@@ -2,6 +2,7 @@
 pragma solidity ^0.4.21;
 
 import "./MMInterface.sol";
+import "./Merkle.sol";
 
 contract MMInstantiator is MMInterface {
   uint32 private currentIndex = 0;
@@ -25,11 +26,6 @@ contract MMInstantiator is MMInterface {
     bytes32 newHash; // hash after some write operations have been proved
     ReadWrite[] history;
     uint historyPointer;
-    //mapping(uint64 => bool) addressWasSubmitted; // mark address submitted
-    //mapping(uint64 => bytes8) valueSubmitted; // value submitted to address
-    //mapping(uint64 => bool) addressWasWritten; // marks address as written
-    //mapping(uint64 => bytes8) valueWritten; // value written to address
-    //uint64[] writtenAddress;
     state currentState;
   }
 
@@ -67,19 +63,8 @@ contract MMInstantiator is MMInterface {
   {
     require(msg.sender == instance[_index].provider);
     require(instance[_index].currentState == state.WaitingProofs);
-    require((_position & 7) == 0);
-    require(proof.length == 61);
-    bytes32 runningHash = keccak256(_value);
-    // iterate the hash with the uncle subtree provided in proof
-    uint64 eight = 8;
-    for (uint i = 0; i < 61; i++) {
-      if ((_position & (eight << i)) == 0) {
-        runningHash = keccak256(runningHash, proof[i]);
-      } else {
-        runningHash = keccak256(proof[i], runningHash);
-      }
-    }
-    require (runningHash == instance[_index].newHash);
+    require(Merkle.getRoot(_position, _value, proof)
+            == instance[_index].newHash);
     instance[_index].history.push(ReadWrite(true, _position, _value));
     emit ValueProved(_index, true, _position, _value);
   }
@@ -90,38 +75,17 @@ contract MMInstantiator is MMInterface {
   /// @param _newValue to be written
   /// @param proof The proof that the old value was correct
   function proveWrite(uint32 _index, uint64 _position,
-                      bytes _oldValue, bytes8 _newValue,
+                      bytes8 _oldValue, bytes8 _newValue,
                       bytes32[] proof) public {
     require(msg.sender == instance[_index].provider);
     // "Only provider can proveWrite");
     require(instance[_index].currentState == state.WaitingProofs);
-    // "proveWrite needs WaitingProofs state");
-    require((_position & 7) == 0);
-    // "proveWrite needs aligned addresses");
-    require(proof.length == 61);
-    // "proveWrite needs proofs with length 61");
-    // verifying the proof of the old value
-    bytes32 runningHash = keccak256(_oldValue);
-    uint64 eight = 8;
-    for (uint i = 0; i < 61; i++) {
-      if ((_position & (eight << i)) == 0) {
-        runningHash = keccak256(runningHash, proof[i]);
-      } else {
-        runningHash = keccak256(proof[i], runningHash);
-      }
-    }
-    require(runningHash == instance[_index].newHash);
-    // "proveWrite detected false proof");
-    // find out new hash after write
-    runningHash = keccak256(_newValue);
-    for (i = 0; i < 61; i++) {
-      if ((_position & (eight << i)) == 0) {
-        runningHash = keccak256(runningHash, proof[i]);
-      } else {
-        runningHash = keccak256(proof[i], runningHash);
-      }
-    }
-    instance[_index].newHash = runningHash;
+    // check proof of old value
+    require(Merkle.getRoot(_position, _oldValue, proof)
+            == instance[_index].newHash);
+    // update root
+    instance[_index].newHash =
+      Merkle.getRoot(_position, _newValue, proof);
     instance[_index].history
       .push(ReadWrite(false, _position, _newValue));
     emit ValueProved(_index, false, _position, _newValue);
