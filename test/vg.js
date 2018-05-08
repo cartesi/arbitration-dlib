@@ -118,8 +118,8 @@ contract('VGInstantiator', function(accounts) {
     expect(event).not.to.be.undefined;
     // instantiate a verification game
     response = await vgInstantiator.instantiate(
-      accounts[0], accounts[1], 1000, 3600, initialHash, claimerFinalHash,
-      finalTime, { from: accounts[2], gas: 2000000 });
+      accounts[0], accounts[1], 1000, 20000, 3600, initialHash,
+      claimerFinalHash, finalTime, { from: accounts[2], gas: 2000000 });
     event = getEvent(response, 'VGCreated');
     vgIndex = event._index.toNumber();
     // check if the state is WaitSale
@@ -139,7 +139,7 @@ contract('VGInstantiator', function(accounts) {
     // mimic a waiting period equivalent to the sale phase
     response = await sendRPC(web3, { jsonrpc: "2.0",
                                      method: "evm_increaseTime",
-                                     params: [5 * 3650], id: Date.now() });
+                                     params: [20000], id: Date.now() });
     // finish sale phase
     response = await vgInstantiator.finishSalePhase(vgIndex);
     event = getEvent(response, 'StartChallenge');
@@ -171,7 +171,8 @@ contract('VGInstantiator', function(accounts) {
       // alice claiming victory should fail
       expect(await getError(
         partitionInstantiator
-          .claimVictoryByTime(partitionIndex, { from: accounts[0], gas: 1500000 }))
+          .claimVictoryByTime(partitionIndex,
+                              { from: accounts[0], gas: 1500000 }))
             ).to.have.string('VM Exception');
       // send hashes
       response = await partitionInstantiator
@@ -205,12 +206,14 @@ contract('VGInstantiator', function(accounts) {
       if (+rightPoint == +leftPoint + 1) {
         // if the interval is unitary, present divergence
         response = await partitionInstantiator.presentDivergence(
-          partitionIndex, leftPoint.toString(), { from: accounts[0], gas: 1500000 })
+          partitionIndex, leftPoint.toString(),
+          { from: accounts[0], gas: 1500000 })
         event = getEvent(response, 'DivergenceFound');
         expect(event).not.to.be.undefined;
         expect(+event._timeOfDivergence).to.equal(lastAggreement);
         // check if the state is DivergenceFound
-        currentState = await partitionInstantiator.currentState.call(partitionIndex);
+        currentState = await partitionInstantiator
+          .currentState.call(partitionIndex);
         expect(currentState.toNumber()).to.equal(4);
         break;
       } else {
@@ -226,7 +229,7 @@ contract('VGInstantiator', function(accounts) {
     event = getEvent(response, 'PartitionDivergenceFound');
     expect(event).not.to.be.undefined;
     mmIndex = event._mmInstance.toNumber();
-    // having found the point of divergence we simulate the machine at that point
+    // having found the point of divergence we simulate the machine at point
     let freshMM = new mm.MemoryManager();
     initMachine(freshMM);
     let freshSubleq = new subleq.Subleq(freshMM)

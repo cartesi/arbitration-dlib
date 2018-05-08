@@ -32,7 +32,6 @@ contract('SimpleMemoryInstantiator', function(accounts) {
       simpleMemoryInstantiator.write(0, 4, '0x0000000000000000',
                                   { from: accounts[0], gas: 1500000 }))
           ).to.have.string('VM Exception');
-
     // finishing writing
     response = await simpleMemoryInstantiator
       .finishProofPhase(0, { from: accounts[0], gas: 1500000 })
