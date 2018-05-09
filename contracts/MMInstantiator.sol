@@ -1,10 +1,11 @@
 /// @title An instantiator of memory managers
 pragma solidity ^0.4.21;
 
+import "./Decorated.sol";
 import "./MMInterface.sol";
 import "./Merkle.sol";
 
-contract MMInstantiator is MMInterface {
+contract MMInstantiator is MMInterface, Decorated {
   uint32 private currentIndex = 0;
 
   // the privider will fill the memory for the client to read and write
@@ -60,8 +61,8 @@ contract MMInstantiator is MMInterface {
   // @param proof The proof that this value is correct
   function proveRead(uint32 _index, uint64 _position, bytes8 _value,
                      bytes32[] proof) public
+    onlyBy(instance[_index].provider)
   {
-    require(msg.sender == instance[_index].provider);
     require(instance[_index].currentState == state.WaitingProofs);
     require(Merkle.getRoot(_position, _value, proof)
             == instance[_index].newHash);
@@ -76,9 +77,9 @@ contract MMInstantiator is MMInterface {
   /// @param proof The proof that the old value was correct
   function proveWrite(uint32 _index, uint64 _position,
                       bytes8 _oldValue, bytes8 _newValue,
-                      bytes32[] proof) public {
-    require(msg.sender == instance[_index].provider);
-    // "Only provider can proveWrite");
+                      bytes32[] proof) public
+    onlyBy(instance[_index].provider)
+  {
     require(instance[_index].currentState == state.WaitingProofs);
     // check proof of old value
     require(Merkle.getRoot(_position, _oldValue, proof)
@@ -92,8 +93,9 @@ contract MMInstantiator is MMInterface {
   }
 
   /// @notice Stop memory insertion and start read and write phase
-  function finishProofPhase(uint32 _index) public {
-    require(msg.sender == instance[_index].provider);
+  function finishProofPhase(uint32 _index) public
+    onlyBy(instance[_index].provider)
+  {
     require(instance[_index].currentState == state.WaitingProofs);
     instance[_index].currentState = state.WaitingReplay;
     emit FinishedProofs(_index);
@@ -102,10 +104,10 @@ contract MMInstantiator is MMInterface {
   /// @notice Replays a read in memory that has been proved to be correct
   /// according to initial hash
   /// @param _position of the desired memory
-  function read(uint32 _index, uint64 _position)
-    public returns (bytes8)
+  function read(uint32 _index, uint64 _position) public
+    onlyBy(instance[_index].client)
+    returns (bytes8)
   {
-    require(msg.sender == instance[_index].client);
     require(instance[_index].currentState == state.WaitingReplay);
     require((_position & 7) == 0);
     uint pointer = instance[_index].historyPointer;
@@ -121,10 +123,9 @@ contract MMInstantiator is MMInterface {
   /// @notice Replays a write in memory that was proved correct
   /// @param _position of the write
   /// @param _value to be written
-  function write(uint32 _index, uint64 _position, bytes8 _value)
-    public
+  function write(uint32 _index, uint64 _position, bytes8 _value) public
+    onlyBy(instance[_index].client)
   {
-    require(msg.sender == instance[_index].client);
     require(instance[_index].currentState == state.WaitingReplay);
     require((_position & 7) == 0);
     uint pointer = instance[_index].historyPointer;
@@ -137,8 +138,9 @@ contract MMInstantiator is MMInterface {
   }
 
   /// @notice Stop write (or read) phase
-  function finishReplayPhase(uint32 _index) public {
-    require(msg.sender == instance[_index].client);
+  function finishReplayPhase(uint32 _index) public
+    onlyBy(instance[_index].client)
+  {
     require(instance[_index].currentState == state.WaitingReplay);
     require(instance[_index].historyPointer == instance[_index].history.length);
     delete(instance[_index].history);
