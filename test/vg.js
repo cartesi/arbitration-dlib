@@ -260,9 +260,9 @@ contract('VGInstantiator', function(accounts) {
     // check final hash
     remoteFinalHash = await mmInstantiator.newHash.call(mmIndex);
     expect(remoteFinalHash).to.equal(finalHash);
-    // check if memory is still waiting proofs
-    currentState = await mmInstantiator.currentState.call(mmIndex);
-    expect(currentState.toNumber()).to.equal(0);
+    // check if memory is still WaitingProofs
+    expect(await mmInstantiator.stateIsWaitingProofs.call(mmIndex))
+      .to.be.true;
     // check that alice has no tokens
     response = await token.balanceOf(accounts[0]);
     expect(response.toNumber()).to.equal(0);
@@ -271,9 +271,9 @@ contract('VGInstantiator', function(accounts) {
     response = await mmInstantiator.finishProofPhase(mmIndex);
     event = getEvent(response, 'FinishedProofs');
     expect(event).not.to.be.undefined;
-    // check if memory is still waiting proofs
-    currentState = await mmInstantiator.currentState.call(mmIndex);
-    expect(currentState.toNumber()).to.equal(1);
+    // check if memory is still WaitingReplay
+    expect(await mmInstantiator.stateIsWaitingReplay.call(mmIndex))
+      .to.be.true;
     // finish challange
     response = await vgInstantiator.settleVerificationGame(
       vgIndex, { from: accounts[0], gas: 3000000 });

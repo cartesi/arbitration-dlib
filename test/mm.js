@@ -48,9 +48,9 @@ contract('MMInstantiator', function(accounts) {
     expect(event._index.toNumber()).to.equal(0);
     index = 0;
 
-    // contract should start waiting for values to be inserted
-    currentState = await mmInstantiator.currentState.call(index);
-    expect(currentState.toNumber()).to.equal(0);
+    // contract should start in state WaitingProofs
+    expect(await mmInstantiator.stateIsWaitingProofs.call(mmIndex))
+      .to.be.true;
 
     // cannot submit un-aligned address
     proof = myMM.generateProof(0);
@@ -142,8 +142,8 @@ contract('MMInstantiator', function(accounts) {
     remoteFinalHash = await mmInstantiator.newHash.call(index);
     expect(finalHash).to.equal(remoteFinalHash);
 
-    // check if contract is in finished state
-    currentState = await mmInstantiator.currentState.call(index);
-    expect(currentState.toNumber()).to.equal(2);
+    // check if contract is in state FinishedReplay
+    expect(await mmInstantiator.stateIsFinishedReplay.call(mmIndex))
+      .to.be.true;
   })
 })
