@@ -147,13 +147,6 @@ contract('DepthInterface', function(accounts) {
 
     divergingAddress = await depthInterface.currentAddress.call();
     expect(divergingAddress.toString()).to.equal(large.toString());
-
-    // kill contract
-    response = await depthInterface.kill({ from: accounts[2], gas: 1500000 });
-
-    // check if contract was killed
-    [error, currentState] = await unwrap(depthInterface.currentState());
-    expect(error.message).to.have.string('not a contract address');;
   });
 
   it('Claimer timeout', async function() {
@@ -188,13 +181,6 @@ contract('DepthInterface', function(accounts) {
     // check if the state is ChallengerWon
     currentState = await depthInterface.currentState.call();
     expect(currentState.toNumber()).to.equal(2);
-
-    // kill contract
-    response = await depthInterface.kill({ from: accounts[2], gas: 1500000 });
-
-    // check if contract was killed
-    [error, currentState] = await unwrap(depthInterface.currentState());
-    expect(error.message).to.have.string('not a contract address');;
   });
 
   it('Challenger timeout', async function() {
@@ -257,12 +243,5 @@ contract('DepthInterface', function(accounts) {
     // check if the state is ClaimerWon
     currentState = await depthInterface.currentState.call();
     expect(currentState.toNumber()).to.equal(3);
-
-    // kill contract
-    response = await depthInterface.kill({ from: accounts[2], gas: 1500000 });
-
-    // check if contract was killed
-    [error, currentState] = await unwrap(depthInterface.currentState());
-    expect(error.message).to.have.string('not a contract address');;
   });
 });

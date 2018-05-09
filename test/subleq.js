@@ -7,10 +7,10 @@ const unwrap = require('../utils/tools.js').unwrap;
 const getError = require('../utils/tools.js').getError;
 const twoComplement32 = require('../utils/tools.js').twoComplement32;
 
-var SubleqInterface = artifacts.require("./SubleqInterface.sol");
+var Subleq = artifacts.require("./Subleq.sol");
 var SimpleMemoryInstantiator = artifacts.require("./SimpleMemoryInstantiator.sol");
 
-contract('SubleqInterface', function(accounts) {
+contract('Subleq', function(accounts) {
   let echo_binary = [-1, 21, 3,
                      21, -1, 6,
                      21, 22, 9,
@@ -43,13 +43,11 @@ contract('SubleqInterface', function(accounts) {
     let simpleMemoryInstantiator = await SimpleMemoryInstantiator
         .new({ from: accounts[2], gas: 2000000 });
     mmAddress = simpleMemoryInstantiator.address;
-
     // write program to memory contract
     //console.log('write program to memory contract');
     var softwareLength = echo_binary.length;
     for (let i = 0; i < softwareLength; i++) {
       // write on memory
-      //console.log(twoComplement32(echo_binary[i]));
       response = await simpleMemoryInstantiator
         .write(0, 8 * i, twoComplement32(echo_binary[i]),
                { from: accounts[0], gas: 1500000 })
@@ -70,7 +68,6 @@ contract('SubleqInterface', function(accounts) {
       .write(0, oSizePosition, "0x0000000000100000")
 
     // write input in memory contract
-    //console.log('write input in memory contract');
 
     var inputLength = input_string.length;
     for (let i = 0; i < inputLength; i++) {
@@ -81,10 +78,8 @@ contract('SubleqInterface', function(accounts) {
                { from: accounts[0], gas: 1500000 })
     }
 
-    // launch subleq from accounts[2], who will be the owner
-    let subleqInterface = await SubleqInterface
-        .new(simpleMemoryInstantiator.address,
-             { from: accounts[2], gas: 2000000 });
+    // launch subleq from accounts[2]
+    let subleq = await Subleq.new({ from: accounts[2], gas: 3000000 });
 
     let running = 0;
 
@@ -112,15 +107,13 @@ contract('SubleqInterface', function(accounts) {
       //     .call({ from: accounts[0], gas: 1500000 });
       //   console.log("output at: " + j + " = " + response);
       // }
-      // console.log(await subleqInterface.owner());
+      // console.log(await subleq.owner());
       // console.log(accounts[2]);
-
       //
-      response = await subleqInterface.step(
+      response = await subleq.step(
         mmAddress, 0,
         { from: accounts[2], gas: 1500000 })
       expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
-      // console.log(getEvent(response, 'StepGiven'));
 
       running = getEvent(response, 'StepGiven').exitCode.toNumber();
       //console.log(running);

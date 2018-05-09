@@ -16,6 +16,7 @@ var web3 = new Web3('http://127.0.0.1:9545');
 var MMInstantiator = artifacts.require("./MMInstantiator.sol");
 var PartitionInstantiator = artifacts.require("./PartitionInstantiator.sol");
 var Token = artifacts.require("./lib/bokkypoobah/Token.sol");
+var Subleq = artifacts.require("./Subleq.sol");
 var VGInstantiator = artifacts.require("./VGInstantiator.sol");
 
 contract('VGInstantiator', function(accounts) {
@@ -106,10 +107,12 @@ contract('VGInstantiator', function(accounts) {
     let mmInstantiator = await MMInstantiator.new();
     let partitionInstantiator = await PartitionInstantiator.new();
     let token = await Token.new({ from: accounts[2] });
+    let subleqContract = await Subleq.new({ from: accounts[2], gas: 3000000 });
     let vgInstantiator = await VGInstantiator.new(
       token.address,
       partitionInstantiator.address,
-      mmInstantiator.address
+      mmInstantiator.address,
+      { from: accounts[2], gas: 5000000 }
     );
     response = await token.approve(
       vgInstantiator.address, 1000,
@@ -118,8 +121,9 @@ contract('VGInstantiator', function(accounts) {
     expect(event).not.to.be.undefined;
     // instantiate a verification game
     response = await vgInstantiator.instantiate(
-      accounts[0], accounts[1], 1000, 20000, 3600, initialHash,
-      claimerFinalHash, finalTime, { from: accounts[2], gas: 2000000 });
+      accounts[0], accounts[1], 1000, 20000, 3600, subleqContract.address,
+      initialHash, claimerFinalHash, finalTime,
+      { from: accounts[2], gas: 2000000 });
     event = getEvent(response, 'VGCreated');
     vgIndex = event._index.toNumber();
     // check if the state is WaitSale
