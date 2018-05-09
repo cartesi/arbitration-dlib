@@ -20,7 +20,6 @@ contract VGInstantiator is Decorated
   enum state { WaitSale, WaitPartition, WaitMemoryProveValues,
                FinishedClaimerWon, FinishedChallengerWon }
 
-  // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
   struct VGCtx
   {
     address challenger; // the two parties involved in each instance
@@ -43,6 +42,37 @@ contract VGInstantiator is Decorated
   }
 
   mapping(uint32 => VGCtx) private instance;
+
+  // These are the possible states and transitions of the contract.
+  //
+  //               +---+
+  //               |   |
+  //               +---+
+  //                 |
+  //                 | instantiate
+  //                 v                     | setChallengerPrice
+  //               +----------+            | setClaimerPrice
+  //               | WaitSale |------------| buyInstanceFromChallenger
+  //               +----------+            | buyInstanceFromClaimer
+  //                 |
+  //                 | finishSalePhase
+  //                 v
+  //               +----------------+  winByPartitionTimeout
+  //   +-----------| WaitPartition  |------------------------+
+  //   |           +----------------+                        |
+  //   |                         |                           |
+  //   | winByPartitionTimeout   | startMachineRunChallenge  |
+  //   |                         v                           |
+  //   |           +-----------------------+                 |
+  //   | +---------| WaitMemoryProveValues |                 |
+  //   | |         +-----------------------+                 |
+  //   | |                       |                           |
+  //   | |claimVictoryByDeadline | settleVerificationGame    |
+  //   v v                       |                           v
+  // +--------------------+      |        +-----------------------+
+  // | FinishedClaimerWon |      +------->| FinishedChallengerWon |
+  // +--------------------+               +-----------------------+
+  //
 
   event VGCreated(uint32 _index, address _challenger, address _claimer,
                   uint _valueXYZ, uint _roundDuration, address _machineAddress,
@@ -152,6 +182,9 @@ contract VGInstantiator is Decorated
                             instance[_index].finalTime,
                             10,
                             instance[_index].roundDuration);
+    delete instance[_index].challengerPriceXYZ;
+    delete instance[_index].claimerPriceXYZ;
+    delete instance[_index].salesDuration;
     instance[_index].currentState = state.WaitPartition;
     emit StartChallenge(_index, instance[_index].partitionInstance);
   }
@@ -191,6 +224,8 @@ contract VGInstantiator is Decorated
       mm.instantiate(instance[_index].challenger,
                      instance[_index].machine,
                      instance[_index].hashBeforeDivergence);
+    // !!!!!!!!! should call delete in partitionInstance !!!!!!!!!
+    delete instance[_index].partitionInstance;
     instance[_index].timeOfLastMove = now;
     instance[_index].currentState = state.WaitMemoryProveValues;
     emit PartitionDivergenceFound(_index, instance[_index].mmInstance);
@@ -226,6 +261,7 @@ contract VGInstantiator is Decorated
   {
       tokenContract.transfer(instance[_index].challenger,
                              instance[_index].valueXYZ);
+      clearInstance(_index);
       instance[_index].currentState = state.FinishedChallengerWon;
       emit VGFinished(instance[_index].currentState);
   }
@@ -234,14 +270,46 @@ contract VGInstantiator is Decorated
   {
       tokenContract.transfer(instance[_index].claimer,
                              instance[_index].valueXYZ);
+      clearInstance(_index);
       instance[_index].currentState = state.FinishedClaimerWon;
       emit VGFinished(instance[_index].currentState);
   }
 
-  function currentState(uint32 _index) public view
-    returns (VGInstantiator.state)
-  {
-    return instance[_index].currentState;
+  function clearInstance(uint32 _index) internal {
+    delete instance[_index].challenger;
+    delete instance[_index].claimer;
+    delete instance[_index].valueXYZ;
+    delete instance[_index].roundDuration;
+    delete instance[_index].machine;
+    delete instance[_index].initialHash;
+    delete instance[_index].claimerFinalHash;
+    delete instance[_index].finalTime;
+    delete instance[_index].timeOfLastMove;
+    // !!!!!!!!! should call delete in mmInstance !!!!!!!!!
+    delete instance[_index].mmInstance;
+    delete instance[_index].hashBeforeDivergence;
+    delete instance[_index].hashAfterDivergence;
   }
 
+  // state getters
+
+  function stateIsWaitSale(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.WaitSale;
+  }
+
+  function stateIsWaitPartition(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.WaitPartition;
+  }
+
+  function stateIsWaitMemoryProveValues(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.WaitMemoryProveValues;
+  }
+
+  function stateIsFinishedClaimerWon(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.FinishedClaimerWon;
+  }
+
+  function stateIsFinishedChallengerWon(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.FinishedClaimerWon;
+  }
 }
