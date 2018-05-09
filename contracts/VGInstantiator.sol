@@ -195,11 +195,9 @@ contract VGInstantiator is Decorated
   function winByPartitionTimeout(uint32 _index) public {
     require(instance[_index].currentState == state.WaitPartition);
     uint32 partitionIndex = instance[_index].partitionInstance;
-    if (partition.currentState(partitionIndex)
-        == PartitionInterface.state.ChallengerWon)
+    if (partition.stateIsChallengerWon(partitionIndex))
       { challengerWins(_index); return; }
-    if (partition.currentState(partitionIndex)
-        == PartitionInterface.state.ClaimerWon)
+    if (partition.stateIsClaimerWon(partitionIndex))
       { claimerWins(_index); return; }
     require(false);
   }
@@ -212,8 +210,8 @@ contract VGInstantiator is Decorated
   /// machine.
   function startMachineRunChallenge(uint32 _index) public {
     require(instance[_index].currentState == state.WaitPartition);
-    require(partition.currentState(_index)
-            == PartitionInterface.state.DivergenceFound);
+    require(partition
+            .stateIsDivergenceFound(instance[_index].partitionInstance));
     uint32 partitionIndex = instance[_index].partitionInstance;
     uint divergenceTime = partition.divergenceTime(partitionIndex);
     instance[_index].hashBeforeDivergence
@@ -240,9 +238,9 @@ contract VGInstantiator is Decorated
   {
     require(instance[_index].currentState == state.WaitMemoryProveValues);
     uint32 mmIndex = instance[_index].mmInstance;
-    require(mm.currentState(mmIndex) == MMInterface.state.WaitingReplay);
+    require(mm.stateIsWaitingReplay(mmIndex));
     instance[_index].machine.step(address(mm), mmIndex);
-    require(mm.currentState(mmIndex) == MMInterface.state.FinishedReplay);
+    require(mm.stateIsFinishedReplay(mmIndex));
     require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence);
     challengerWins(_index);
   }

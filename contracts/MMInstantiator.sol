@@ -191,12 +191,6 @@ contract MMInstantiator is MMInterface, Decorated {
     return instance[_index].newHash;
   }
 
-  function currentState(uint32 _index) public view
-    returns (MMInstantiator.state)
-  {
-    return instance[_index].currentState;
-  }
-
   // state getters
 
   function stateIsWaitingProofs(uint32 _index) public view returns(bool) {

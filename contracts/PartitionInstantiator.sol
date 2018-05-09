@@ -270,12 +270,6 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     return instance[_index].queryArray[i];
   }
 
-  function currentState(uint32 _index) public view
-    returns (PartitionInstantiator.state)
-  {
-    return instance[_index].currentState;
-  }
-
   // state getters
 
   function stateIsWaitingQuery(uint32 _index) public view returns(bool) {
