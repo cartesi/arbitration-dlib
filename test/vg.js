@@ -112,7 +112,7 @@ contract('VGInstantiator', function(accounts) {
       token.address,
       partitionInstantiator.address,
       mmInstantiator.address,
-      { from: accounts[2], gas: 5000000 }
+      { from: accounts[2], gas: 6000000 }
     );
     response = await token.approve(
       vgInstantiator.address, 1000,
@@ -127,9 +127,7 @@ contract('VGInstantiator', function(accounts) {
     event = getEvent(response, 'VGCreated');
     vgIndex = event._index.toNumber();
     // check if the state is WaitSale
-    currentState = await vgInstantiator
-      .currentState.call(vgIndex);
-    expect(currentState.toNumber()).to.equal(0);
+    expect(await vgInstantiator.stateIsWaitSale.call(vgIndex)).to.be.true;
     // alice attempting to win by partition timeout should fail
     expect(await getError(
       vgInstantiator
@@ -157,9 +155,8 @@ contract('VGInstantiator', function(accounts) {
     while (true) {
       var i;
       // check if the state is WaitingHashes
-      currentState = await partitionInstantiator
-        .currentState.call(partitionIndex);
-      expect(currentState.toNumber()).to.equal(1);
+      expect(await partitionInstantiator
+             .stateIsWaitingHashes.call(partitionIndex)).to.be.true;
       // get the query array and prepare response
       // (loop since solidity cannot return dynamic array from function)
       for (i = 0; i < querySize; i++) {
@@ -195,9 +192,8 @@ contract('VGInstantiator', function(accounts) {
         }
       }
       // check if the state is WaitingQuery
-      currentState = await partitionInstantiator
-        .currentState.call(partitionIndex);
-      expect(currentState.toNumber()).to.equal(0);
+      expect(await partitionInstantiator
+             .stateIsWaitingQuery.call(partitionIndex)).to.be.true;
       // bob claiming victory should fail
       expect(await getError(
         partitionInstantiator.claimVictoryByTime(
@@ -216,9 +212,8 @@ contract('VGInstantiator', function(accounts) {
         expect(event).not.to.be.undefined;
         expect(+event._timeOfDivergence).to.equal(lastAggreement);
         // check if the state is DivergenceFound
-        currentState = await partitionInstantiator
-          .currentState.call(partitionIndex);
-        expect(currentState.toNumber()).to.equal(4);
+        expect(await partitionInstantiator
+               .stateIsDivergenceFound.call(partitionIndex)).to.be.true;
         break;
       } else {
         // send query with last queried time of aggreement

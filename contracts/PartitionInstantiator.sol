@@ -38,9 +38,9 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   //            |  ^
   // replyQuery |  | makeQuery
   //            v  |
-  //          +--------------+                          +------------+
-  //          | WaitingQuery |------------------------->| ClaimerWon |
   //          +--------------+   claimVictoryByTimeout  +------------+
+  //          | WaitingQuery |------------------------->| ClaimerWon |
+  //          +--------------+                          +------------+
   //            |
   //            | presentDivergence
   //            v
@@ -211,6 +211,25 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
 
   // Getters methods
 
+  function getInstance(uint32 _index) public view returns
+    (address challenger,
+     address claimer,
+     uint finalTime,
+     uint querySize,
+     uint timeOfLastMove,
+     uint roundDuration,
+     uint divergenceTime)
+  {
+    return (instance[_index].challenger,
+            instance[_index].claimer,
+            instance[_index].finalTime,
+            instance[_index].querySize,
+            instance[_index].timeOfLastMove,
+            instance[_index].roundDuration,
+            instance[_index].divergenceTime);
+  }
+
+  /*
   function challenger(uint32 _index) public view returns (address) {
     return instance[_index].challenger;
   }
@@ -223,20 +242,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     return instance[_index].finalTime;
   }
 
-  function timeSubmitted(uint32 _index, uint key) public view returns (bool) {
-    return instance[_index].timeSubmitted[key];
-  }
-
-  function timeHash(uint32 _index, uint key) public view returns (bytes32) {
-    return instance[_index].timeHash[key];
-  }
-
   function querySize(uint32 _index) public view returns (uint) {
     return instance[_index].querySize;
-  }
-
-  function queryArray(uint32 _index, uint i) public view returns (uint) {
-    return instance[_index].queryArray[i];
   }
 
   function timeOfLastMove(uint32 _index) public view returns (uint) {
@@ -246,6 +253,22 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   function roundDuration(uint32 _index) public view returns (uint) {
     return instance[_index].roundDuration;
   }
+  */
+  function divergenceTime(uint32 _index) public view returns (uint) {
+    return instance[_index].divergenceTime;
+  }
+
+  function timeSubmitted(uint32 _index, uint key) public view returns (bool) {
+    return instance[_index].timeSubmitted[key];
+  }
+
+  function timeHash(uint32 _index, uint key) public view returns (bytes32) {
+    return instance[_index].timeHash[key];
+  }
+
+  function queryArray(uint32 _index, uint i) public view returns (uint) {
+    return instance[_index].queryArray[i];
+  }
 
   function currentState(uint32 _index) public view
     returns (PartitionInstantiator.state)
@@ -253,7 +276,25 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     return instance[_index].currentState;
   }
 
-  function divergenceTime(uint32 _index) public view returns (uint) {
-    return instance[_index].divergenceTime;
+  // state getters
+
+  function stateIsWaitingQuery(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.WaitingQuery;
+  }
+
+  function stateIsWaitingHashes(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.WaitingHashes;
+  }
+
+  function stateIsChallengerWon(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.ChallengerWon;
+  }
+
+  function stateIsClaimerWon(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.ClaimerWon;
+  }
+
+  function stateIsDivergenceFound(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.DivergenceFound;
   }
 }
