@@ -12,5 +12,9 @@ contract PartitionInterface
                        uint _roundDuration) public returns (uint32);
   function timeHash(uint32 _index, uint key) public view returns (bytes32);
   function divergenceTime(uint32 _index) public view returns (uint);
-  function currentState(uint32 _index) public view returns (state);
+  function stateIsWaitingQuery(uint32 _index) public view returns(bool);
+  function stateIsWaitingHashes(uint32 _index) public view returns(bool);
+  function stateIsChallengerWon(uint32 _index) public view returns(bool);
+  function stateIsClaimerWon(uint32 _index) public view returns(bool);
+  function stateIsDivergenceFound(uint32 _index) public view returns(bool);
 }
