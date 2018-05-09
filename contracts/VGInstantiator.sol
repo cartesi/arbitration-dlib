@@ -1,12 +1,13 @@
 // @title Verification game instantiator
 pragma solidity ^0.4.23;
 
+import "./Decorated.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
 import "./MachineInterface.sol";
 import "./lib/bokkypoobah/Token.sol";
 
-contract VGInstantiator
+contract VGInstantiator is Decorated
 {
   using SafeMath for uint;
 
@@ -95,18 +96,20 @@ contract VGInstantiator
   /// this can be used to signal to buyers that the player is convinced of the
   /// victory and incentivise them to execute the verification off-chain.
   function setChallengerPrice(uint32 _index, uint _newPrice,
-                              uint _doubleDown) public {
+                              uint _doubleDown) public
+    onlyBy(instance[_index].challenger)
+  {
     require(instance[_index].currentState == state.WaitSale);
-    require(msg.sender == instance[_index].challenger);
     require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
     instance[_index].challengerPriceXYZ = _newPrice;
     emit SetPrice(true, _index, _newPrice, _doubleDown);
   }
 
   function setClaimerPrice(uint32 _index, uint _newPrice,
-                           uint _doubleDown) public {
+                           uint _doubleDown) public
+    onlyBy(instance[_index].claimer)
+  {
     require(instance[_index].currentState == state.WaitSale);
-    require(msg.sender == instance[_index].claimer);
     require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
     instance[_index].claimerPriceXYZ = _newPrice;
     emit SetPrice(false, _index, _newPrice, _doubleDown);
@@ -134,12 +137,12 @@ contract VGInstantiator
     instance[_index].claimerPriceXYZ = instance[_index].valueXYZ;
   }
 
-  /// @notice After five times the round duration, the sale phase can be
+  /// @notice After the sales duration, the sale phase can be
   /// finished by anyone.
-  function finishSalePhase(uint32 _index) public {
+  function finishSalePhase(uint32 _index) public
+    onlyAfter(instance[_index].timeOfLastMove + instance[_index].salesDuration)
+  {
     require(instance[_index].currentState == state.WaitSale);
-    require(now > instance[_index].timeOfLastMove
-            + instance[_index].salesDuration);
     instance[_index].timeOfLastMove = now;
     instance[_index].partitionInstance =
       partition.instantiate(instance[_index].challenger,
@@ -171,8 +174,8 @@ contract VGInstantiator
   /// @notice After the partition challenge has lead to a divergence in the hash
   /// within one time step, anyone can start a mechine run challenge to decide
   /// whether the claimer was correct about that particular step transition.
-  /// This function call solely instantiate a memory manager, so the the
-  /// provider can fill the appropriate addresses that will be read by the
+  /// This function call solely instantiate a memory manager, so the
+  /// provider must fill the appropriate addresses that will be read by the
   /// machine.
   function startMachineRunChallenge(uint32 _index) public {
     require(instance[_index].currentState == state.WaitPartition);
@@ -197,8 +200,9 @@ contract VGInstantiator
   /// the provider calls this function to instantiate the machine and perform
   /// one step on it. The machine will write to memory now. Later, the
   /// provider will be expected to update the memory hash accordingly.
-  function settleVerificationGame(uint32 _index) public {
-    require(msg.sender == instance[_index].challenger);
+  function settleVerificationGame(uint32 _index) public
+    onlyBy(instance[_index].challenger)
+  {
     require(instance[_index].currentState == state.WaitMemoryProveValues);
     uint32 mmIndex = instance[_index].mmInstance;
     require(mm.currentState(mmIndex) == MMInterface.state.WaitingReplay);
@@ -211,11 +215,10 @@ contract VGInstantiator
   /// @notice Claimer can claim victory if challenger has lost the deadline
   /// for some of the steps in the protocol.
   function claimVictoryByDeadline(uint32 _index) public
+    onlyBy(instance[_index].claimer)
+    onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
   {
-    require(msg.sender == instance[_index].claimer);
     require(instance[_index].currentState == state.WaitMemoryProveValues);
-    require(now > instance[_index].timeOfLastMove
-            + instance[_index].roundDuration);
     claimerWins(_index);
   }
 

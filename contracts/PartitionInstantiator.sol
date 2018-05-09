@@ -1,9 +1,10 @@
 /// @title Partition instantiator
 pragma solidity ^0.4.18;
 
+import "./Decorated.sol";
 import "./PartitionInterface.sol";
 
-contract PartitionInstantiator is PartitionInterface {
+contract PartitionInstantiator is PartitionInterface, Decorated {
   uint32 private currentIndex = 0;
 
   // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
@@ -125,8 +126,8 @@ contract PartitionInstantiator is PartitionInterface {
   /// corresponding to the queried times
   function replyQuery(uint32 _index, uint[] postedTimes,
                       bytes32[] postedHashes) public
+    onlyBy(instance[_index].claimer)
   {
-    require(msg.sender == instance[_index].claimer);
     require(instance[_index].currentState == state.WaitingHashes);
     require(postedTimes.length == instance[_index].querySize);
     require(postedHashes.length == instance[_index].querySize);
@@ -153,8 +154,8 @@ contract PartitionInstantiator is PartitionInterface {
   /// split. Should be a disagreement point.
   function makeQuery(uint32 _index, uint queryPiece,
                      uint leftPoint, uint rightPoint) public
+    onlyBy(instance[_index].challenger)
   {
-    require(msg.sender == instance[_index].challenger);
     require(instance[_index].currentState == state.WaitingQuery);
     require(queryPiece < instance[_index].querySize - 1);
     // make sure the challenger knows the previous query
@@ -195,8 +196,8 @@ contract PartitionInstantiator is PartitionInterface {
   /// should be a point of aggreement, while _divergenceTime + 1 should be a
   /// point of disagreement (both queried).
   function presentDivergence(uint32 _index, uint _divergenceTime) public
+      onlyBy(instance[_index].challenger)
   {
-    require(msg.sender == instance[_index].challenger);
     require(_divergenceTime < instance[_index].finalTime);
     require(instance[_index].timeSubmitted[_divergenceTime]);
     require(instance[_index].timeSubmitted[_divergenceTime + 1]);
