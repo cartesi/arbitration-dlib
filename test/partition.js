@@ -54,8 +54,8 @@ contract('PartitionInstantiator', function(accounts) {
     event = getEvent(response, 'PartitionCreated');
     index = event._index.toNumber();
     // check if the state is WaitingHashes
-    currentState = await partitionInstantiator.currentState.call(index);
-    expect(currentState.toNumber()).to.equal(1);
+    expect(await partitionInstantiator.stateIsWaitingHashes.call(index))
+      .to.be.true;
     // create random functions to serve as levers
     // but first, some sensible arguments
     for (i = 0; i < querySize; i++) {
@@ -104,8 +104,8 @@ contract('PartitionInstantiator', function(accounts) {
       event = getEvent(response, 'ChallengeEnded');
       expect(+event._state).to.equal(2);
       // check if the state is ChallengerWon
-      currentState = await partitionInstantiator.currentState.call(index);
-      expect(currentState.toNumber()).to.equal(2);
+      expect(await partitionInstantiator.stateIsChallengerWon.call(index))
+        .to.be.true;
       // no one can act now
       await cannotAct(accounts[0]);
       await cannotAct(accounts[1]);
@@ -144,8 +144,8 @@ contract('PartitionInstantiator', function(accounts) {
       event = getEvent(response, 'ChallengeEnded');
       expect(+event._state).to.equal(3);
       // check if the state is ClaimerWon
-      currentState = await partitionInstantiator.currentState.call(index);
-      expect(currentState.toNumber()).to.equal(3);
+      expect(await partitionInstantiator.stateIsClaimerWon.call(index))
+        .to.be.true;
       // no one can act now
       await cannotAct(accounts[0]);
       await cannotAct(accounts[1]);
@@ -157,8 +157,8 @@ contract('PartitionInstantiator', function(accounts) {
       while (true) {
         var i;
         // check if the state is WaitingHashes
-        currentState = await partitionInstantiator.currentState.call(index);
-        expect(currentState.toNumber()).to.equal(1);
+        expect(await partitionInstantiator.stateIsWaitingHashes.call(index))
+          .to.be.true;
         // challenger cannot act now
         await cannotAct(accounts[0]);
         // get the query array and prepare response
@@ -192,8 +192,8 @@ contract('PartitionInstantiator', function(accounts) {
           }
         }
         // check if the state is WaitingQuery
-        currentState = await partitionInstantiator.currentState.call(index);
-        expect(currentState.toNumber()).to.equal(0);
+        expect(await partitionInstantiator.stateIsWaitingQuery.call(index))
+          .to.be.true;
         // claimer cannot act now
         await cannotAct(accounts[1])
         // claimer claiming victory should fail
@@ -213,8 +213,8 @@ contract('PartitionInstantiator', function(accounts) {
           expect(event).not.to.be.undefined;
           expect(+event._timeOfDivergence).to.equal(lastAggreement);
           // check if the state is DivergenceFound
-          currentState = await partitionInstantiator.currentState.call(index);
-          expect(currentState.toNumber()).to.equal(4);
+          expect(await partitionInstantiator.stateIsDivergenceFound.call(index))
+            .to.be.true;
           // no one can act now
           await cannotAct(accounts[0]);
           await cannotAct(accounts[1]);

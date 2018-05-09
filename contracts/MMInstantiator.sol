@@ -32,6 +32,31 @@ contract MMInstantiator is MMInterface, Decorated {
 
   mapping(uint32 => MMCtx) private instance;
 
+  // These are the possible states and transitions of the contract.
+  //
+  // +---+
+  // |   |
+  // +---+
+  //   |
+  //   | instantiate
+  //   v
+  // +---------------+    | proveRead
+  // | WaitingProofs |----| proveWrite
+  // +---------------+
+  //   |
+  //   | finishProofPhase
+  //   v
+  // +----------------+    |read
+  // | FinishedReplay |----|write
+  // +----------------+
+  //   |
+  //   | finishReplayPhase
+  //   v
+  // +---------------+
+  // | WaitingReplay |
+  // +---------------+
+  //
+
   event MemoryCreated(uint32 _index, bytes32 _initialHash);
   event ValueProved(uint32 _index, bool _wasRead, uint64 _position,
                     bytes8 _value);
@@ -170,5 +195,19 @@ contract MMInstantiator is MMInterface, Decorated {
     returns (MMInstantiator.state)
   {
     return instance[_index].currentState;
+  }
+
+  // state getters
+
+  function stateIsWaitingProofs(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.WaitingProofs;
+  }
+
+  function stateIsWaitingReplay(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.WaitingReplay;
+  }
+
+  function stateIsFinishedReplay(uint32 _index) public view returns(bool) {
+    return instance[_index].currentState == state.FinishedReplay;
   }
 }
