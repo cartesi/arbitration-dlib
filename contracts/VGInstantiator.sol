@@ -3,10 +3,10 @@ pragma solidity ^0.4.23;
 
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
-import "./SubleqInterface.sol";
+import "./MachineInterface.sol";
 import "./lib/bokkypoobah/Token.sol";
 
-contract VGInstantiator is SubleqInterface
+contract VGInstantiator
 {
   using SafeMath for uint;
 
@@ -29,6 +29,7 @@ contract VGInstantiator is SubleqInterface
     uint claimerPriceXYZ; // price if someone wants to buy from claimer
     uint salesDuration; // time interval to sell the instance
     uint roundDuration; // time interval to interact with this contract
+    MachineInterface machine; // the machine which will run the challenge
     bytes32 initialHash; // hash of machine memory that both aggree uppon
     bytes32 claimerFinalHash; // hash claimer commited for machine after running
     uint finalTime; // the time for which the machine should run
@@ -43,10 +44,11 @@ contract VGInstantiator is SubleqInterface
   mapping(uint32 => VGCtx) private instance;
 
   event VGCreated(uint32 _index, address _challenger, address _claimer,
-                  uint _valueXYZ, uint _roundDuration, bytes32 _initialHash,
-                  bytes32 _claimerFinalHash, uint _finalTime,
-                  uint32 _partitionInstance);
-  event DoubleDown(uint32 _index, uint _value);
+                  uint _valueXYZ, uint _roundDuration, address _machineAddress,
+                  bytes32 _initialHash, bytes32 _claimerFinalHash,
+                  uint _finalTime, uint32 _partitionInstance);
+  event SetPrice(bool _isChallenger, uint32 _index, uint _value,
+                 uint _doubleDown);
   event StartChallenge(uint32 _index, uint32 _partitionInstance);
   event PartitionDivergenceFound(uint32 _index, uint32 _mmInstance);
   event MemoryWriten(uint32 _index);
@@ -62,8 +64,8 @@ contract VGInstantiator is SubleqInterface
 
   function instantiate(address _challenger, address _claimer, uint _valueXYZ,
                        uint _roundDuration, uint _salesDuration,
-                       bytes32 _initialHash, bytes32 _claimerFinalHash,
-                       uint _finalTime)
+                       address _machineAddress, bytes32 _initialHash,
+                       bytes32 _claimerFinalHash, uint _finalTime)
     public returns (uint32)
   {
     require(tokenContract.transferFrom(msg.sender, address(this), _valueXYZ));
@@ -75,13 +77,15 @@ contract VGInstantiator is SubleqInterface
     instance[currentIndex].claimerPriceXYZ = _valueXYZ;
     instance[currentIndex].salesDuration = _salesDuration;
     instance[currentIndex].roundDuration = _roundDuration;
+    instance[currentIndex].machine = MachineInterface(_machineAddress);
     instance[currentIndex].initialHash = _initialHash;
     instance[currentIndex].claimerFinalHash = _claimerFinalHash;
     instance[currentIndex].finalTime = _finalTime;
     instance[currentIndex].timeOfLastMove = now;
     instance[currentIndex].currentState = state.WaitSale;
     emit VGCreated(currentIndex, _challenger, _claimer, _valueXYZ,
-                   _roundDuration, _initialHash, _claimerFinalHash, _finalTime,
+                   _roundDuration, _machineAddress, _initialHash,
+                   _claimerFinalHash, _finalTime,
                    instance[currentIndex].partitionInstance);
     currentIndex++;
     return(currentIndex - 1);
@@ -90,23 +94,22 @@ contract VGInstantiator is SubleqInterface
   /// @notice During sale phase, anyone can increase the value of an instance
   /// this can be used to signal to buyers that the player is convinced of the
   /// victory and incentivise them to execute the verification off-chain.
-  /// Be careful to increase the price before if needed.
-  function doubleDown(uint32 _index, uint _value) public {
-    require(instance[_index].currentState == state.WaitSale);
-    require(tokenContract.transferFrom(msg.sender, address(this), _value));
-    emit DoubleDown(_index, _value);
-  }
-
-  function setChallengerPrice(uint32 _index, uint _newPrice) public {
+  function setChallengerPrice(uint32 _index, uint _newPrice,
+                              uint _doubleDown) public {
     require(instance[_index].currentState == state.WaitSale);
     require(msg.sender == instance[_index].challenger);
+    require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
     instance[_index].challengerPriceXYZ = _newPrice;
+    emit SetPrice(true, _index, _newPrice, _doubleDown);
   }
 
-  function setClaimerPrice(uint32 _index, uint _newPrice) public {
+  function setClaimerPrice(uint32 _index, uint _newPrice,
+                           uint _doubleDown) public {
     require(instance[_index].currentState == state.WaitSale);
     require(msg.sender == instance[_index].claimer);
+    require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
     instance[_index].claimerPriceXYZ = _newPrice;
+    emit SetPrice(false, _index, _newPrice, _doubleDown);
   }
 
   /// @notice During sale phase, anyone can buy this instance from challenger
@@ -182,7 +185,8 @@ contract VGInstantiator is SubleqInterface
     instance[_index].hashAfterDivergence
       = partition.timeHash(partitionIndex, divergenceTime + 1);
     instance[_index].mmInstance =
-      mm.instantiate(instance[_index].challenger, address(this),
+      mm.instantiate(instance[_index].challenger,
+                     instance[_index].machine,
                      instance[_index].hashBeforeDivergence);
     instance[_index].timeOfLastMove = now;
     instance[_index].currentState = state.WaitMemoryProveValues;
@@ -198,9 +202,9 @@ contract VGInstantiator is SubleqInterface
     require(instance[_index].currentState == state.WaitMemoryProveValues);
     uint32 mmIndex = instance[_index].mmInstance;
     require(mm.currentState(mmIndex) == MMInterface.state.WaitingReplay);
-    subleq.step(address(mm), mmIndex);
+    instance[_index].machine.step(address(mm), mmIndex);
     require(mm.currentState(mmIndex) == MMInterface.state.FinishedReplay);
-    //require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence);
+    require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence);
     challengerWins(_index);
   }
 

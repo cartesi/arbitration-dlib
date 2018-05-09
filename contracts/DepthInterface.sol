@@ -1,10 +1,9 @@
 /// @title Depth interfacing contract
 pragma solidity ^0.4.18;
 
-import "./mortal.sol";
 import "./DepthLib.sol";
 
-contract DepthInterface is mortal {
+contract DepthInterface {
 
   using DepthLib for DepthLib.DepthCtx;
   DepthLib.DepthCtx depth;
@@ -63,12 +62,10 @@ contract DepthInterface is mortal {
 
   // Library functions
 
-  function DepthInterface(address _challenger,
-                          address _claimer, bytes32 _claimerHashOfRoot,
-                          uint _roundDuration) public
+  constructor(address _challenger,
+              address _claimer, bytes32 _claimerHashOfRoot,
+              uint _roundDuration) public
   {
-    require(owner != _challenger);
-    require(owner != _claimer);
     depth.init(_challenger, _claimer, _claimerHashOfRoot,
                _roundDuration);
   }
