@@ -6,8 +6,6 @@ import "./MMInterface.sol";
 import "./Merkle.sol";
 
 contract MMInstantiator is MMInterface, Decorated {
-  uint32 private currentIndex = 0;
-
   // the privider will fill the memory for the client to read and write
   // memory starts with hash and all values that are inserted are first verified
   // then client can read inserted values and write some more
@@ -86,6 +84,7 @@ contract MMInstantiator is MMInterface, Decorated {
   // @param proof The proof that this value is correct
   function proveRead(uint32 _index, uint64 _position, bytes8 _value,
                      bytes32[] proof) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
   {
     require(instance[_index].currentState == state.WaitingProofs);
@@ -103,6 +102,7 @@ contract MMInstantiator is MMInterface, Decorated {
   function proveWrite(uint32 _index, uint64 _position,
                       bytes8 _oldValue, bytes8 _newValue,
                       bytes32[] proof) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
   {
     require(instance[_index].currentState == state.WaitingProofs);
@@ -119,6 +119,7 @@ contract MMInstantiator is MMInterface, Decorated {
 
   /// @notice Stop memory insertion and start read and write phase
   function finishProofPhase(uint32 _index) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
   {
     require(instance[_index].currentState == state.WaitingProofs);
@@ -130,6 +131,7 @@ contract MMInstantiator is MMInterface, Decorated {
   /// according to initial hash
   /// @param _position of the desired memory
   function read(uint32 _index, uint64 _position) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].client)
     returns (bytes8)
   {
@@ -149,6 +151,7 @@ contract MMInstantiator is MMInterface, Decorated {
   /// @param _position of the write
   /// @param _value to be written
   function write(uint32 _index, uint64 _position, bytes8 _value) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].client)
   {
     require(instance[_index].currentState == state.WaitingReplay);
@@ -164,6 +167,7 @@ contract MMInstantiator is MMInterface, Decorated {
 
   /// @notice Stop write (or read) phase
   function finishReplayPhase(uint32 _index) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].client)
   {
     require(instance[_index].currentState == state.WaitingReplay);
@@ -175,33 +179,40 @@ contract MMInstantiator is MMInterface, Decorated {
   }
 
   // getter methods
-  function provider(uint32 _index) public view returns (address) {
-    return instance[_index].provider;
-  }
+  function provider(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns (address)
+  { return instance[_index].provider; }
 
-  function client(uint32 _index) public view returns (address) {
-    return instance[_index].client;
-  }
+  function client(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns (address)
+  { return instance[_index].client; }
 
-  function initialHash(uint32 _index) public view returns (bytes32) {
-    return instance[_index].initialHash;
-  }
+  function initialHash(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns (bytes32)
+  { return instance[_index].initialHash; }
 
-  function newHash(uint32 _index) public view returns (bytes32) {
-    return instance[_index].newHash;
-  }
+  function newHash(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns (bytes32)
+  { return instance[_index].newHash; }
 
   // state getters
 
-  function stateIsWaitingProofs(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.WaitingProofs;
-  }
+  function stateIsWaitingProofs(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.WaitingProofs; }
 
-  function stateIsWaitingReplay(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.WaitingReplay;
-  }
+  function stateIsWaitingReplay(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.WaitingReplay; }
 
-  function stateIsFinishedReplay(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.FinishedReplay;
-  }
+  function stateIsFinishedReplay(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.FinishedReplay; }
 }
