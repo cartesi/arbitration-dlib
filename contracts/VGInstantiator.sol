@@ -25,7 +25,9 @@ contract VGInstantiator is Decorated, Instantiator
     address claimer;
     uint valueXYZ; // the value given to the winner in XYZ
     uint challengerPriceXYZ; // price if someone wants to buy from challenger
+    uint challengerDoubleDown; // amount added by challenger to instance
     uint claimerPriceXYZ; // price if someone wants to buy from claimer
+    uint claimerDoubleDown; // amount added by claimer to instance
     uint salesDuration; // time interval to sell the instance
     uint roundDuration; // time interval to interact with this contract
     MachineInterface machine; // the machine which will run the challenge
@@ -104,7 +106,9 @@ contract VGInstantiator is Decorated, Instantiator
     instance[currentIndex].claimer = _claimer;
     instance[currentIndex].valueXYZ = _valueXYZ;
     instance[currentIndex].challengerPriceXYZ = _valueXYZ;
+    instance[currentIndex].challengerDoubleDown = 0;
     instance[currentIndex].claimerPriceXYZ = _valueXYZ;
+    instance[currentIndex].claimerDoubleDown = 0;
     instance[currentIndex].salesDuration = _salesDuration;
     instance[currentIndex].roundDuration = _roundDuration;
     instance[currentIndex].machine = MachineInterface(_machineAddress);
@@ -121,9 +125,10 @@ contract VGInstantiator is Decorated, Instantiator
     return(currentIndex - 1);
   }
 
-  /// @notice During sale phase, anyone can increase the value of an instance
+  /// @notice Set a new price for the instance and possibly increase its value
+  /// During sale phase, anyone can increase the value of an instance
   /// this can be used to signal to buyers that the player is convinced of the
-  /// victory and incentivise them to execute the verification off-chain.
+  /// victory and incentivise them to pre-execute the verification off-chain.
   function setChallengerPrice(uint32 _index, uint _newPrice,
                               uint _doubleDown) public
     onlyInstantiated(_index)
@@ -132,6 +137,8 @@ contract VGInstantiator is Decorated, Instantiator
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
     instance[_index].challengerPriceXYZ = _newPrice;
+    instance[_index].valueXYZ += _doubleDown;
+    instance[_index].challengerDoubleDown += _doubleDown;
     emit SetPrice(true, _index, _newPrice, _doubleDown);
   }
 
@@ -143,6 +150,8 @@ contract VGInstantiator is Decorated, Instantiator
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
     instance[_index].claimerPriceXYZ = _newPrice;
+    instance[_index].valueXYZ += _doubleDown;
+    instance[_index].claimerDoubleDown += _doubleDown;
     emit SetPrice(false, _index, _newPrice, _doubleDown);
   }
 
