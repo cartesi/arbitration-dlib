@@ -2,16 +2,15 @@
 pragma solidity ^0.4.23;
 
 import "./Decorated.sol";
+import "./Instantiator.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
 import "./MachineInterface.sol";
 import "./lib/bokkypoobah/Token.sol";
 
-contract VGInstantiator is Decorated
+contract VGInstantiator is Decorated, Instantiator
 {
   using SafeMath for uint;
-
-  uint32 private currentIndex = 0;
 
   Token private tokenContract; // address of Themis ERC20 contract
   PartitionInterface private partition;
@@ -127,6 +126,7 @@ contract VGInstantiator is Decorated
   /// victory and incentivise them to execute the verification off-chain.
   function setChallengerPrice(uint32 _index, uint _newPrice,
                               uint _doubleDown) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
     require(instance[_index].currentState == state.WaitSale);
@@ -137,6 +137,7 @@ contract VGInstantiator is Decorated
 
   function setClaimerPrice(uint32 _index, uint _newPrice,
                            uint _doubleDown) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
   {
     require(instance[_index].currentState == state.WaitSale);
@@ -146,7 +147,9 @@ contract VGInstantiator is Decorated
   }
 
   /// @notice During sale phase, anyone can buy this instance from challenger
-  function buyInstanceFromChallenger(uint32 _index) public {
+  function buyInstanceFromChallenger(uint32 _index) public
+    onlyInstantiated(_index)
+  {
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this),
                                        instance[_index].challengerPriceXYZ));
@@ -157,7 +160,9 @@ contract VGInstantiator is Decorated
   }
 
   /// @notice During sale phase, anyone can buy this instance from claimer
-  function buyInstanceFromClaimer(uint32 _index) public {
+  function buyInstanceFromClaimer(uint32 _index) public
+    onlyInstantiated(_index)
+  {
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this),
                                        instance[_index].claimerPriceXYZ));
@@ -170,6 +175,7 @@ contract VGInstantiator is Decorated
   /// @notice After the sales duration, the sale phase can be
   /// finished by anyone.
   function finishSalePhase(uint32 _index) public
+    onlyInstantiated(_index)
     onlyAfter(instance[_index].timeOfLastMove + instance[_index].salesDuration)
   {
     require(instance[_index].currentState == state.WaitSale);
@@ -192,7 +198,9 @@ contract VGInstantiator is Decorated
   /// @notice In case one of the parties wins the partition challenge by
   /// timeout, then he or she can call this function to claim victory in
   /// the hireCPU contract as well.
-  function winByPartitionTimeout(uint32 _index) public {
+  function winByPartitionTimeout(uint32 _index) public
+    onlyInstantiated(_index)
+  {
     require(instance[_index].currentState == state.WaitPartition);
     uint32 partitionIndex = instance[_index].partitionInstance;
     if (partition.stateIsChallengerWon(partitionIndex))
@@ -208,7 +216,9 @@ contract VGInstantiator is Decorated
   /// This function call solely instantiate a memory manager, so the
   /// provider must fill the appropriate addresses that will be read by the
   /// machine.
-  function startMachineRunChallenge(uint32 _index) public {
+  function startMachineRunChallenge(uint32 _index) public
+    onlyInstantiated(_index)
+  {
     require(instance[_index].currentState == state.WaitPartition);
     require(partition
             .stateIsDivergenceFound(instance[_index].partitionInstance));
@@ -234,6 +244,7 @@ contract VGInstantiator is Decorated
   /// one step on it. The machine will write to memory now. Later, the
   /// provider will be expected to update the memory hash accordingly.
   function settleVerificationGame(uint32 _index) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
     require(instance[_index].currentState == state.WaitMemoryProveValues);
@@ -248,6 +259,7 @@ contract VGInstantiator is Decorated
   /// @notice Claimer can claim victory if challenger has lost the deadline
   /// for some of the steps in the protocol.
   function claimVictoryByDeadline(uint32 _index) public
+    onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
     onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
   {
@@ -256,6 +268,7 @@ contract VGInstantiator is Decorated
   }
 
   function challengerWins(uint32 _index) private
+    onlyInstantiated(_index)
   {
       tokenContract.transfer(instance[_index].challenger,
                              instance[_index].valueXYZ);
@@ -265,6 +278,7 @@ contract VGInstantiator is Decorated
   }
 
   function claimerWins(uint32 _index) private
+    onlyInstantiated(_index)
   {
       tokenContract.transfer(instance[_index].claimer,
                              instance[_index].valueXYZ);
@@ -273,7 +287,9 @@ contract VGInstantiator is Decorated
       emit VGFinished(instance[_index].currentState);
   }
 
-  function clearInstance(uint32 _index) internal {
+  function clearInstance(uint32 _index) internal
+    onlyInstantiated(_index)
+  {
     delete instance[_index].challenger;
     delete instance[_index].claimer;
     delete instance[_index].valueXYZ;
@@ -291,23 +307,28 @@ contract VGInstantiator is Decorated
 
   // state getters
 
-  function stateIsWaitSale(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.WaitSale;
-  }
+  function stateIsWaitSale(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.WaitSale; }
 
-  function stateIsWaitPartition(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.WaitPartition;
-  }
+  function stateIsWaitPartition(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.WaitPartition; }
 
-  function stateIsWaitMemoryProveValues(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.WaitMemoryProveValues;
-  }
+  function stateIsWaitMemoryProveValues(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.WaitMemoryProveValues; }
 
-  function stateIsFinishedClaimerWon(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.FinishedClaimerWon;
-  }
+  function stateIsFinishedClaimerWon(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.FinishedClaimerWon; }
 
-  function stateIsFinishedChallengerWon(uint32 _index) public view returns(bool) {
-    return instance[_index].currentState == state.FinishedClaimerWon;
-  }
+  function stateIsFinishedChallengerWon(uint32 _index) public view
+    onlyInstantiated(_index)
+    returns(bool)
+  { return instance[_index].currentState == state.FinishedClaimerWon; }
 }

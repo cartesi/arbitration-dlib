@@ -49,7 +49,7 @@ contract('MMInstantiator', function(accounts) {
     index = 0;
 
     // contract should start in state WaitingProofs
-    expect(await mmInstantiator.stateIsWaitingProofs.call(mmIndex))
+    expect(await mmInstantiator.stateIsWaitingProofs.call(index))
       .to.be.true;
 
     // cannot submit un-aligned address
@@ -143,7 +143,7 @@ contract('MMInstantiator', function(accounts) {
     expect(finalHash).to.equal(remoteFinalHash);
 
     // check if contract is in state FinishedReplay
-    expect(await mmInstantiator.stateIsFinishedReplay.call(mmIndex))
+    expect(await mmInstantiator.stateIsFinishedReplay.call(index))
       .to.be.true;
   })
 })

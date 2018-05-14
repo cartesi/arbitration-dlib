@@ -1,7 +1,9 @@
 /// @title Abstract interface for partition instantiator
 pragma solidity ^0.4.0;
 
-contract PartitionInterface
+import "./Instantiator.sol";
+
+contract PartitionInterface is Instantiator
 {
   enum state { WaitingQuery, WaitingHashes,
                ChallengerWon, ClaimerWon, DivergenceFound }

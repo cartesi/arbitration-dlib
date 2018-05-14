@@ -1,7 +1,9 @@
 /// @title Interface for memory manager instantiator
 pragma solidity ^0.4.0;
 
-contract MMInterface
+import "./Instantiator.sol";
+
+contract MMInterface is Instantiator
 {
   enum state { WaitingProofs, WaitingReplay, FinishedReplay }
 
