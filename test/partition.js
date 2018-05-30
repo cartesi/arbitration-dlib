@@ -1,7 +1,6 @@
 const BigNumber = require('bignumber.js');
 const Web3 = require('web3');
 
-const mm = require('../utils/mm.js');
 const expect = require('chai').expect;
 const getEvent = require('../utils/tools.js').getEvent;
 const unwrap = require('../utils/tools.js').unwrap;
