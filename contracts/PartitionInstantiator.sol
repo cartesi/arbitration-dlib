@@ -201,6 +201,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
+    //shouldnt it be < instance[_index].finalTime - 1, since the next step also has to exist
     require(_divergenceTime < instance[_index].finalTime);
     require(instance[_index].timeSubmitted[_divergenceTime]);
     require(instance[_index].timeSubmitted[_divergenceTime + 1]);
