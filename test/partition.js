@@ -107,18 +107,19 @@ contract('PartitionInstantiator', function(accounts) {
       ).to.have.string('VM Exception');
     });
   });
+  // Replyquery requires test 
+  describe('Calling replyQuery ', async function() {
+    it('Posted times.length has to be equal to querysize', async function() {
+            /*response = await partitionInstantiator
+        .replyQuery(index,[1] , replyArray,
+          { from: accounts[1], gas: 1500000 });*/
+          expect(await getError(partitionInstantiator
+            .replyQuery(index,[1] , replyArray,
+            { from: accounts[1], gas: 1500000 })
+          )).to.have.string('VM Exception');
+    });
+  });
 
-  //Slice edge cases - direct call - does this make sense, I cannot test an internal function? 
-
-/*
-       describe('Slice edge cases', async function(){
-       it('Left point cant be bigger than right point', async function() {
-       expect(await getError(partitionInstantiator.slice(index, 10, 5, { from: accounts[9], gas: 2000000 }))
-       ).to.have.string('VM Exception');
-
-       });
-       });
-*/
   describe('Claimer timeout', async function() {
     it('Contract should reach ChallengerWon state', async function() {
       // mimic a waiting period of 3500 seconds
@@ -187,7 +188,6 @@ contract('PartitionInstantiator', function(accounts) {
       await cannotAct(accounts[1]);
     });
   });
-
   describe('Divergence found', async function() {
     it('Contract should reach DivergenceFound state', async function() {
       while (true) {
@@ -267,7 +267,7 @@ contract('PartitionInstantiator', function(accounts) {
   });
 });
 
-// Starting partition with other parameters to cross different paths
+// Starting partition with other parameters in order to cross different paths
 // This explores the else left point + 1 <  righ point, on slice 
 contract('PartitionInstantiator', function(accounts) {
   let index;
