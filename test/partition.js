@@ -81,6 +81,8 @@ contract('PartitionInstantiator', function(accounts) {
     // challenger cannot act in this turn
     await cannotAct(accounts[0]);
   });
+
+  // Instantiates various partitions with incorrect parameters
   describe('Instantiate Requires should throw exception', async function() {
     it('Challenger and Claimer cant have the same address', async function (){
       expect(await getError(partitionInstantiator.instantiate(accounts[0], accounts[0], initialHash, claimerFinalHash,finalTime, querySize, roundDuration,{ from: accounts[9], gas: 2000000 }))
@@ -88,22 +90,31 @@ contract('PartitionInstantiator', function(accounts) {
     });
 
     it('Final time has to be bigger than zero', async function (){
-      expect(await getError(partitionInstantiator.instantiate(   accounts[0], accounts[1], initialHash, claimerFinalHash,
+      expect(await getError(partitionInstantiator.instantiate(accounts[0], accounts[1], initialHash, claimerFinalHash,
         0, querySize, roundDuration, { from: accounts[9], gas: 2000000 }))
       ).to.have.string('VM Exception');
     });
 
     it('Query Size must be bigger than 2', async function (){
-      expect(await getError(partitionInstantiator.instantiate(   accounts[0], accounts[1], initialHash, claimerFinalHash,
+      expect(await getError(partitionInstantiator.instantiate(accounts[0], accounts[1], initialHash, claimerFinalHash,
           finalTime, 2, roundDuration, { from: accounts[9], gas: 2000000 }))
       ).to.have.string('VM Exception');
     });
 
     it('Query Size must be less than 100', async function (){
-      expect(await getError(partitionInstantiator.instantiate(   accounts[0], accounts[1], initialHash, claimerFinalHash,
+      expect(await getError(partitionInstantiator.instantiate(accounts[0], accounts[1], initialHash, claimerFinalHash,
           finalTime, 100, roundDuration, { from: accounts[9], gas: 2000000 }))
       ).to.have.string('VM Exception');
     });
+  });
+  
+  //Slice edge cases - direct call
+  describe('Slice edge cases', async function(){
+    /* it('Left point cant be bigger than right point', async function() {
+      expect(await getError(partitionInstantiator.slice(index, 10, 5, { from: accounts[9], gas: 2000000 }))
+      ).to.have.string('VM Exception');
+ 
+    });*/
   });
   describe('Claimer timeout', async function() {
     it('Contract should reach ChallengerWon state', async function() {
@@ -134,7 +145,6 @@ contract('PartitionInstantiator', function(accounts) {
       await cannotAct(accounts[1]);
     });
   });
-
   describe('Challenger timeout', async function() {
     it('Contract should reach ClaimerWon state', async function() {
       // (loop since solidity cannot return dynamic array from function)
