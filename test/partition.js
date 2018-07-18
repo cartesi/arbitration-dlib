@@ -107,17 +107,30 @@ contract('PartitionInstantiator', function(accounts) {
       ).to.have.string('VM Exception');
     });
   });
-  // Replyquery requires test 
+  // Replyquery requires should fail when: 
   describe('Calling replyQuery ', async function() {
-    it('Posted times.length has to be equal to querysize', async function() {
-            /*response = await partitionInstantiator
+    it('Posted times.length should equal querysize', async function() {
+      expect(await getError(partitionInstantiator
         .replyQuery(index,[1] , replyArray,
-          { from: accounts[1], gas: 1500000 });*/
-          expect(await getError(partitionInstantiator
-            .replyQuery(index,[1] , replyArray,
-            { from: accounts[1], gas: 1500000 })
-          )).to.have.string('VM Exception');
+          { from: accounts[1], gas: 1500000 })
+      )).to.have.string('VM Exception');
     });
+    
+    it('Posted hashes.length should equal to querysize', async function() {
+      expect(await getError(partitionInstantiator
+        .replyQuery(index,queryArray , ['incorrect'],
+          { from: accounts[1], gas: 1500000 })
+      )).to.have.string('VM Exception');
+    });
+    it('Posted times elements should equal to querysize elements', async function() {
+      expect(await getError(partitionInstantiator
+        .replyQuery(index, [1,2,3] , replyArray,
+          { from: accounts[1], gas: 1500000 })
+      )).to.have.string('VM Exception');
+    });
+
+
+
   });
 
   describe('Claimer timeout', async function() {
