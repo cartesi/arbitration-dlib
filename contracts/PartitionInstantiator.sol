@@ -171,7 +171,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     emit QueryPosted(_index, instance[_index].queryArray);
   }
 
-  /// @notice Claim victory for opponent timeout.
+  /// @notice Claim victory for opponent timeout/?count=25&after=t3_906e12.
   function claimVictoryByTime(uint32 _index) public
     onlyInstantiated(_index)
   {
