@@ -274,21 +274,34 @@ contract('PartitionInstantiator', function(accounts) {
             index, 50001, { from: accounts[0], gas: 1500000 })
           )).to.have.string('VM Exception');
 
-          // present divergence should fail if divergence time > final time
+          // present divergence should fail if divergence time has not been submited
           expect(await getError(partitionInstantiator
             .presentDivergence(
-            index, 49000, { from: accounts[0], gas: 1500000 })
+            index, 50000, { from: accounts[0], gas: 1500000 })
           )).to.have.string('VM Exception');
 
-          // present divergence should fail if divergence time has not been submited
           response = await partitionInstantiator.presentDivergence(
             index, leftPoint.toString(), { from: accounts[0], gas: 1500000 })
           event = getEvent(response, 'DivergenceFound');
           expect(event).not.to.be.undefined;
           expect(+event._timeOfDivergence).to.equal(lastAggreement);
-          // check if the state is DivergenceFound
+       
+          // check if the state is divergencefound
           expect(await partitionInstantiator.stateIsDivergenceFound.call(index))
             .to.be.true;
+
+          // check if divergencetime == leftpoint
+          response = await partitionInstantiator.divergenceTime(index);
+          expect(response).to.equal(leftPoint);
+
+          // check if time submitted[divergencetime == true] 
+          response = await partitionInstantiator.timeSubmitted(index, leftPoint);
+          expect(response).to.true;
+          
+          // check if timehash of divergence time is not undefined
+          response = await partitionInstantiator.timeHash(index, leftPoint);
+          expect(response).to.be.defined;
+      
           // no one can act now
           await cannotAct(accounts[0]);
           await cannotAct(accounts[1]);
