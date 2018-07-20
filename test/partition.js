@@ -299,9 +299,9 @@ contract('PartitionInstantiator', function(accounts) {
           expect(response).to.be.true;
           
           // check if timehash of divergence time is not undefined
-                //         response = await partitionInstantiator.timeHash(index, leftPoint);
-                //         expect(response).to.be.defined;
-                //     
+          response = await partitionInstantiator.timeHash(index, +event._timeOfDivergence);
+          expect(response).not.to.be.undefined;
+                
           // no one can act now
           await cannotAct(accounts[0]);
           await cannotAct(accounts[1]);
