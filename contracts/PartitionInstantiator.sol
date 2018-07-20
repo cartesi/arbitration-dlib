@@ -74,10 +74,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     instance[currentIndex].timeHash[0] = _initialHash;
     instance[currentIndex].timeHash[_finalTime] = _claimerFinalHash;
     instance[currentIndex].querySize = _querySize;
-    // initialize queryArray with zeros
-    for (uint i = 0; i < instance[currentIndex].querySize; i++) {
-      instance[currentIndex].queryArray.push(0);
-    }
+    // Creates queryArray with the correct size
+    instance[currentIndex].queryArray = new uint[] (instance[currentIndex].querySize);
     // slice the interval, placing the separators in queryArray
     slice(currentIndex, 0, instance[currentIndex].finalTime);
     instance[currentIndex].roundDuration = _roundDuration;
