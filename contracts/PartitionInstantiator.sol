@@ -83,8 +83,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     instance[currentIndex].currentState = state.WaitingHashes;
     emit PartitionCreated(currentIndex);
     emit QueryPosted(currentIndex, instance[currentIndex].queryArray);
-    currentIndex++;
-    return(currentIndex - 1);
+    
+    return currentIndex++;
   }
 
   // split an interval using (querySize) points (placed in queryArray)
