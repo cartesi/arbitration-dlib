@@ -291,8 +291,8 @@ contract('PartitionInstantiator', function(accounts) {
             .to.be.true;
 
           // check if divergencetime == leftpoint
-                //         response = await partitionInstantiator.divergenceTime(index);
-                //         expect(response).to.equal(leftPoint);
+          response = await partitionInstantiator.divergenceTime(index);
+          expect(response.toString()).to.equal(lastAggreement.toString());
 
           // check if time submitted[divergencetime == true] 
                 ///         response = await partitionInstantiator.timeSubmitted(index, leftPoint);
