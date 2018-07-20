@@ -94,10 +94,11 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     require(rightPoint > leftPoint);
     uint i;
     uint intervalLength = rightPoint - leftPoint;
+    uint endOfInterval = instance[_index].querySize - 1;
     // if intervalLength is not big enough to allow us jump sizes larger then
     // one, we go step by step
-    if (intervalLength < 2 * (instance[_index].querySize - 1)) {
-      for (i = 0; i < instance[_index].querySize - 1; i++) {
+    if (intervalLength < 2 * endOfInterval) {
+      for (i = 0; i < endOfInterval; i++) {
         if (leftPoint + i < rightPoint) {
           instance[_index].queryArray[i] = leftPoint + i;
         } else {
@@ -108,12 +109,12 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
       // otherwise: intervalLength = (querySize - 1) * divisionLength + j
       // with divisionLength >= 1 and j in {0, ..., querySize - 2}. in this
       // case the size of maximum slice drops to a proportion of intervalLength
-      uint divisionLength = intervalLength / (instance[_index].querySize - 1);
-      for (i = 0; i < instance[_index].querySize - 1; i++) {
+      uint divisionLength = intervalLength / endOfInterval;
+      for (i = 0; i < endOfInterval; i++) {
         instance[_index].queryArray[i] = leftPoint + i * divisionLength;
       }
     }
-    instance[_index].queryArray[instance[_index].querySize - 1] = rightPoint;
+    instance[_index].queryArray[endOfInterval] = rightPoint;
   }
 
   /// @notice Answer the query (only claimer can call it).
