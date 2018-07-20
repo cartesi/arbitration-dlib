@@ -290,14 +290,14 @@ contract('PartitionInstantiator', function(accounts) {
           expect(await partitionInstantiator.stateIsDivergenceFound.call(index))
             .to.be.true;
 
-          // check if divergencetime == leftpoint
+          // check if divergencetime == lastAggreement
           response = await partitionInstantiator.divergenceTime(index);
           expect(response.toString()).to.equal(lastAggreement.toString());
 
           // check if time submitted[divergencetime == true] 
-                ///         response = await partitionInstantiator.timeSubmitted(index, leftPoint);
-                ///         expect(response).to.true;
-                ///         
+          response = await partitionInstantiator.timeSubmitted(index, +event._timeOfDivergence);
+          expect(response).to.be.true;
+          
           // check if timehash of divergence time is not undefined
                 //         response = await partitionInstantiator.timeHash(index, leftPoint);
                 //         expect(response).to.be.defined;
