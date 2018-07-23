@@ -62,10 +62,10 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
                        uint _querySize, uint _roundDuration) public
     returns(uint32)
   {
-    require(_challenger != _claimer);
-    require(_finalTime > 0);
-    require(_querySize > 2);
-    require(_querySize < 100);
+    require(_challenger != _claimer, "Challenger and claimer have the same address");
+    require(_finalTime > 0, "Final Time has to be bigger than zero");
+    require(_querySize > 2, "_querySize has to be bigger than two");
+    require(_querySize < 100, "_querySize has to be less than 100");
     instance[currentIndex].challenger = _challenger;
     instance[currentIndex].claimer = _claimer;
     instance[currentIndex].finalTime = _finalTime;
@@ -91,7 +91,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   // leftPoint rightPoint are always the first and last points in queryArray.
   function slice(uint32 _index, uint leftPoint, uint rightPoint) internal
   {
-    require(rightPoint > leftPoint);
+    require(rightPoint > leftPoint, "rightPoint has to be bigger than leftPoint");
     uint i;
     uint intervalLength = rightPoint - leftPoint;
     uint queryLastIndex = instance[_index].querySize - 1;
@@ -127,12 +127,12 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
   {
-    require(instance[_index].currentState == state.WaitingHashes);
-    require(postedTimes.length == instance[_index].querySize);
-    require(postedHashes.length == instance[_index].querySize);
+    require(instance[_index].currentState == state.WaitingHashes, "State is not WaitingHashes");
+    require(postedTimes.length == instance[_index].querySize, "postedTimes.length != querySize");
+    require(postedHashes.length == instance[_index].querySize, "postedHashes.length != querySize");
     for (uint i = 0; i < instance[_index].querySize; i++) {
       // make sure the claimer knows the current query
-      require(postedTimes[i] == instance[_index].queryArray[i]);
+      require(postedTimes[i] == instance[_index].queryArray[i], "postedTimes[i] != queryArray[i]");
       // cannot rewrite previous answer
       if (!instance[_index].timeSubmitted[postedTimes[i]]) {
         instance[_index].timeSubmitted[postedTimes[i]] = true;
@@ -156,14 +156,14 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
-    require(instance[_index].currentState == state.WaitingQuery);
-    require(queryPiece < instance[_index].querySize - 1);
+    require(instance[_index].currentState == state.WaitingQuery, "State is not WaitingQuery");
+    require(queryPiece < instance[_index].querySize - 1, "queryPiece is bigger thatn querySize -1");
     // make sure the challenger knows the previous query
-    require(leftPoint == instance[_index].queryArray[queryPiece]);
-    require(rightPoint == instance[_index].queryArray[queryPiece + 1]);
+    require(leftPoint == instance[_index].queryArray[queryPiece], "leftPoint != queryArray[queryPiece]");
+    require(rightPoint == instance[_index].queryArray[queryPiece + 1],"rightPoint != queryArray[queryPiece]");
     // no unitary queries. in unitary case, present divergence instead.
     // by avoiding unitary queries one forces the contest to end
-    require(rightPoint - leftPoint > 1);
+    require(rightPoint - leftPoint > 1,"Interval is less than one");
     slice(_index, leftPoint, rightPoint);
     instance[_index].currentState = state.WaitingHashes;
     instance[_index].timeOfLastMove = now;
@@ -188,7 +188,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
       emit ChallengeEnded(_index, uint8(instance[_index].currentState));
       return;
     }
-    require(false);
+    revert();
   }
 
   /// @notice Present a precise time of divergence (can only be called by
@@ -200,9 +200,10 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
-    require(_divergenceTime < instance[_index].finalTime);
-    require(instance[_index].timeSubmitted[_divergenceTime]);
-    require(instance[_index].timeSubmitted[_divergenceTime + 1]);
+    require(_divergenceTime < instance[_index].finalTime, "divergence time has to be less than finalTime");
+
+    require(instance[_index].timeSubmitted[_divergenceTime],"_divergenceTime has to have been submitted");
+    require(instance[_index].timeSubmitted[_divergenceTime + 1], "_divergenceTime +1 has to have been submitted");
     instance[_index].divergenceTime = _divergenceTime;
     instance[_index].currentState = state.DivergenceFound;
     emit ChallengeEnded(_index, uint8(instance[_index].currentState));
