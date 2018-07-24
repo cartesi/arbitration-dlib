@@ -171,7 +171,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     emit QueryPosted(_index, instance[_index].queryArray);
   }
 
-  /// @notice Claim victory for opponent timeout.
+  /// @notice Claim victory for opponent timeout/?count=25&after=t3_906e12.
   function claimVictoryByTime(uint32 _index) public
     onlyInstantiated(_index)
   {
@@ -201,6 +201,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
+    //shouldnt it be < instance[_index].finalTime - 1, since the next step also has to exist
     require(_divergenceTime < instance[_index].finalTime);
     require(instance[_index].timeSubmitted[_divergenceTime]);
     require(instance[_index].timeSubmitted[_divergenceTime + 1]);
