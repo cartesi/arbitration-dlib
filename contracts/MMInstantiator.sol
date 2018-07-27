@@ -159,7 +159,7 @@ contract MMInstantiator is MMInterface, Decorated {
     require((_position & 7) == 0);
     uint pointer = instance[_index].historyPointer;
     ReadWrite storage pointInHistory = instance[_index].history[pointer];
-    require(pointInHistory.wasRead);
+    require(!pointInHistory.wasRead);
     require(pointInHistory.position == _position);
     require(pointInHistory.value == _value);
     delete(instance[_index].history[pointer]);
