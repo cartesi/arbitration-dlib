@@ -138,9 +138,10 @@ contract MMInstantiator is MMInterface, Decorated {
     require(instance[_index].currentState == state.WaitingReplay);
     require((_position & 7) == 0);
     uint pointer = instance[_index].historyPointer;
-    require(instance[_index].history[pointer].wasRead);
-    require(instance[_index].history[pointer].position == _position);
-    bytes8 value = instance[_index].history[pointer].value;
+    ReadWrite storage pointInHistory = instance[_index].history[pointer];
+    require(pointInHistory.wasRead);
+    require(pointInHistory.position == _position);
+    bytes8 value = pointInHistory.value;
     delete(instance[_index].history[pointer]);
     instance[_index].historyPointer++;
     emit ValueRead(_index, _position, value);
