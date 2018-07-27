@@ -67,12 +67,13 @@ contract MMInstantiator is MMInterface, Decorated {
                        bytes32 _initialHash) public returns (uint32)
   {
     require(_provider != _client);
-    instance[currentIndex].provider = _provider;
-    instance[currentIndex].client = _client;
-    instance[currentIndex].initialHash = _initialHash;
-    instance[currentIndex].newHash = _initialHash;
-    instance[currentIndex].historyPointer = 0;
-    instance[currentIndex].currentState = state.WaitingProofs;
+    MMCtx storage currentInstance = instance[currentIndex];
+    currentInstance.provider = _provider;
+    currentInstance.client = _client;
+    currentInstance.initialHash = _initialHash;
+    currentInstance.newHash = _initialHash;
+    currentInstance.historyPointer = 0;
+    currentInstance.currentState = state.WaitingProofs;
     emit MemoryCreated(currentIndex, _initialHash);
     
     return currentIndex++;
