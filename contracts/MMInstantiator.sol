@@ -74,8 +74,8 @@ contract MMInstantiator is MMInterface, Decorated {
     instance[currentIndex].historyPointer = 0;
     instance[currentIndex].currentState = state.WaitingProofs;
     emit MemoryCreated(currentIndex, _initialHash);
-    currentIndex++;
-    return(currentIndex - 1);
+    
+    return currentIndex++;
   }
 
   /// @notice Proves that a certain value in current memory is correct
