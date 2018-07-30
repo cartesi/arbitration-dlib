@@ -1,5 +1,5 @@
 /// @title Partition instantiator
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "./Decorated.sol";
 import "./PartitionInterface.sol";
