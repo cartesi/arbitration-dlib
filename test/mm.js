@@ -90,7 +90,15 @@ contract('MMInstantiator', function(accounts) {
         expect(event._value.toString()).to.equal(
           twoComplement32(myMM.getWord(u.position)));
       } else {
-        // submit write
+              
+        // submit write with wrong proof          
+        expect(await getError(
+          mmInstantiator.proveWrite(index, u.position, myMM.getWord(u.position),
+            twoComplement32(u.value),["falseProof"],
+            { from: accounts[0], gas: 2000000 })
+        )).to.have.string('VM Exception');
+              
+        
         response = await mmInstantiator
           .proveWrite(index, u.position, myMM.getWord(u.position),
                       twoComplement32(u.value), proof,
