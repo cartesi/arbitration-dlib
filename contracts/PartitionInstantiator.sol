@@ -66,7 +66,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     require(_finalTime > 0, "Final Time has to be bigger than zero");
     require(_querySize > 2, "_querySize has to be bigger than two");
     require(_querySize < 50, "_querySize has to be less than 50");
-    require(_roundDuration > 50, "Round Duration has to be at least 50 seconds");
+    require(_roundDuration > 50, "Round Duration has to be greater than 50 seconds");
     instance[currentIndex].challenger = _challenger;
     instance[currentIndex].claimer = _claimer;
     instance[currentIndex].finalTime = _finalTime;
