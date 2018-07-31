@@ -49,8 +49,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   //
 
   event PartitionCreated(uint256 _index);
-  event QueryPosted(uint256 _index, uint[] _queryTimes);
-  event HashesPosted(uint256 _index, uint[] _postedTimes, bytes32[] _postedHashes);
+  event QueryPosted(uint256 _index);
+  event HashesPosted(uint256 _index);
   event ChallengeEnded(uint256 _index, uint8 _state);
   event DivergenceFound(uint256 _index, uint _timeOfDivergence,
                         bytes32 _hashAtDivergenceTime,
@@ -83,7 +83,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     instance[currentIndex].timeOfLastMove = now;
     instance[currentIndex].currentState = state.WaitingHashes;
     emit PartitionCreated(currentIndex);
-    emit QueryPosted(currentIndex, instance[currentIndex].queryArray);
+    emit QueryPosted(currentIndex);
     
     return currentIndex++;
   }
@@ -142,7 +142,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     }
     instance[_index].currentState = state.WaitingQuery;
     instance[_index].timeOfLastMove = now;
-    emit HashesPosted(_index, postedTimes, postedHashes);
+    emit HashesPosted(_index);
   }
 
   /// @notice Makes a query (only challenger can call it).
@@ -168,7 +168,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     slice(_index, leftPoint, rightPoint);
     instance[_index].currentState = state.WaitingHashes;
     instance[_index].timeOfLastMove = now;
-    emit QueryPosted(_index, instance[_index].queryArray);
+    emit QueryPosted(_index);
   }
 
   /// @notice Claim victory for opponent timeout.
