@@ -3,8 +3,8 @@ pragma solidity 0.4.24;
 
 contract Instantiator
 {
-  uint32 internal currentIndex = 0;
+  uint256 internal currentIndex = 0;
 
-  modifier onlyInstantiated(uint32 _index)
+  modifier onlyInstantiated(uint256 _index)
   { require(currentIndex > _index); _; }
 }
