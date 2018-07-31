@@ -28,7 +28,7 @@ contract MMInstantiator is MMInterface, Decorated {
     state currentState;
   }
 
-  mapping(uint32 => MMCtx) private instance;
+  mapping(uint256 => MMCtx) private instance;
 
   // These are the possible states and transitions of the contract.
   //
@@ -55,16 +55,16 @@ contract MMInstantiator is MMInterface, Decorated {
   // +---------------+
   //
 
-  event MemoryCreated(uint32 _index, bytes32 _initialHash);
-  event ValueProved(uint32 _index, bool _wasRead, uint64 _position,
+  event MemoryCreated(uint256 _index, bytes32 _initialHash);
+  event ValueProved(uint256 _index, bool _wasRead, uint64 _position,
                     bytes8 _value);
-  event ValueRead(uint32 _index, uint64 _position, bytes8 _value);
-  event ValueWritten(uint32 _index, uint64 _position, bytes8 _value);
-  event FinishedProofs(uint32 _index);
-  event FinishedReplay(uint32 _index);
+  event ValueRead(uint256 _index, uint64 _position, bytes8 _value);
+  event ValueWritten(uint256 _index, uint64 _position, bytes8 _value);
+  event FinishedProofs(uint256 _index);
+  event FinishedReplay(uint256 _index);
 
   function instantiate(address _provider, address _client,
-                       bytes32 _initialHash) public returns (uint32)
+                       bytes32 _initialHash) public returns (uint256)
   {
     require(_provider != _client);
     instance[currentIndex].provider = _provider;
@@ -82,7 +82,7 @@ contract MMInstantiator is MMInterface, Decorated {
   // @param _position The address of the value to be confirmed
   // @param _value The value in that address to be confirmed
   // @param proof The proof that this value is correct
-  function proveRead(uint32 _index, uint64 _position, bytes8 _value,
+  function proveRead(uint256 _index, uint64 _position, bytes8 _value,
                      bytes32[] proof) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
@@ -99,7 +99,7 @@ contract MMInstantiator is MMInterface, Decorated {
   /// @param _oldValue before write
   /// @param _newValue to be written
   /// @param proof The proof that the old value was correct
-  function proveWrite(uint32 _index, uint64 _position,
+  function proveWrite(uint256 _index, uint64 _position,
                       bytes8 _oldValue, bytes8 _newValue,
                       bytes32[] proof) public
     onlyInstantiated(_index)
@@ -118,7 +118,7 @@ contract MMInstantiator is MMInterface, Decorated {
   }
 
   /// @notice Stop memory insertion and start read and write phase
-  function finishProofPhase(uint32 _index) public
+  function finishProofPhase(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
   {
@@ -130,7 +130,7 @@ contract MMInstantiator is MMInterface, Decorated {
   /// @notice Replays a read in memory that has been proved to be correct
   /// according to initial hash
   /// @param _position of the desired memory
-  function read(uint32 _index, uint64 _position) public
+  function read(uint256 _index, uint64 _position) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].client)
     returns (bytes8)
@@ -150,7 +150,7 @@ contract MMInstantiator is MMInterface, Decorated {
   /// @notice Replays a write in memory that was proved correct
   /// @param _position of the write
   /// @param _value to be written
-  function write(uint32 _index, uint64 _position, bytes8 _value) public
+  function write(uint256 _index, uint64 _position, bytes8 _value) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].client)
   {
@@ -166,7 +166,7 @@ contract MMInstantiator is MMInterface, Decorated {
   }
 
   /// @notice Stop write (or read) phase
-  function finishReplayPhase(uint32 _index) public
+  function finishReplayPhase(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].client)
   {
@@ -179,39 +179,39 @@ contract MMInstantiator is MMInterface, Decorated {
   }
 
   // getter methods
-  function provider(uint32 _index) public view
+  function provider(uint256 _index) public view
     onlyInstantiated(_index)
     returns (address)
   { return instance[_index].provider; }
 
-  function client(uint32 _index) public view
+  function client(uint256 _index) public view
     onlyInstantiated(_index)
     returns (address)
   { return instance[_index].client; }
 
-  function initialHash(uint32 _index) public view
+  function initialHash(uint256 _index) public view
     onlyInstantiated(_index)
     returns (bytes32)
   { return instance[_index].initialHash; }
 
-  function newHash(uint32 _index) public view
+  function newHash(uint256 _index) public view
     onlyInstantiated(_index)
     returns (bytes32)
   { return instance[_index].newHash; }
 
   // state getters
 
-  function stateIsWaitingProofs(uint32 _index) public view
+  function stateIsWaitingProofs(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitingProofs; }
 
-  function stateIsWaitingReplay(uint32 _index) public view
+  function stateIsWaitingReplay(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitingReplay; }
 
-  function stateIsFinishedReplay(uint32 _index) public view
+  function stateIsFinishedReplay(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.FinishedReplay; }

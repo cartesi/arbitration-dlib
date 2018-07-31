@@ -4,9 +4,9 @@ pragma solidity 0.4.24;
 import "./MachineInterface.sol";
 
 contract mmInterface {
-  function read(uint32 _index, uint64 _address) public view returns (bytes8);
-  function write(uint32 _index, uint64 _address, bytes8 _value) public;
-  function finishReplayPhase(uint32 _index) public;
+  function read(uint256 _index, uint64 _address) public view returns (bytes8);
+  function write(uint256 _index, uint64 _address, bytes8 _value) public;
+  function finishReplayPhase(uint256 _index) public;
 }
 
 contract Subleq is MachineInterface {
@@ -37,7 +37,7 @@ contract Subleq is MachineInterface {
 
   constructor() public {}
 
-  function endStep(address _mmAddress, uint32 _mmIndex, uint8 _exitCode)
+  function endStep(address _mmAddress, uint256 _mmIndex, uint8 _exitCode)
     internal returns (uint8) {
     mmInterface mm = mmInterface(_mmAddress);
     mm.finishReplayPhase(_mmIndex);
@@ -47,7 +47,7 @@ contract Subleq is MachineInterface {
 
   /// @notice Performs one step of the subleq machine on memory
   /// @return false indicates a halted machine or invalid instruction
-  function step(address _mmAddress, uint32 _mmIndex)
+  function step(address _mmAddress, uint256 _mmIndex)
     public returns (uint8)
   {
     // Architecture

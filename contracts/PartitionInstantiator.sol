@@ -21,7 +21,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     uint divergenceTime;
   }
 
-  mapping(uint32 => PartitionCtx) private instance;
+  mapping(uint256 => PartitionCtx) private instance;
 
   // These are the possible states and transitions of the contract.
   //
@@ -48,11 +48,11 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   //          +-----------------+
   //
 
-  event PartitionCreated(uint32 _index);
-  event QueryPosted(uint32 _index, uint[] _queryTimes);
-  event HashesPosted(uint32 _index, uint[] _postedTimes, bytes32[] _postedHashes);
-  event ChallengeEnded(uint32 _index, uint8 _state);
-  event DivergenceFound(uint32 _index, uint _timeOfDivergence,
+  event PartitionCreated(uint256 _index);
+  event QueryPosted(uint256 _index, uint[] _queryTimes);
+  event HashesPosted(uint256 _index, uint[] _postedTimes, bytes32[] _postedHashes);
+  event ChallengeEnded(uint256 _index, uint8 _state);
+  event DivergenceFound(uint256 _index, uint _timeOfDivergence,
                         bytes32 _hashAtDivergenceTime,
                         bytes32 _hashRigthAfterDivergenceTime);
 
@@ -60,12 +60,13 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
                        address _claimer, bytes32 _initialHash,
                        bytes32 _claimerFinalHash, uint _finalTime,
                        uint _querySize, uint _roundDuration) public
-    returns(uint32)
+    returns(uint256)
   {
     require(_challenger != _claimer, "Challenger and claimer have the same address");
     require(_finalTime > 0, "Final Time has to be bigger than zero");
     require(_querySize > 2, "_querySize has to be bigger than two");
     require(_querySize < 50, "_querySize has to be less than 50");
+    require(_roundDuration > 50, "Round Duration has to be at least 50 seconds");
     instance[currentIndex].challenger = _challenger;
     instance[currentIndex].claimer = _claimer;
     instance[currentIndex].finalTime = _finalTime;
@@ -89,7 +90,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
 
   // split an interval using (querySize) points (placed in queryArray)
   // leftPoint rightPoint are always the first and last points in queryArray.
-  function slice(uint32 _index, uint leftPoint, uint rightPoint) internal
+  function slice(uint256 _index, uint leftPoint, uint rightPoint) internal
   {
     require(rightPoint > leftPoint, "rightPoint has to be bigger than leftPoint");
     uint i;
@@ -122,7 +123,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   /// been queried.
   /// @param postedHashes An array (of size querySize) with the hashes
   /// corresponding to the queried times
-  function replyQuery(uint32 _index, uint[] postedTimes,
+  function replyQuery(uint256 _index, uint[] postedTimes,
                       bytes32[] postedHashes) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
@@ -151,7 +152,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   /// split. Should be an aggreement point.
   /// @param leftPoint confirmation of the rightPoint of the interval to be
   /// split. Should be a disagreement point.
-  function makeQuery(uint32 _index, uint queryPiece,
+  function makeQuery(uint256 _index, uint queryPiece,
                      uint leftPoint, uint rightPoint) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
@@ -171,7 +172,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   }
 
   /// @notice Claim victory for opponent timeout.
-  function claimVictoryByTime(uint32 _index) public
+  function claimVictoryByTime(uint256 _index) public
     onlyInstantiated(_index)
   {
     if ((msg.sender == instance[_index].challenger)
@@ -196,7 +197,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   /// @param _divergenceTime The time when the divergence happended. It
   /// should be a point of aggreement, while _divergenceTime + 1 should be a
   /// point of disagreement (both queried).
-  function presentDivergence(uint32 _index, uint _divergenceTime) public
+  function presentDivergence(uint256 _index, uint _divergenceTime) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
@@ -215,7 +216,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   // Getters methods
 
   /*
-  function getInstance(uint32 _index) public view
+  function getInstance(uint256 _index) public view
     onlyInstantiated(_index)
     returns (address challenger,
              address claimer,
@@ -236,73 +237,73 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   */
 
   /*
-  function challenger(uint32 _index) public view returns (address) {
+  function challenger(uint256 _index) public view returns (address) {
     return instance[_index].challenger;
   }
 
-  function claimer(uint32 _index) public view returns (address) {
+  function claimer(uint256 _index) public view returns (address) {
     return instance[_index].claimer;
   }
 
-  function finalTime(uint32 _index) public view returns (uint) {
+  function finalTime(uint256 _index) public view returns (uint) {
     return instance[_index].finalTime;
   }
 
-  function querySize(uint32 _index) public view returns (uint) {
+  function querySize(uint256 _index) public view returns (uint) {
     return instance[_index].querySize;
   }
 
-  function timeOfLastMove(uint32 _index) public view returns (uint) {
+  function timeOfLastMove(uint256 _index) public view returns (uint) {
     return instance[_index].timeOfLastMove;
   }
 
-  function roundDuration(uint32 _index) public view returns (uint) {
+  function roundDuration(uint256 _index) public view returns (uint) {
     return instance[_index].roundDuration;
   }
   */
-  function divergenceTime(uint32 _index) public view
+  function divergenceTime(uint256 _index) public view
     onlyInstantiated(_index)
     returns (uint)
   { return instance[_index].divergenceTime; }
 
-  function timeSubmitted(uint32 _index, uint key) public view
+  function timeSubmitted(uint256 _index, uint key) public view
     onlyInstantiated(_index)
     returns (bool)
   { return instance[_index].timeSubmitted[key]; }
 
-  function timeHash(uint32 _index, uint key) public view
+  function timeHash(uint256 _index, uint key) public view
     onlyInstantiated(_index)
     returns (bytes32)
   { return instance[_index].timeHash[key]; }
 
-  function queryArray(uint32 _index, uint i) public view
+  function queryArray(uint256 _index, uint i) public view
     onlyInstantiated(_index)
     returns (uint)
   { return instance[_index].queryArray[i]; }
 
   // state getters
 
-  function stateIsWaitingQuery(uint32 _index) public view
+  function stateIsWaitingQuery(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitingQuery; }
 
-  function stateIsWaitingHashes(uint32 _index) public view
+  function stateIsWaitingHashes(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitingHashes; }
 
-  function stateIsChallengerWon(uint32 _index) public view
+  function stateIsChallengerWon(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.ChallengerWon; }
 
-  function stateIsClaimerWon(uint32 _index) public view
+  function stateIsClaimerWon(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.ClaimerWon; }
 
-  function stateIsDivergenceFound(uint32 _index) public view
+  function stateIsDivergenceFound(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.DivergenceFound; }
