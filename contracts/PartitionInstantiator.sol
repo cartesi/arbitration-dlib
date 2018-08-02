@@ -202,9 +202,9 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     onlyBy(instance[_index].challenger)
   {
     require(_divergenceTime < instance[_index].finalTime, "divergence time has to be less than finalTime");
-
     require(instance[_index].timeSubmitted[_divergenceTime],"_divergenceTime has to have been submitted");
     require(instance[_index].timeSubmitted[_divergenceTime + 1], "_divergenceTime +1 has to have been submitted");
+
     instance[_index].divergenceTime = _divergenceTime;
     instance[_index].currentState = state.DivergenceFound;
     emit ChallengeEnded(_index, uint8(instance[_index].currentState));
