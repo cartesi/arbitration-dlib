@@ -11,4 +11,31 @@ contract TestPartitionInstantiator {
     Assert.equal(500, expected, "testing structure");
   }
 
+  function testSlice(){
+  }
+
+  function testReplyQuery(){
+  }
+
+  function testMakeQuery(){
+  }
+
+  function testClaimVictoryByTime(){
+  }
+  
+  function testPresentDivergence(){
+  }
+
+  function testDivergenceTime(){
+  }
+
+  function testTimeSubmitted(){
+  }
+
+  function testTimeHash(){
+  }
+
+  function testQueryArray() {
+  }
+
 }
