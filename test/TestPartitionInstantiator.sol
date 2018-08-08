@@ -28,10 +28,67 @@ contract TestPartitionInstantiator is PartitionInstantiator{
     Assert.equal(instance[1].finalTime, 3000000, "Final time should be 3000000");
     Assert.equal(instance[1].timeHash[0], "otherInitialHash", "Initial hash should be otherInitialHash");
     Assert.equal(instance[1].timeHash[instance[1].finalTime], "otherFinalHash", "Final hash should be otherFinalHash");
-    Assert.equal(instance[1].querySize, 19, "querysize should be equal to 15");
+    Assert.equal(instance[1].querySize, 19, "querysize should be equal to 19");
     nextIndex++; //Always increment after instance tests
+
+    //instantiate n partitions
+    uint n = nextIndex + 5;
+    uint i = nextIndex;
+    for (i; i < n; i++) {
+      newIndex = instantiate(0x222,0x333,"otherInitialHash","otherFinalHash", 3000000, 19, 55 + i);
+      Assert.equal(newIndex, nextIndex, "Partition index should be equal to nextIndex");
+      Assert.equal(instance[i].roundDuration, 55 + i, "round duration should be 55 + i");
+    nextIndex++;
+    } 
   }
   function testSlice() public {
+  //if intervalLength < 2 * queryLastIndex
+    uint leftPoint = 2;
+    uint rightPoint = 5;
+   
+    slice(0,leftPoint, rightPoint);
+
+    for(uint i = 0; i < instance[0].querySize - 1; i++){
+      if(leftPoint + i < rightPoint){
+        Assert.equal(instance[0].queryArray[i], leftPoint + i,"Queryarray[i] must be = leftPoint +i");
+      }else{
+        Assert.equal(instance[0].queryArray[i], rightPoint, "queryArray[i] must be equal rightPoint"); 
+      }
+    }
+
+    leftPoint = 50;
+    rightPoint = 55;
+ 
+    slice(3,leftPoint, rightPoint);
+
+    for(i = 0; i < instance[3].querySize - 1; i++){
+      if(leftPoint + i < rightPoint){
+        Assert.equal(instance[3].queryArray[i], leftPoint + i,"Queryarray[i] must be = leftPoint +i");
+      }else{
+        Assert.equal(instance[3].queryArray[i], rightPoint, "queryArray[i] must be equal rightPoint"); 
+      }
+    }
+
+    //else
+    leftPoint = 1;
+    rightPoint = 600;
+   
+    slice(1,leftPoint, rightPoint);
+
+    uint divisionLength = (rightPoint - leftPoint) / (instance[1].querySize - 1);
+    for (i = 0; i < instance[1].querySize - 1; i++) {
+      Assert.equal(instance[1].queryArray[i], leftPoint + i * divisionLength, "slice else path");
+    }
+    leftPoint = 150;
+    rightPoint = 600;
+   
+    slice(1,leftPoint, rightPoint);
+
+    divisionLength = (rightPoint - leftPoint) / (instance[1].querySize - 1);
+    for (i = 0; i < instance[1].querySize - 1; i++) {
+      Assert.equal(instance[1].queryArray[i], leftPoint + i * divisionLength, "slice else path");
+    }
+
   }
 
   function testReplyQuery() public {
@@ -82,5 +139,3 @@ contract ThrowProxy {
     return target.call(data);
   }
 }
-
-
