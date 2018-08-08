@@ -30,8 +30,7 @@ contract TestPartitionInstantiator is PartitionInstantiator{
     Assert.equal(instance[1].timeHash[instance[1].finalTime], "otherFinalHash", "Final hash should be otherFinalHash");
     Assert.equal(instance[1].querySize, 19, "querysize should be equal to 15");
     nextIndex++; //Always increment after instance tests
- }
-
+  }
   function testSlice() public {
   }
 
@@ -59,4 +58,29 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   function testQueryArray() public {
   }
 
+  //Test throws/requires
+  function testThrow() public { 
+  }
+
 }
+
+// Proxy contract for testing throws
+contract ThrowProxy {
+  address public target;
+  bytes data;
+
+  function ThrowProxy(address _target) {
+    target = _target;
+  }
+
+  //prime the data using the fallback function.
+  function() {
+    data = msg.data;
+  }
+
+  function execute() returns (bool) {
+    return target.call(data);
+  }
+}
+
+
