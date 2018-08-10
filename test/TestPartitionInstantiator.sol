@@ -7,11 +7,11 @@ import "../contracts/PartitionInstantiator.sol";
 contract TestPartitionInstantiator is PartitionInstantiator{
   uint nextIndex = 0;
   function testInstantiate() public {
-    uint newIndex = instantiate(0x123,0x231,"initialHash","finalHash", 50000, 15, 55);   
+    uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 50000, 15, 55);   
     
     Assert.equal(newIndex, nextIndex, "Partition index should be equal to nextIndex"); 
     Assert.equal(instance[0].roundDuration, 55, "round duration should be 55");
-    Assert.equal(instance[0].challenger, 0x123, "Challenger address should be 0x123");
+    Assert.equal(instance[0].challenger, msg.sender, "Challenger address should be msg.sender");
     Assert.equal(instance[0].claimer, 0x231, "Claimer address should be 0x231");
     Assert.equal(instance[0].finalTime, 50000, "Final time should be 50000");
     Assert.equal(instance[0].timeHash[0], "initialHash", "Initial hash should be initialHash");
@@ -20,11 +20,11 @@ contract TestPartitionInstantiator is PartitionInstantiator{
     
     nextIndex++; //Always increment after instance tests
     
-    newIndex = instantiate(0x222,0x333,"otherInitialHash","otherFinalHash", 3000000, 19, 150);
+    newIndex = instantiate(0x222,msg.sender,"otherInitialHash","otherFinalHash", 3000000, 19, 150);
     Assert.equal(newIndex, nextIndex, "Partition index should be equal to nextIndex");
 
     Assert.equal(instance[1].challenger, 0x222, "Challenger address should be 0x222");
-    Assert.equal(instance[1].claimer, 0x333, "Claimer address should be 0x333");
+    Assert.equal(instance[1].claimer, msg.sender, "Claimer address should be msg.sender");
     Assert.equal(instance[1].finalTime, 3000000, "Final time should be 3000000");
     Assert.equal(instance[1].timeHash[0], "otherInitialHash", "Initial hash should be otherInitialHash");
     Assert.equal(instance[1].timeHash[instance[1].finalTime], "otherFinalHash", "Final hash should be otherFinalHash");
@@ -68,7 +68,18 @@ contract TestPartitionInstantiator is PartitionInstantiator{
         Assert.equal(instance[3].queryArray[i], rightPoint, "queryArray[i] must be equal rightPoint"); 
       }
     }
+    leftPoint = 0;
+    rightPoint = 1;
+ 
+    slice(3,leftPoint, rightPoint);
 
+    for(i = 0; i < instance[3].querySize - 1; i++){
+      if(leftPoint + i < rightPoint){
+        Assert.equal(instance[3].queryArray[i], leftPoint + i,"Queryarray[i] must be = leftPoint +i");
+      }else{
+        Assert.equal(instance[3].queryArray[i], rightPoint, "queryArray[i] must be equal rightPoint"); 
+      }
+    }
     //else
     leftPoint = 1;
     rightPoint = 600;
@@ -92,6 +103,20 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   }
 
   function testReplyQuery() public {
+    bytes32[] memory replyArray = new bytes32[](instance[1].querySize);
+    uint256[] memory postedTimes = new uint[](instance[1].querySize);
+
+
+    for(uint i = 0; i < instance[1].querySize; i++){
+      replyArray[i] = "0123";
+    }
+    for(i = 0; i < instance[1].querySize; i++){
+      postedTimes[i] = instance[1].queryArray[i];
+    }
+    instance[1].currentState = state.WaitingHashes;
+    replyQuery(1, postedTimes, replyArray);
+
+    Assert.equal(uint(instance[1].currentState),uint(state.WaitingQuery), "State should be waiting query");
   }
 
   function testMakeQuery() public {
