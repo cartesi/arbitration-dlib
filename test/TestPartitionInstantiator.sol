@@ -147,6 +147,7 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   //Test throws/requires
   function testThrow() public { 
     PartitionInstantiator partition = PartitionInstantiator(DeployedAddresses.PartitionInstantiator());
+    ThrowProxy throwProxy = new ThrowProxy(address(partition));
     uint newIndex = partition.instantiate(msg.sender,0x231,"initialHash","finalHash", 50000, 15, 55);   
     
 
@@ -160,9 +161,10 @@ contract TestPartitionInstantiator is PartitionInstantiator{
       postedTimes[i] = instance[0].queryArray[i];
     }
     instance[newIndex].currentState = state.WaitingHashes;
- 
-    bool result = partition.call.value(0)(bytes4(keccak256("replyQuery(uint, uint[], bytes32[])")),newIndex, postedTimes, replyArray); 
-    Assert.equal(result, false, "wut");
+    PartitionInstantiator(address(throwProxy)).replyQuery(newIndex, postedTimes, replyArray); 
+    bool r = throwProxy.execute.gas(2000000)();
+//    bool result = partition.call.value(0)(bytes4(keccak256("replyQuery(uint, uint[], bytes32[])")),newIndex, postedTimes, replyArray); 
+    Assert.equal(r, false, "wut");
   }
 
 }
