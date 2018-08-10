@@ -120,6 +120,7 @@ contract TestPartitionInstantiator is PartitionInstantiator{
 
     for(i = 0; i < instance[1].querySize; i++){
       Assert.isTrue(instance[1].timeSubmitted[postedTimes[i]], "postedTimes must be true");
+      Assert.equal(instance[1].timeHash[postedTimes[i]], replyArray[i], "posted times and postedHashes should match");
     }
   }
 
