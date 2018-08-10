@@ -105,7 +105,7 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   function testReplyQuery() public {
     bytes32[] memory replyArray = new bytes32[](instance[1].querySize);
     uint256[] memory postedTimes = new uint[](instance[1].querySize);
-
+    uint currentIndex = 1;
 
     for(uint i = 0; i < instance[1].querySize; i++){
       replyArray[i] = "0123";
@@ -117,6 +117,10 @@ contract TestPartitionInstantiator is PartitionInstantiator{
     replyQuery(1, postedTimes, replyArray);
 
     Assert.equal(uint(instance[1].currentState),uint(state.WaitingQuery), "State should be waiting query");
+
+    for(i = 0; i < instance[1].querySize; i++){
+      Assert.isTrue(instance[1].timeSubmitted[postedTimes[i]], "postedTimes must be true");
+    }
   }
 
   function testMakeQuery() public {
