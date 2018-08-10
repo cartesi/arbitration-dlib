@@ -105,7 +105,6 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   function testReplyQuery() public {
     bytes32[] memory replyArray = new bytes32[](instance[1].querySize);
     uint256[] memory postedTimes = new uint[](instance[1].querySize);
-    uint currentIndex = 1;
 
     for(uint i = 0; i < instance[1].querySize; i++){
       replyArray[i] = "0123";
@@ -147,6 +146,23 @@ contract TestPartitionInstantiator is PartitionInstantiator{
 
   //Test throws/requires
   function testThrow() public { 
+    PartitionInstantiator partition = PartitionInstantiator(DeployedAddresses.PartitionInstantiator());
+    uint newIndex = partition.instantiate(msg.sender,0x231,"initialHash","finalHash", 50000, 15, 55);   
+    
+
+    bytes32[] memory replyArray = new bytes32[](15);
+    uint256[] memory postedTimes = new uint[](15);
+
+    for(uint i = 0; i < 15; i++){
+      replyArray[i] = "0123";
+    }
+    for(i = 0; i < 15; i++){
+      postedTimes[i] = instance[0].queryArray[i];
+    }
+    instance[newIndex].currentState = state.WaitingHashes;
+ 
+    bool result = partition.call.value(0)(bytes4(keccak256("replyQuery(uint, uint[], bytes32[])")),newIndex, postedTimes, replyArray); 
+    Assert.equal(result, false, "wut");
   }
 
 }
