@@ -22,7 +22,6 @@ contract TestPartitionInstantiator is PartitionInstantiator{
     
     newIndex = instantiate(0x222,msg.sender,"otherInitialHash","otherFinalHash", 3000000, 19, 150);
     Assert.equal(newIndex, nextIndex, "Partition index should be equal to nextIndex");
-
     Assert.equal(instance[1].challenger, 0x222, "Challenger address should be 0x222");
     Assert.equal(instance[1].claimer, msg.sender, "Claimer address should be msg.sender");
     Assert.equal(instance[1].finalTime, 3000000, "Final time should be 3000000");
@@ -30,6 +29,14 @@ contract TestPartitionInstantiator is PartitionInstantiator{
     Assert.equal(instance[1].timeHash[instance[1].finalTime], "otherFinalHash", "Final hash should be otherFinalHash");
     Assert.equal(instance[1].querySize, 19, "querysize should be equal to 19");
     nextIndex++; //Always increment after instance tests
+
+    newIndex = instantiate(0x222,msg.sender,"otherInitialHash","otherFinalHash", 3000000, 19, 300);
+    nextIndex++; //Always increment after instance tests
+    
+    newIndex = instantiate(msg.sender,0x123,"otherInitialHash","otherFinalHash", 3000000, 5, 150);
+    nextIndex++; //Always increment after instance tests
+
+
 
     //instantiate n partitions
     uint n = nextIndex + 5;
@@ -103,27 +110,55 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   }
 
   function testReplyQuery() public {
-    bytes32[] memory replyArray = new bytes32[](instance[1].querySize);
-    uint256[] memory postedTimes = new uint[](instance[1].querySize);
+    
+    uint currentIndex = 1;
+    bytes32[] memory replyArray = new bytes32[](instance[currentIndex].querySize);
+    uint256[] memory postedTimes = new uint[](instance[currentIndex].querySize);
 
-    for(uint i = 0; i < instance[1].querySize; i++){
+    for(uint i = 0; i < instance[currentIndex].querySize; i++){
       replyArray[i] = "0123";
     }
-    for(i = 0; i < instance[1].querySize; i++){
-      postedTimes[i] = instance[1].queryArray[i];
+    for(i = 0; i < instance[currentIndex].querySize; i++){
+      postedTimes[i] = instance[currentIndex].queryArray[i];
     }
-    instance[1].currentState = state.WaitingHashes;
-    replyQuery(1, postedTimes, replyArray);
+    instance[currentIndex].currentState = state.WaitingHashes;
+    replyQuery(currentIndex, postedTimes, replyArray);
 
-    Assert.equal(uint(instance[1].currentState),uint(state.WaitingQuery), "State should be waiting query");
+    Assert.equal(uint(instance[currentIndex].currentState),uint(state.WaitingQuery), "State should be waiting query");
 
-    for(i = 0; i < instance[1].querySize; i++){
-      Assert.isTrue(instance[1].timeSubmitted[postedTimes[i]], "postedTimes must be true");
-      Assert.equal(instance[1].timeHash[postedTimes[i]], replyArray[i], "posted times and postedHashes should match");
+    for(i = 0; i < instance[currentIndex].querySize; i++){
+      Assert.isTrue(instance[currentIndex].timeSubmitted[postedTimes[i]], "postedTimes must be true");
+      Assert.equal(instance[currentIndex].timeHash[postedTimes[i]], replyArray[i], "posted times and postedHashes should match");
+    }
+
+    currentIndex = 2;
+
+    for(i = 0; i < instance[currentIndex].querySize; i++){
+      replyArray[i] = "0123";
+    }
+    for(i = 0; i < instance[currentIndex].querySize; i++){
+      postedTimes[i] = instance[currentIndex].queryArray[i];
+    }
+    instance[currentIndex].currentState = state.WaitingHashes;
+    replyQuery(currentIndex, postedTimes, replyArray);
+
+    Assert.equal(uint(instance[currentIndex].currentState),uint(state.WaitingQuery), "State should be waiting query");
+
+    for(i = 0; i < instance[currentIndex].querySize; i++){
+      Assert.isTrue(instance[currentIndex].timeSubmitted[postedTimes[i]], "postedTimes must be true");
+      Assert.equal(instance[currentIndex].timeHash[postedTimes[i]], replyArray[i], "posted times and postedHashes should match");
     }
   }
 
   function testMakeQuery() public {
+    uint currentIndex = 0;
+    uint queryPiece = 8;
+    uint leftPoint = instance[currentIndex].queryArray[queryPiece];
+    uint rightPoint = instance[currentIndex].queryArray[queryPiece + 1];
+
+    instance[currentIndex].currentState = state.WaitingQuery;
+    makeQuery(currentIndex, queryPiece, leftPoint, rightPoint);
+
   }
 
   function testClaimVictoryByTime() public {
@@ -147,8 +182,9 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   //Test throws/requires
   function testThrow() public { 
     PartitionInstantiator partition = PartitionInstantiator(DeployedAddresses.PartitionInstantiator());
-    ThrowProxy throwProxy = new ThrowProxy(address(partition));
-    uint newIndex = partition.instantiate(msg.sender,0x231,"initialHash","finalHash", 50000, 15, 55);   
+
+    ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
+    uint newIndex = partition.instantiate(0x2123,address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
     
 
     bytes32[] memory replyArray = new bytes32[](15);
@@ -158,13 +194,14 @@ contract TestPartitionInstantiator is PartitionInstantiator{
       replyArray[i] = "0123";
     }
     for(i = 0; i < 15; i++){
-      postedTimes[i] = instance[0].queryArray[i];
+      postedTimes[i] = instance[newIndex].queryArray[i];
     }
     instance[newIndex].currentState = state.WaitingHashes;
-    PartitionInstantiator(address(throwProxy)).replyQuery(newIndex, postedTimes, replyArray); 
-    bool r = throwProxy.execute.gas(2000000)();
-//    bool result = partition.call.value(0)(bytes4(keccak256("replyQuery(uint, uint[], bytes32[])")),newIndex, postedTimes, replyArray); 
-    Assert.equal(r, false, "wut");
+    
+    PartitionInstantiator(address(aliceThrowProxy)).replyQuery(newIndex, postedTimes, replyArray); 
+    
+    bool r = aliceThrowProxy.execute.gas(2000000)();
+    Assert.equal(r, false, "Transaction should have failed");
   }
 
 }
