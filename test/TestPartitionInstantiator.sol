@@ -3,6 +3,7 @@ pragma solidity 0.4.24;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/PartitionInstantiator.sol";
+import "../contracts/PartitionTestAux.sol";
 
 contract TestPartitionInstantiator is PartitionInstantiator{
   uint nextIndex = 0;
@@ -181,27 +182,32 @@ contract TestPartitionInstantiator is PartitionInstantiator{
 
   //Test throws/requires
   function testThrow() public { 
-    PartitionInstantiator partition = PartitionInstantiator(DeployedAddresses.PartitionInstantiator());
-
+    PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
     uint newIndex = partition.instantiate(0x2123,address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
     
 
     bytes32[] memory replyArray = new bytes32[](15);
     uint256[] memory postedTimes = new uint[](15);
+  
+    bytes32[] memory wrongReplyArray = new bytes32[](15);
+    uint256[] memory wrongPostedTimes = new uint[](15);
 
     for(uint i = 0; i < 15; i++){
       replyArray[i] = "0123";
+      postedTimes[i] = partition.getQueryArrayAtIndex(newIndex,i);
     }
-    for(i = 0; i < 15; i++){
-      postedTimes[i] = instance[newIndex].queryArray[i];
+    for(i = 0; i < 12; i++){
+     wrongReplyArray[i] = "0123";
+     wrongPostedTimes[i] = 3;
     }
-    instance[newIndex].currentState = state.WaitingHashes;
+    partition.setState(newIndex, state.WaitingQuery);
     
     PartitionInstantiator(address(aliceThrowProxy)).replyQuery(newIndex, postedTimes, replyArray); 
     
     bool r = aliceThrowProxy.execute.gas(2000000)();
-    Assert.equal(r, false, "Transaction should have failed");
+    Assert.equal(r, false, "Transaction should fail, state is not WaitingHashes");
+
   }
 
 }
