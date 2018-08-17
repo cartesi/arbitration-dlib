@@ -7,6 +7,9 @@ var DepthLib = artifacts.require("./DepthLib.sol");
 var DepthInterface = artifacts.require("./DepthInterface.sol");
 var VGInstantiator = artifacts.require("./VGInstantiator.sol");
 
+//test aux
+var PartitionTestAux = artifacts.require("./PartitionTestAux.sol");
+
 module.exports = function(deployer) {
   deployer.deploy(Token);
   deployer.deploy(MMInstantiator);
@@ -14,5 +17,6 @@ module.exports = function(deployer) {
   deployer.deploy(Subleq);
   deployer.deploy(PartitionInstantiator);
   deployer.deploy(DepthLib);
+  deployer.deploy(PartitionTestAux);
   deployer.link(DepthLib, DepthInterface);
 };
