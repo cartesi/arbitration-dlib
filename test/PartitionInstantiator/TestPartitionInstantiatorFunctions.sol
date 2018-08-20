@@ -2,10 +2,9 @@ pragma solidity 0.4.24;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/PartitionInstantiator.sol";
-import "../contracts/PartitionTestAux.sol";
+import "../../contracts/PartitionInstantiator.sol";
 
-contract TestPartitionInstantiator is PartitionInstantiator{
+contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
   uint nextIndex = 0;
     
   bytes32[] replyArray = new bytes32[](15);
@@ -183,55 +182,5 @@ contract TestPartitionInstantiator is PartitionInstantiator{
 
   function testQueryArray() public {
   }
-
-  //Test throws/requires
-  function testReplyThrowWrongState() public { 
-    PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
-    ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
-    uint newIndex = partition.instantiate(0x2123,address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
-    
-      
-    for(uint i = 0; i < 15; i++){
-      replyArray[i] = "0123";
-      postedTimes[i] = partition.getQueryArrayAtIndex(newIndex,i);
-    }
-    partition.setState(newIndex, state.WaitingQuery);
-    
-    PartitionInstantiator(address(aliceThrowProxy)).replyQuery(newIndex, postedTimes, replyArray); 
-    
-    bool r = aliceThrowProxy.execute.gas(2000000)();
-    Assert.equal(r, false, "Transaction should fail, state is not WaitingHashes");
-  }
-  function testReplyThrowWrongPostedTimesLength(){
-    PartitionTestAux  partitionB = PartitionTestAux(DeployedAddresses.PartitionTestAux());
-    ThrowProxy aliceThrowProxy = new ThrowProxy(address(partitionB));
-    uint newIndex = partitionB.instantiate(0x2123,address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
-//   bytes32[] memory replyArrayB = new bytes32[](15);
-//   uint256[] memory postedTimesB = new uint[](15);
- 
-    partitionB.setState(newIndex, state.WaitingHashes);
-//    PartitionInstantiator(address(aliceThrowProxy)).replyQuery(newIndex, postedTimes, replyArray); 
-//    
-//    bool r = aliceThrowProxy.execute.gas(2000000)();
-//    Assert.equal(r, false, "Transaction should fail, postedTimes.length != querySize"); 
-  }
 }
 
-// Proxy contract for testing throws
-contract ThrowProxy {
-  address public target;
-  bytes data;
-
-  function ThrowProxy(address _target) {
-    target = _target;
-  }
-
-  //prime the data using the fallback function.
-  function() {
-    data = msg.data;
-  }
-
-  function execute() returns (bool) {
-    return target.call(data);
-  }
-}
