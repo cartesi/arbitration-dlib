@@ -7,6 +7,10 @@ import "../contracts/PartitionTestAux.sol";
 
 contract TestPartitionInstantiator is PartitionInstantiator{
   uint nextIndex = 0;
+    
+  bytes32[] replyArray = new bytes32[](15);
+  uint256[] postedTimes = new uint[](15);
+
   function testInstantiate() public {
     uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 50000, 15, 55);   
     
@@ -181,25 +185,15 @@ contract TestPartitionInstantiator is PartitionInstantiator{
   }
 
   //Test throws/requires
-  function testThrow() public { 
+  function testReplyThrowWrongState() public { 
     PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
     uint newIndex = partition.instantiate(0x2123,address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
     
-
-    bytes32[] memory replyArray = new bytes32[](15);
-    uint256[] memory postedTimes = new uint[](15);
-  
-    bytes32[] memory wrongReplyArray = new bytes32[](15);
-    uint256[] memory wrongPostedTimes = new uint[](15);
-
+      
     for(uint i = 0; i < 15; i++){
       replyArray[i] = "0123";
       postedTimes[i] = partition.getQueryArrayAtIndex(newIndex,i);
-    }
-    for(i = 0; i < 12; i++){
-     wrongReplyArray[i] = "0123";
-     wrongPostedTimes[i] = 3;
     }
     partition.setState(newIndex, state.WaitingQuery);
     
@@ -207,9 +201,20 @@ contract TestPartitionInstantiator is PartitionInstantiator{
     
     bool r = aliceThrowProxy.execute.gas(2000000)();
     Assert.equal(r, false, "Transaction should fail, state is not WaitingHashes");
-
   }
-
+  function testReplyThrowWrongPostedTimesLength(){
+    PartitionTestAux  partitionB = PartitionTestAux(DeployedAddresses.PartitionTestAux());
+    ThrowProxy aliceThrowProxy = new ThrowProxy(address(partitionB));
+    uint newIndex = partitionB.instantiate(0x2123,address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
+//   bytes32[] memory replyArrayB = new bytes32[](15);
+//   uint256[] memory postedTimesB = new uint[](15);
+ 
+    partitionB.setState(newIndex, state.WaitingHashes);
+//    PartitionInstantiator(address(aliceThrowProxy)).replyQuery(newIndex, postedTimes, replyArray); 
+//    
+//    bool r = aliceThrowProxy.execute.gas(2000000)();
+//    Assert.equal(r, false, "Transaction should fail, postedTimes.length != querySize"); 
+  }
 }
 
 // Proxy contract for testing throws
