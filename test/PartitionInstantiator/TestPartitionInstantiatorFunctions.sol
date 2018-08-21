@@ -41,16 +41,6 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
     nextIndex++; //Always increment after instance tests
 
 
-
-    //instantiate n partitions
-    uint n = nextIndex + 5;
-    uint i = nextIndex;
-    for (i; i < n; i++) {
-      newIndex = instantiate(0x222,0x333,"otherInitialHash","otherFinalHash", 3000000, 19, 55 + i);
-      Assert.equal(newIndex, nextIndex, "Partition index should be equal to nextIndex");
-      Assert.equal(instance[i].roundDuration, 55 + i, "round duration should be 55 + i");
-    nextIndex++;
-    } 
   }
   function testSlice() public {
   //if intervalLength < 2 * queryLastIndex
@@ -194,18 +184,49 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
   }
   
   function testPresentDivergence() public {
+    uint newIndex;
+    uint divergenceTime;
+    for(uint i = 1; i < 7; i++){
+      newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000 * i, 3 * i, 55 * i);       
+      divergenceTime = instance[newIndex].finalTime - i;
+      instance[newIndex].timeSubmitted[divergenceTime] = true;
+      instance[newIndex].timeSubmitted[divergenceTime + 1] = true;
+      presentDivergence(newIndex, divergenceTime);
+
+      Assert.equal(uint(instance[newIndex].currentState), uint(state.DivergenceFound), "State should be divergence found");
+    }
   }
 
   function testDivergenceTime() public {
+    uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000, 3, 55);
+    uint newDivergenceTime = 5;
+    instance[newIndex].divergenceTime = newDivergenceTime;
+
+    Assert.equal(newDivergenceTime, divergenceTime(newIndex), "divergence time should be equal");
+
   }
 
   function testTimeSubmitted() public {
+    uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000, 3, 55);
+    uint key = 3;
+    instance[newIndex].timeSubmitted[key] = true;
+
+    Assert.equal(timeSubmitted(newIndex, key), true, "time submitted should be true");  
   }
 
   function testTimeHash() public {
+    uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000, 3, 55);
+    uint key = 3;
+    instance[newIndex].timeHash[key] = 0x121;
+
+    Assert.equal(timeHash(newIndex, key), 0x121, "time hash should match");
   }
 
   function testQueryArray() public {
+    uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000, 15, 55);
+    for(uint i = 0; i < 8; i++){
+      Assert.equal(instance[newIndex].queryArray[i], queryArray(newIndex,i), "queryArray should match");
+    }
   }
 }
 
