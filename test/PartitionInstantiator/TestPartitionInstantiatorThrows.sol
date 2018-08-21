@@ -11,8 +11,8 @@ contract TestPartitionInstantiatorThrows is PartitionInstantiator{
   
   bytes32[] wrongReplyArray = new bytes32[](3);
   uint256[] wrongPostedTimes = new uint[](3);
-  
-  //Test throws/requires
+
+  //Test reply throws/requires
   function testReplyThrows() public { 
     PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
@@ -57,7 +57,37 @@ contract TestPartitionInstantiatorThrows is PartitionInstantiator{
 
 
   }
+  //test makeQuery throws
+  function testMakeQueryThrows() public {
+    uint queryPiece = 5;
+    PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
+    ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
+    uint newIndex = partition.instantiate(address(aliceThrowProxy),0x123,"initialHash","finalHash", 50000, 15, 55);   
+   partition.setState(newIndex, state.WaitingQuery);
+ 
+    //Make query with incorrect queryPiece
+  PartitionInstantiator(address(aliceThrowProxy)).makeQuery(newIndex, 300, 0, 1); 
+    
+  bool r = aliceThrowProxy.execute.gas(2000000)();
+  Assert.equal(r, false, "Transaction should fail, queryPiece is bigger than instance.querySize -1");
 
+
+    //Make query with incorrect leftPoint
+  PartitionInstantiator(address(aliceThrowProxy)).makeQuery(newIndex, queryPiece, 0, partition.getQueryArrayAtIndex(newIndex, queryPiece + 1)); 
+  
+  partition.setState(newIndex, state.WaitingQuery);
+    
+  r = aliceThrowProxy.execute.gas(2000000)();
+  Assert.equal(r, false, "Transaction should fail, wrong leftPoint");
+
+    //Make query with incorrect rightPoint
+  PartitionInstantiator(address(aliceThrowProxy)).makeQuery(newIndex, queryPiece, partition.getQueryArrayAtIndex(newIndex, queryPiece ), 13); 
+  
+  partition.setState(newIndex, state.WaitingQuery);
+    
+  r = aliceThrowProxy.execute.gas(2000000)();
+  Assert.equal(r, false, "Transaction should fail, wrong rightPoint");
+  }
   // Test modifiers
   function testModifiers() public {
  
@@ -85,6 +115,7 @@ contract TestPartitionInstantiatorThrows is PartitionInstantiator{
     Assert.equal(r, false, "Non claimer caller, transaction should fail");
   }
 }
+
 
 // Proxy contract for testing throws
 contract ThrowProxy {
