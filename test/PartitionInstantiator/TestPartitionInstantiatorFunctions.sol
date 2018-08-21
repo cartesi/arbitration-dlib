@@ -166,16 +166,31 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
       queryPiece = instance[newIndex].querySize - 2;
       leftPoint  = instance[newIndex].queryArray[queryPiece];
       rightPoint = instance[newIndex].queryArray[queryPiece + 1];
-    instance[newIndex].currentState = state.WaitingQuery;
-    makeQuery(newIndex, queryPiece, leftPoint, rightPoint);
+      instance[newIndex].currentState = state.WaitingQuery;
+      makeQuery(newIndex, queryPiece, leftPoint, rightPoint);
 
-    Assert.equal(uint(instance[newIndex].currentState), uint(state.WaitingHashes), "State should be waiting hashes");
-
-    Assert.equal(instance[newIndex].timeOfLastMove, now, "time of last move should be now");
+      Assert.equal(uint(instance[newIndex].currentState), uint(state.WaitingHashes), "State should be waiting hashes");
+      Assert.equal(instance[newIndex].timeOfLastMove, now, "time of last move should be now");
     }
- }
+  }
 
   function testClaimVictoryByTime() public {
+    uint newIndex;
+    for (uint i = 1;i < 6; i++){
+      if(i % 2 == 0){
+        newIndex = instantiate(msg.sender,0x231, "initialHash","finalHash", 5000 * i, 3 * i, 55 * i);
+        instance[newIndex].currentState = state.WaitingHashes;
+      }else{
+        newIndex = instantiate(0x312, msg.sender,"initialHash","finalHash", 5000 * i, 3 * i, 55 * i);
+        instance[newIndex].currentState = state.WaitingQuery;
+      } 
+         
+      instance[newIndex].timeOfLastMove = 0; 
+      instance[newIndex].roundDuration = 0;
+
+      claimVictoryByTime(newIndex);
+      Assert.equal(uint(instance[newIndex].currentState), i%2 == 0? uint(state.ChallengerWon):uint(state.ClaimerWon), "State should be waiting hashes");
+    }
   }
   
   function testPresentDivergence() public {
