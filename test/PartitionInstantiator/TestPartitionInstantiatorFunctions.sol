@@ -155,15 +155,25 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
   }
 
   function testMakeQuery() public {
-    uint currentIndex = 0;
-    uint queryPiece = 8;
-    uint leftPoint = instance[currentIndex].queryArray[queryPiece];
-    uint rightPoint = instance[currentIndex].queryArray[queryPiece + 1];
+    
+    uint newIndex;
+    uint queryPiece;
+    uint leftPoint;
+    uint rightPoint;     
 
-    instance[currentIndex].currentState = state.WaitingQuery;
-    makeQuery(currentIndex, queryPiece, leftPoint, rightPoint);
+    for(uint i = 1; i < 5; i++) {
+      newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000 * i, i * 3, i * 55);   
+      queryPiece = instance[newIndex].querySize - 2;
+      leftPoint  = instance[newIndex].queryArray[queryPiece];
+      rightPoint = instance[newIndex].queryArray[queryPiece + 1];
+    instance[newIndex].currentState = state.WaitingQuery;
+    makeQuery(newIndex, queryPiece, leftPoint, rightPoint);
 
-  }
+    Assert.equal(uint(instance[newIndex].currentState), uint(state.WaitingHashes), "State should be waiting hashes");
+
+    Assert.equal(instance[newIndex].timeOfLastMove, now, "time of last move should be now");
+    }
+ }
 
   function testClaimVictoryByTime() public {
   }
