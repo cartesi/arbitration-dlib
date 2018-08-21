@@ -81,7 +81,7 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
         Assert.equal(instance[3].queryArray[i], rightPoint, "queryArray[i] must be equal rightPoint"); 
       }
     }
-    //else
+    //else path
     leftPoint = 1;
     rightPoint = 600;
    
@@ -108,7 +108,8 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
     uint currentIndex = 1;
     bytes32[] memory replyArray = new bytes32[](instance[currentIndex].querySize);
     uint256[] memory postedTimes = new uint[](instance[currentIndex].querySize);
-
+    
+    //populate replyArray and PostedTimes with correct values
     for(uint i = 0; i < instance[currentIndex].querySize; i++){
       replyArray[i] = "0123";
     }
@@ -167,6 +168,7 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
   function testClaimVictoryByTime() public {
     uint newIndex;
     for (uint i = 1;i < 6; i++){
+      //alternate between msg.sender being challenger and claimer
       if(i % 2 == 0){
         newIndex = instantiate(msg.sender,0x231, "initialHash","finalHash", 5000 * i, 3 * i, 55 * i);
         instance[newIndex].currentState = state.WaitingHashes;
@@ -174,7 +176,7 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
         newIndex = instantiate(0x312, msg.sender,"initialHash","finalHash", 5000 * i, 3 * i, 55 * i);
         instance[newIndex].currentState = state.WaitingQuery;
       } 
-         
+      //Setting round duration and timeOfLastMove to zero to bypass modifiers (simulate player ran out of time to answer)   
       instance[newIndex].timeOfLastMove = 0; 
       instance[newIndex].roundDuration = 0;
 
@@ -196,7 +198,7 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
       Assert.equal(uint(instance[newIndex].currentState), uint(state.DivergenceFound), "State should be divergence found");
     }
   }
-
+  //Test getters
   function testDivergenceTime() public {
     uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000, 3, 55);
     uint newDivergenceTime = 5;
@@ -224,7 +226,7 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
 
   function testQueryArray() public {
     uint newIndex = instantiate(msg.sender,0x231,"initialHash","finalHash", 5000, 15, 55);
-    for(uint i = 0; i < 8; i++){
+    for(uint i = 0; i < instance[newIndex].querySize; i++){
       Assert.equal(instance[newIndex].queryArray[i], queryArray(newIndex,i), "queryArray should match");
     }
   }
