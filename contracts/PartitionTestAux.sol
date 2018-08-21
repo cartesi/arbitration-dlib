@@ -12,5 +12,12 @@ contract PartitionTestAux is PartitionInstantiator {
   function setState(uint partitionIndex, state toState){
     instance[partitionIndex].currentState = toState;
   }
+
+  function setTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex ){
+    instance[partitionIndex].timeSubmitted[timeIndex] = true;
+  }
+  function getTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex) returns (bool) {
+    return instance[partitionIndex].timeSubmitted[timeIndex];
+  }
 }
 
