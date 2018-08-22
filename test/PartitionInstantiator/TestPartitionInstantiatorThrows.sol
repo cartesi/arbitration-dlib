@@ -3,7 +3,7 @@ pragma solidity 0.4.24;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../../contracts/PartitionInstantiator.sol";
-import "../../contracts/testAuxiliarsContracts/PartitionTestAux.sol";
+import "../../contracts/testAuxiliaries/PartitionTestAux.sol";
 
 contract TestPartitionInstantiatorThrows is PartitionInstantiator{
   bytes32[] replyArray = new bytes32[](15);
@@ -151,16 +151,16 @@ contract ThrowProxy {
   address public target;
   bytes data;
 
-  function ThrowProxy(address _target) {
+  constructor(address _target) public{
     target = _target;
   }
 
   //prime the data using the fallback function.
-  function() {
+  function() public{
     data = msg.data;
   }
 
-  function execute() returns (bool) {
+  function execute() public returns (bool) {
     return target.call(data);
   }
 }
