@@ -106,42 +106,42 @@ contract TestPartitionInstantiatorFunctions is PartitionInstantiator{
   function testReplyQuery() public {
     
     uint currentIndex = 1;
-    bytes32[] memory replyArray = new bytes32[](instance[currentIndex].querySize);
-    uint256[] memory postedTimes = new uint[](instance[currentIndex].querySize);
+    bytes32[] memory mockReplyArray = new bytes32[](instance[currentIndex].querySize);
+    uint256[] memory mockPostedTimes = new uint[](instance[currentIndex].querySize);
     
     //populate replyArray and PostedTimes with correct values
     for(uint i = 0; i < instance[currentIndex].querySize; i++){
-      replyArray[i] = "0123";
+      mockReplyArray[i] = "0123";
     }
     for(i = 0; i < instance[currentIndex].querySize; i++){
-      postedTimes[i] = instance[currentIndex].queryArray[i];
+      mockPostedTimes[i] = instance[currentIndex].queryArray[i];
     }
     instance[currentIndex].currentState = state.WaitingHashes;
-    replyQuery(currentIndex, postedTimes, replyArray);
+    replyQuery(currentIndex, mockPostedTimes, mockReplyArray);
 
     Assert.equal(uint(instance[currentIndex].currentState),uint(state.WaitingQuery), "State should be waiting query");
 
     for(i = 0; i < instance[currentIndex].querySize; i++){
-      Assert.isTrue(instance[currentIndex].timeSubmitted[postedTimes[i]], "postedTimes must be true");
-      Assert.equal(instance[currentIndex].timeHash[postedTimes[i]], replyArray[i], "posted times and postedHashes should match");
+      Assert.isTrue(instance[currentIndex].timeSubmitted[mockPostedTimes[i]], "postedTimes must be true");
+      Assert.equal(instance[currentIndex].timeHash[mockPostedTimes[i]], mockReplyArray[i], "posted times and postedHashes should match");
     }
 
     currentIndex = 2;
 
     for(i = 0; i < instance[currentIndex].querySize; i++){
-      replyArray[i] = "0123";
+      mockReplyArray[i] = "0123";
     }
     for(i = 0; i < instance[currentIndex].querySize; i++){
-      postedTimes[i] = instance[currentIndex].queryArray[i];
+      mockPostedTimes[i] = instance[currentIndex].queryArray[i];
     }
     instance[currentIndex].currentState = state.WaitingHashes;
-    replyQuery(currentIndex, postedTimes, replyArray);
+    replyQuery(currentIndex, mockPostedTimes, mockReplyArray);
 
     Assert.equal(uint(instance[currentIndex].currentState),uint(state.WaitingQuery), "State should be waiting query");
 
     for(i = 0; i < instance[currentIndex].querySize; i++){
-      Assert.isTrue(instance[currentIndex].timeSubmitted[postedTimes[i]], "postedTimes must be true");
-      Assert.equal(instance[currentIndex].timeHash[postedTimes[i]], replyArray[i], "posted times and postedHashes should match");
+      Assert.isTrue(instance[currentIndex].timeSubmitted[mockPostedTimes[i]], "postedTimes must be true");
+      Assert.equal(instance[currentIndex].timeHash[mockPostedTimes[i]], mockReplyArray[i], "posted times and postedHashes should match");
     }
   }
 
