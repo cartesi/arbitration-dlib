@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-import "./PartitionInstantiator.sol";
+import "../PartitionInstantiator.sol";
 
 contract PartitionTestAux is PartitionInstantiator {
   function PartitionTestAux(){}

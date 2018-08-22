@@ -3,7 +3,7 @@ pragma solidity 0.4.24;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../../contracts/PartitionInstantiator.sol";
-import "../../contracts/PartitionTestAux.sol";
+import "../../contracts/testAuxiliarsContracts/PartitionTestAux.sol";
 
 contract TestPartitionInstantiatorThrows is PartitionInstantiator{
   bytes32[] replyArray = new bytes32[](15);
