@@ -1,5 +1,5 @@
 /// @title Partition contract
-pragma solidity ^0.4.18;
+pragma solidity 0.4.24;
 
 contract SimpleMemoryInstantiator {
   uint32 private currentIndex = 0;
