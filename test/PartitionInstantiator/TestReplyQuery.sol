@@ -17,6 +17,8 @@ contract TestReplyQuery is PartitionInstantiator{
     bytes32[] memory mockReplyArray = new bytes32[](instance[newIndex].querySize);
     uint256[] memory mockPostedTimes = new uint[](instance[newIndex].querySize);
     
+    slice(newIndex, 1, instance[newIndex].querySize); 
+
     //populate replyArray and PostedTimes with correct values
     for(uint i = 0; i < instance[newIndex].querySize; i++){
       mockReplyArray[i] = "0123";
@@ -24,6 +26,7 @@ contract TestReplyQuery is PartitionInstantiator{
     for(i = 0; i < instance[newIndex].querySize; i++){
       mockPostedTimes[i] = instance[newIndex].queryArray[i];
     }
+
     instance[newIndex].currentState = state.WaitingHashes;
     replyQuery(newIndex, mockPostedTimes, mockReplyArray);
 
@@ -35,6 +38,7 @@ contract TestReplyQuery is PartitionInstantiator{
     }
     
     newIndex = instantiate(mockAddress1, msg.sender, "initiaHash", "finalHash", 3000000, 19, 150);   
+    slice(newIndex, 1, instance[newIndex].querySize); 
 
     for(i = 0; i < instance[newIndex].querySize; i++){
       mockReplyArray[i] = bytes32(i);
@@ -51,6 +55,6 @@ contract TestReplyQuery is PartitionInstantiator{
       Assert.isTrue(instance[newIndex].timeSubmitted[mockPostedTimes[i]], "postedTimes must be true");
       Assert.equal(instance[newIndex].timeHash[mockPostedTimes[i]], mockReplyArray[i], "posted times and postedHashes should match");
     }
-  }
+ }
 }
 
