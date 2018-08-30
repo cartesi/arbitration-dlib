@@ -7,12 +7,12 @@ import "../../contracts/testAuxiliaries/MMInstantiatorTestAux.sol";
 
 contract TestMemoryManagerThrows is MMInstantiator, SimpleMemoryInstantiator {
 
-  function testProveRead(){
+  function testProveReadAndProveWrite(){
     MMInstantiatorTestAux mmInstance = MMInstantiatorTestAux(DeployedAddresses.MMInstantiatorTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(mmInstance));
-    bytes32[] memory bytesArray = new bytes32[](3);
+    bytes32[] memory bytesArray = new bytes32[](61);
 
-    for(uint i = 0; i < 3; i++){
+    for(uint i = 0; i < 61; i++){
       bytesArray[i] = "ab";
 
     }
@@ -23,12 +23,23 @@ contract TestMemoryManagerThrows is MMInstantiator, SimpleMemoryInstantiator {
     MMInstantiator(address(aliceThrowProxy)).proveRead(newIndex, 3,"initial", bytesArray);
    
     bool r = aliceThrowProxy.execute.gas(2000000)();
-    Assert.equal(r, false, "Transaction should fail, state should be WaitingProofs");
+    Assert.equal(r, false, "Prove Read Transaction should fail, state should be WaitingProofs");
+   
+    MMInstantiator(address(aliceThrowProxy)).proveWrite(newIndex, 0,"oldValue", "newValue", bytesArray);
+   
+    r = aliceThrowProxy.execute.gas(2000000)();
+    Assert.equal(r, false, "Prove write Transaction should fail, state should be WaitingProofs");
+
 
     //set correct state
     mmInstance.setState(newIndex, state.WaitingProofs);
 
-    MMInstantiator(address(aliceThrowProxy)).proveRead(newIndex, 3,"initial", bytesArray);
+    MMInstantiator(address(aliceThrowProxy)).proveRead(newIndex, 0,"initial", bytesArray);
+   
+    r = aliceThrowProxy.execute.gas(2000000)();
+    Assert.equal(r, false, "Transaction should fail, proof != instance[index].newHash");
+
+    MMInstantiator(address(aliceThrowProxy)).proveWrite(newIndex, 0,"oldValue", "newValue", bytesArray);
    
     r = aliceThrowProxy.execute.gas(2000000)();
     Assert.equal(r, false, "Transaction should fail, proof != instance[index].newHash");
