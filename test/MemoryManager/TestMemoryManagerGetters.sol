@@ -5,7 +5,7 @@ import "../../contracts/MMInstantiator.sol";
 import "../../contracts/SimpleMemoryInstantiator.sol";
 import "../../contracts/testAuxiliaries/MMInstantiatorTestAux.sol";
 
-contract TestMemoryManagerGetters is MMInstantiatorTestAux, SimpleMemoryInstantiator {
+contract TestMemoryManagerGetters is MMInstantiatorTestAux {
 
   function testGetters() public {
     address provider = 0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c;
@@ -26,20 +26,32 @@ contract TestMemoryManagerGetters is MMInstantiatorTestAux, SimpleMemoryInstanti
     Assert.equal(mmInstance.newHash(newIndex), newHash, "newHash should match");
 
   }
-}
 
-// Proxy contract for testing throws
-contract ThrowProxy {
-  address public target;
-  bytes data;
-   constructor(address _target) public{
-    target = _target;
-  }
-  //prime the data using the fallback function.
-  function() public {
-    data = msg.data;
-  }
-  function execute() public returns (bool) {
-    return target.call(data);
+  function testStateGetters() public {
+    address provider = 0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c;
+    address client = 0x583031D1113aD414F02576BD6afaBfb302140225; 
+    bytes32 initialHash = bytes32("mockHash");
+  
+    MMInstantiatorTestAux mmInstance = MMInstantiatorTestAux(DeployedAddresses.MMInstantiatorTestAux());
+
+    uint newIndex =  mmInstance.instantiate(provider, client, initialHash);
+    
+    mmInstance.setState(newIndex, state.WaitingReplay);
+
+    Assert.equal(mmInstance.stateIsWaitingReplay(newIndex), true, "state  should be WaitingReplay");
+    Assert.equal(mmInstance.stateIsWaitingProofs(newIndex), false, "state  shouldint be WaitingtProofs");
+    Assert.equal(mmInstance.stateIsFinishedReplay(newIndex), false, "state  shouldint be FinishedReplayed");
+
+    mmInstance.setState(newIndex, state.WaitingProofs);
+    Assert.equal(mmInstance.stateIsWaitingReplay(newIndex), false, "state  shouldnt be WaitingReplay");
+    Assert.equal(mmInstance.stateIsWaitingProofs(newIndex), true, "state  should be WaitingtProofs");
+    Assert.equal(mmInstance.stateIsFinishedReplay(newIndex), false, "state  shouldint be FinishedReplayed");
+
+    mmInstance.setState(newIndex, state.FinishedReplay);
+    Assert.equal(mmInstance.stateIsWaitingReplay(newIndex), false, "state  shouldnt be WaitingReplay");
+    Assert.equal(mmInstance.stateIsWaitingProofs(newIndex), false, "state  shouldnt be WaitingtProofs");
+    Assert.equal(mmInstance.stateIsFinishedReplay(newIndex), true, "state  should be FinishedReplayed");
+
+
   }
 }
