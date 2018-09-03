@@ -19,7 +19,10 @@ import "../MMInstantiator.sol";
         instance[index].history.push(dummyReadWrite);
       }
     }
-    
+   
+    function setNewHashAtIndex(uint index, bytes32 newHash) public {
+      instance[index].newHash = newHash;
+    } 
     //Wrapper because ThrowProxy contract do not work with return values
     //https://github.com/trufflesuite/truffle/issues/1001
     function readWrapper(uint index, uint64 position) public {
