@@ -5,7 +5,7 @@ import "../../contracts/MMInstantiator.sol";
 import "../../contracts/SimpleMemoryInstantiator.sol";
 import "../../contracts/testAuxiliaries/MMInstantiatorTestAux.sol";
 
-contract TestMemoryManagerThrowsPart2 is MMInstantiatorTestAux, SimpleMemoryInstantiator {
+contract TestMemoryManagerThrowsPart2 is MMInstantiatorTestAux {
 
   function testReadAndWrite() public {
     uint64 position = 0;
