@@ -52,6 +52,5 @@ contract TestMemoryManagerGetters is MMInstantiatorTestAux {
     Assert.equal(mmInstance.stateIsWaitingProofs(newIndex), false, "state  shouldnt be WaitingtProofs");
     Assert.equal(mmInstance.stateIsFinishedReplay(newIndex), true, "state  should be FinishedReplayed");
 
-
   }
 }

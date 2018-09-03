@@ -5,7 +5,7 @@ import "../../contracts/MMInstantiator.sol";
 import "../../contracts/SimpleMemoryInstantiator.sol";
 import "../../contracts/testAuxiliaries/MMInstantiatorTestAux.sol";
 
-contract TestMemoryManagerThrows is MMInstantiatorTestAux, SimpleMemoryInstantiator {
+contract TestMemoryManagerThrows is MMInstantiatorTestAux {
 
   function testProveReadAndProveWrite() public {
     MMInstantiatorTestAux mmInstance = MMInstantiatorTestAux(DeployedAddresses.MMInstantiatorTestAux());
