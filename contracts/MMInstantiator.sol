@@ -28,7 +28,7 @@ contract MMInstantiator is MMInterface, Decorated {
     state currentState;
   }
 
-  mapping(uint256 => MMCtx) private instance;
+  mapping(uint256 => MMCtx) internal instance;
 
   // These are the possible states and transitions of the contract.
   //
