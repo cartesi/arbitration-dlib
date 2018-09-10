@@ -181,11 +181,12 @@ contract('VGInstantiator', function(accounts) {
                     { from: accounts[1], gas: 1500000 })
       event = getEvent(response, 'HashesPosted');
       expect(event).not.to.be.undefined;
+
       // find first last time of query where there was aggreement
       var lastConsensualQuery = 0;
       for (i = 0; i < querySize - 1; i++){
-        if (aliceHistory[event._postedTimes[i]]
-            == event._postedHashes[i]) {
+        if (aliceHistory[queryArray[i]]
+            == replyArray[i]) {
           lastConsensualQuery = i;
         } else {
           break;
@@ -200,8 +201,8 @@ contract('VGInstantiator', function(accounts) {
           partitionIndex,
           { from: accounts[1], gas: 1500000 }))
             ).to.have.string('VM Exception');
-      leftPoint = event._postedTimes[lastConsensualQuery];
-      rightPoint = event._postedTimes[lastConsensualQuery + 1];
+      leftPoint = queryArray[lastConsensualQuery];
+      rightPoint = queryArray[lastConsensualQuery + 1];
       // check if the interval is unitary
       if (+rightPoint == +leftPoint + 1) {
         // if the interval is unitary, present divergence
