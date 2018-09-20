@@ -1,8 +1,8 @@
 const BigNumber = require('bignumber.js');
 const Web3 = require('web3');
 
-const mm = require('../utils/mm.js');
-const subleq = require('../utils/subleq.js')
+const mm = require('../subleq/mm.js');
+const subleq = require('../subleq/subleq.js')
 
 const expect = require('chai').expect;
 const getEvent = require('../utils/tools.js').getEvent;
