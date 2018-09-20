@@ -1,7 +1,7 @@
 const BigNumber = require('bignumber.js');
 const expect = require('chai').expect;
 
-const mm = require('../utils/mm.js');
+const mm = require('../subleq/mm.js');
 const getEvent = require('../utils/tools.js').getEvent;
 const unwrap = require('../utils/tools.js').unwrap;
 const getError = require('../utils/tools.js').getError;
