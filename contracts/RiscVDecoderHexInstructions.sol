@@ -50,8 +50,7 @@ contract RiscVDecoder {
   function insn_S_imm(uint32 code) returns(int32){
     //this was a static_cast
     // return (static_cast<int32_t>(code & 0xfe000000) >> (25 - 5)) | ((code>> 7) & 0x1F);
-    return int32((code & 0xfe000000) >> (25 - 5)) | ((code>> 7) & 0x1F);
-
+    return int32(((code & 0xfe000000) >> (25 - 5)) | ((code>> 7) & 0x1F));
   }
 
   function inst_opcode(uint32 code) returns (uint32){
