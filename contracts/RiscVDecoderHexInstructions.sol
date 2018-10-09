@@ -1,33 +1,33 @@
 pragma solidity 0.4.24;
 
 contract RiscVDecoder {
-  function insn_rd(uint32 code) returns(uint32){
+  function insn_rd(uint32 code) public pure returns(uint32){
     return (code >> 7) & 0x1F;
   }
   
-  function insn_rs1(uint32 code) returns(uint32){
+  function insn_rs1(uint32 code) public pure returns(uint32){
     return (code >> 15) & 0x1F;
   }
   
-  function insn_rs2(uint32 code) returns(uint32){
+  function insn_rs2(uint32 code) public pure returns(uint32){
     return (code >> 20) & 0x1F;
   }
   
-  function insn_I_imm(uint32 code) returns(int32){
+  function insn_I_imm(uint32 code) public pure returns(int32){
      return int32(code >> 20);
   }
   
-  function insn_I_uimm(uint32 code) returns(uint32){
+  function insn_I_uimm(uint32 code) public pure returns(uint32){
     return code >> 20;
   }
   
-  function insn_U_imm(uint32 code) returns(int32){
+  function insn_U_imm(uint32 code) public pure returns(int32){
     //this was a static_cast
     // return static_cast<int32_t>(insn & 0xfffff000);
     return int32(code & 0xfffff000);
   }
   
-  function insn_B_imm(uint32 code) returns(int32){
+  function insn_B_imm(uint32 code) public pure returns(int32){
     int32 imm = int32(((code >> (31 - 12)) & (1 << 12)) |
                   ((code >> (25 - 5)) & 0x7e0) |
                   ((code >> (8 - 1)) & 0x1e) |
@@ -37,7 +37,7 @@ contract RiscVDecoder {
     return imm;
   }
   
-  function insn_J_imm(uint32 code) returns(int32){
+  function insn_J_imm(uint32 code) public pure returns(int32){
     int32 imm = int32(((code >> (31 - 20)) & (1 << 20)) |
                 ((code >> (21 - 1)) & 0x7fe) |
                 ((code >> (20 - 11)) & (1 << 11)) |
@@ -47,34 +47,34 @@ contract RiscVDecoder {
     return imm;
   }
   
-  function insn_S_imm(uint32 code) returns(int32){
+  function insn_S_imm(uint32 code) public pure returns(int32){
     //this was a static_cast
     // return (static_cast<int32_t>(code & 0xfe000000) >> (25 - 5)) | ((code>> 7) & 0x1F);
     return int32(((code & 0xfe000000) >> (25 - 5)) | ((code>> 7) & 0x1F));
   }
 
-  function inst_opcode(uint32 code) returns (uint32){
+  function inst_opcode(uint32 code) public pure returns (uint32){
     return code & 0x7F;
   }
   
-  function inst_funct3(uint32 code) returns (uint32){
+  function inst_funct3(uint32 code) public pure returns (uint32){
     return (code >> 12) & 0x07;
   }
 
-  function insn_funct3_funct7(uint32 code) returns (uint32){
+  function insn_funct3_funct7(uint32 code) public pure returns (uint32){
     return ((code >> 5) & 0x380) | (code >> 25);
   }
-  function insn_funct3_funct5(uint32 code) returns (uint32){
+  function insn_funct3_funct5(uint32 code) public pure returns (uint32){
     return ((code >> 7) & 0xE0) | (code >> 27);
   }
-  function insn_funct7(uint32 code) returns (uint32){
+  function insn_funct7(uint32 code) public pure returns (uint32){
     return (code >> 25) & 0x7F;
   }
-  function insn_funct6(uint32 code) returns (uint32){
+  function insn_funct6(uint32 code) public pure returns (uint32){
     return (code >> 26) & 0x3F;
   }
 
-  function opcode(uint32 code) returns (bytes32){
+  function opcode(uint32 code) public pure returns (bytes32){
     if(code < 0x002f){
       if(code < 0x0017){
         if(code < 0x000f){
@@ -133,7 +133,7 @@ contract RiscVDecoder {
     }
   }
   
-  function branch_funct3(uint32 code) returns (bytes32){
+  function branch_funct3(uint32 code) public pure returns (bytes32){
     if(code < 0x0005){
       if(code < 0x0001){
         /*code == 0x0000*/
@@ -160,7 +160,7 @@ contract RiscVDecoder {
     }
   }
 
-  function load_funct3(uint32 code) returns (bytes32){
+  function load_funct3(uint32 code) public pure returns (bytes32){
     if(code < 0x0003){
       if(code < 0x0001){
         /*code == 0x0000*/
@@ -189,7 +189,7 @@ contract RiscVDecoder {
     } 
   }
   
-  function store_funct3(uint32 code) returns (bytes32){
+  function store_funct3(uint32 code) public pure returns (bytes32){
     if(code < 0x0001){
       /*code == 0x0000*/
       return "SB";
@@ -207,7 +207,7 @@ contract RiscVDecoder {
     }
   }
 
-  function arithmetic_immediate_funct3(uint32 code) returns (bytes32) {
+  function arithmetic_immediate_funct3(uint32 code) public pure returns (bytes32) {
     if(code < 0x0003){
       if(code < 0x0001){
         /*code == 0x0000*/
@@ -241,7 +241,7 @@ contract RiscVDecoder {
     }
   }
   
-  function shift_right_immediate_funct6(uint32 code) returns (bytes32) {
+  function shift_right_immediate_funct6(uint32 code) public pure returns (bytes32) {
     if(code < 0x0010){
       /*code == 0x0000*/
       return "SRLI";
@@ -251,7 +251,7 @@ contract RiscVDecoder {
     } 
   }
 
-  function arithmetic_immediate_32_funct3(uint32 code) returns (bytes32) {
+  function arithmetic_immediate_32_funct3(uint32 code) public pure returns (bytes32) {
     if(code < 0x0181){
       if(code < 0x0081){
         if(code < 0x0020){
@@ -328,7 +328,7 @@ contract RiscVDecoder {
 
   }
 
-  function fence_group_funct3(uint32 code) returns(bytes32){
+  function fence_group_funct3(uint32 code) public pure returns(bytes32){
     if(code < 0x0001){
       /*code == 0x0000*/
       return "FENCE";
@@ -338,7 +338,7 @@ contract RiscVDecoder {
     }
   }
 
-  function env_trap_int_group_insn(uint32 code) returns (bytes32){
+  function env_trap_int_group_insn(uint32 code) public pure returns (bytes32){
     if(code < 0x10200073){
       if(code < 0x100073){
         /*code == 0x0073*/
@@ -364,7 +364,7 @@ contract RiscVDecoder {
     }
   }
   
-  function csr_env_trap_int_mm_funct3(uint32 code) returns (bytes32){
+  function csr_env_trap_int_mm_funct3(uint32 code) public pure returns (bytes32){
     if(code < 0x0003){
       if(code < 0x0001){
         /*code == 0x0000*/
@@ -392,7 +392,7 @@ contract RiscVDecoder {
       return "CSRRC";
     }
   }
-  function whichArithmeticImmediate32Func3(uint32 code) returns (bytes32){
+  function whichArithmeticImmediate32Func3(uint32 code) public pure returns (bytes32){
     if(code < 0x0001){
       /*code == 0x0000*/
       return "ADDI";
@@ -405,7 +405,7 @@ contract RiscVDecoder {
     }
   }
   
-  function whichShiftRightImmediate32Func3(uint32 code) returns (bytes32){
+  function whichShiftRightImmediate32Func3(uint32 code) public pure returns (bytes32){
     if(code < 0x0020){
       /*code == 0x0000*/
       return "SRLIW";
@@ -415,7 +415,7 @@ contract RiscVDecoder {
     } 
   }
  
-  function which_arithmetic_32_funct3_funct7(uint32 code) returns (bytes32){
+  function which_arithmetic_32_funct3_funct7(uint32 code) public pure returns (bytes32){
     if(code < 0x0280){
       if(code < 0x0020){
         if(code < 0x0001){
@@ -458,115 +458,4 @@ contract RiscVDecoder {
       return "SRLW";
     }
   }
-
-//  function getInstruction(uint32 code) returns (bytes32){
-//    return opcode[code];
-//  }
-
-  function populateMaps() {
-//    opcode[3] = "load_group ";
-//    opcode[15] = "fence_group";
-//    opcode[19] = "arithmetic_immediate_group";
-//    opcode[23] = "AUIPC";
-//    opcode[27] = "arithmetic_immediate_32_group";
-//    opcode[35] = "store_group";
-//    opcode[47] = "atomic_group";
-//    opcode[51] = "arithmetic_group";
-//    opcode[55] = "LUI";
-//    opcode[59] = "arithmetic_32_group";
-//    opcode[99] = "branch_group";
-//    opcode[103] = "JALR";
-//    opcode[111] = "JAL";
-//    opcode[115] = "csr_env_trap_int_mm_group";
-//     
-//    branch_funct3[0] = "BEQ";
-//    branch_funct3[1] = "BNE";
-//    branch_funct3[4] = "BLT";
-//    branch_funct3[5] = "BGE";
-//    branch_funct3[6] = "BLTU";
-//    branch_funct3[7] = "BGEU";
-//  
-//    load_funct3[0] = "LB";
-//    load_funct3[1] = "LH";
-//    load_funct3[2] = "LW";
-//    load_funct3[3] = "LD";
-//    load_funct3[4] = "LBU";
-//    load_funct3[5] = "LHU";
-//    load_funct3[6] = "LWU";
-//
-//    store_funct3[0] = "SB";
-//    store_funct3[1] = "SH";
-//    store_funct3[2] = "SW";
-//    store_funct3[3] = "SD";
-//
-//    arithmetic_immediate_funct3[0] = "ADDI";
-//    arithmetic_immediate_funct3[1] = "SLLI";
-//    arithmetic_immediate_funct3[2] = "SLTI";
-//    arithmetic_immediate_funct3[3] = "SLTIU";
-//    arithmetic_immediate_funct3[4] = "XORI";
-//    arithmetic_immediate_funct3[6] = "ORI";
-//    arithmetic_immediate_funct3[7] = "ANDI";
-//
-//    arithmetic_immediate_funct3[5] = "shift_right_immediate_group";
-//
-//    shift_right_immediate_funct6[0] = "SRLI";
-//    shift_right_immediate_funct6[16] = "SRAI";
-//
-//    arithmetic_funct3_funct7[0] = "ADD";
-//    arithmetic_funct3_funct7[1] = "MUL";
-//    arithmetic_funct3_funct7[32] = "SUB";
-//    arithmetic_funct3_funct7[128] = "SLL";
-//    arithmetic_funct3_funct7[129] = "MULH";
-//    arithmetic_funct3_funct7[256] = "SLT";
-//    arithmetic_funct3_funct7[257] = "MULHSU";
-//    arithmetic_funct3_funct7[384] = "SLTU";
-//    arithmetic_funct3_funct7[385] = "MULHU";
-//    arithmetic_funct3_funct7[512] = "XOR";
-//    arithmetic_funct3_funct7[513] = "DIV";
-//    arithmetic_funct3_funct7[640] = "SRL";
-//    arithmetic_funct3_funct7[641] = "DIVU";
-//    arithmetic_funct3_funct7[672] = "SRA";
-//    arithmetic_funct3_funct7[768] = "OR";
-//    arithmetic_funct3_funct7[769] = "REM";
-//    arithmetic_funct3_funct7[896] = "AND";
-//    arithmetic_funct3_funct7[897] = "REMU";
-//    
-//    fence_group_funct3[0] = "FENCE";
-//    fence_group_funct3[1] = "FENCE_I";
-//
-//    env_trap_int_group_insn[115] = "ECALL";
-//    env_trap_int_group_insn[1048691] = "EBREAK";
-//    env_trap_int_group_insn[2097267] = "URET";
-//    env_trap_int_group_insn[270532723] = "SRET";
-//    env_trap_int_group_insn[273678451] = "WFI";
-//    env_trap_int_group_insn[807403635] = "MRET";
-//
-//    csr_env_trap_int_mm_funct3[1] = "CSRRW";
-//    csr_env_trap_int_mm_funct3[2] = "CSRRS";
-//    csr_env_trap_int_mm_funct3[3] = "CSRRC";
-//    csr_env_trap_int_mm_funct3[5] = "CSRRWI";
-//    csr_env_trap_int_mm_funct3[6] = "CSRRSI";
-//    csr_env_trap_int_mm_funct3[7] = "CSRRCI";
-//                               
-//    csr_env_trap_int_mm_funct3[0] = "env_trap_int_mm_group";
-//
-//    arithmetic_immediate_32_funct3[0] = "ADDI";
-//    arithmetic_immediate_32_funct3[1] = "SLLIW";
-//
-//    arithmetic_immediate_32_funct3[5] = "shift_right_immediate_32_group";
-//
-//    shift_right_immediate_32_funct7[0] = "SRLIW";
-//    shift_right_immediate_32_funct7[32] = "SRAIW";
-//
-//    arithmetic_32_funct3_funct7[0] = "ADDW ";
-//    arithmetic_32_funct3_funct7[1] = "MULW ";
-//    arithmetic_32_funct3_funct7[32] = "SUBW ";
-//    arithmetic_32_funct3_funct7[128] = "SLLW ";
-//    arithmetic_32_funct3_funct7[513] = "DIVW ";
-//    arithmetic_32_funct3_funct7[640] = "SRLW ";
-//    arithmetic_32_funct3_funct7[641] = "DIVUW";
-//    arithmetic_32_funct3_funct7[672] = "SRAW ";
-//    arithmetic_32_funct3_funct7[769] = "REMW ";
-//    arithmetic_32_funct3_funct7[897] = "REMUW";
- }
 }
