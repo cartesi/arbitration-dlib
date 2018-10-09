@@ -28,20 +28,20 @@ contract RiscVDecoder {
   }
   
   function insn_B_imm(uint32 code) returns(int32){
-    int imm = ((code >> (31 - 12)) & (1 << 12)) |
+    int32 imm = int32(((code >> (31 - 12)) & (1 << 12)) |
                   ((code >> (25 - 5)) & 0x7e0) |
                   ((code >> (8 - 1)) & 0x1e) |
-                  ((code << (11 - 7)) & (1 << 11));
+                  ((code << (11 - 7)) & (1 << 11)));
     //int shift - cant do
     imm = (imm << 19) >> 19;
     return imm;
   }
   
   function insn_J_imm(uint32 code) returns(int32){
-    int32 imm = ((code >> (31 - 20)) & (1 << 20)) |
+    int32 imm = int32(((code >> (31 - 20)) & (1 << 20)) |
                 ((code >> (21 - 1)) & 0x7fe) |
                 ((code >> (20 - 11)) & (1 << 11)) |
-                (code & 0xff000);
+                (code & 0xff000));
     //int shift - cant do
     imm = (imm << 11) >> 11;
     return imm;
