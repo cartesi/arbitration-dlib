@@ -11,7 +11,12 @@ contract BitsManipulationLibrary {
   event Print(string message);
 
   function littleEndianToBigEndian(uint32 num) public pure returns(uint32){
-
+    uint32 output =
+      ((num >> 24) & 0xff) |
+      ((num << 8)  & 0xff0000) |
+      ((num >> 8)  & 0xff00) |
+      ((num << 24) & 0xff000000);
+    return output;
   }
   function uint32ToBitString(uint32 num) public pure returns (string) {
     bytes memory bitString = new bytes(32);
