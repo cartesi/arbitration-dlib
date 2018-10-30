@@ -10,7 +10,13 @@ contract BitsManipulationLibrary {
 
   event Print(string message);
 
-  function littleEndianToBigEndian(uint32 num) public pure returns(uint32){
+  function int32_arith_shift_right(int32 number, uint shitAmount)
+  public pure returns (int32)
+  {
+        
+  }
+
+  function uint32_littleToBigEndian(uint32 num) public pure returns(uint32) {
     uint32 output =
       ((num >> 24) & 0xff) |
       ((num << 8)  & 0xff0000) |
@@ -18,7 +24,8 @@ contract BitsManipulationLibrary {
       ((num << 24) & 0xff000000);
     return output;
   }
-  function uint32ToBitString(uint32 num) public pure returns (string) {
+
+  function uint32_toBitString(uint32 num) public pure returns (string) {
     bytes memory bitString = new bytes(32);
 
     for (uint32 i = 0; i < 32; i++) {
@@ -28,8 +35,37 @@ contract BitsManipulationLibrary {
     return string(bitString);
   }
 
-  function bitStringToUint32(string bitString) public pure returns (uint32) {
+  function int32_toBitString(int32 num) public pure returns (string) {
+    bytes memory bitString = new bytes(32);
 
+    bool negative = (num < 0);
+    int firstOnePos = -1;
+
+    for (uint32 i = 0; i < 32; i++) {
+      if(num % 2 == 0){
+        bitString[31 - i] = byte("0");
+      }else{
+        bitString[31 - i] = byte("1");
+
+        if(firstOnePos < 31 - i){
+          firstOnePos = 31 -i;
+        }
+      }
+      num /= 2;
+    }
+    if(negative){
+      for (i = 0; i < firstOnePos; i++){
+        if(bitString[i] == byte("0")){
+          bitString[i] = byte("1");
+        }else{
+          bitString[i] = byte("0");
+        }
+      }
+    }
+
+    return string(bitString);
+  }
+  function bitString_toUint32(string bitString) public pure returns (uint32) {
     var s = bitString.toSlice();
     var delim = ".".toSlice();
     var bitsArray = new string[](s.count(delim) + 1);
