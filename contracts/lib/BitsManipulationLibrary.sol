@@ -10,10 +10,10 @@ contract BitsManipulationLibrary {
 
   event Print(string message);
 
-  function int32_arith_shift_right(int32 number, uint shitAmount)
+  function int32_arith_shift_right(int32 number, uint shiftAmount)
   public pure returns (int32)
   {
-        
+
   }
 
   function uint32_littleToBigEndian(uint32 num) public pure returns(uint32) {
@@ -36,34 +36,7 @@ contract BitsManipulationLibrary {
   }
 
   function int32_toBitString(int32 num) public pure returns (string) {
-    bytes memory bitString = new bytes(32);
-
-    bool negative = (num < 0);
-    int firstOnePos = -1;
-
-    for (uint32 i = 0; i < 32; i++) {
-      if(num % 2 == 0){
-        bitString[31 - i] = byte("0");
-      }else{
-        bitString[31 - i] = byte("1");
-
-        if(firstOnePos < 31 - i){
-          firstOnePos = 31 -i;
-        }
-      }
-      num /= 2;
-    }
-    if(negative){
-      for (i = 0; i < firstOnePos; i++){
-        if(bitString[i] == byte("0")){
-          bitString[i] = byte("1");
-        }else{
-          bitString[i] = byte("0");
-        }
-      }
-    }
-
-    return string(bitString);
+    return uint32_toBitString(uint32(num));
   }
   function bitString_toUint32(string bitString) public pure returns (uint32) {
     var s = bitString.toSlice();
