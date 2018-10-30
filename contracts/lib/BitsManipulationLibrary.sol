@@ -87,5 +87,9 @@ contract BitsManipulationLibrary {
     }
     return num;
   }
+
+  function bitString_toInt32(uint32 bitString) public pure returns (int32) {
+    return int32(bitString);
+  }
 }
 
