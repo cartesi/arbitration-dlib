@@ -32,6 +32,7 @@ contract RiscVDeinsnr {
                   ((insn >> (25 - 5)) & 0x7e0) |
                   ((insn >> (8 - 1)) & 0x1e) |
                   ((insn << (11 - 7)) & (1 << 11)));
+    //TO-DO: use arithmetic shift on BitManipulation library
     //int shift - cant do
     imm = (imm << 19) >> 19;
     return imm;
@@ -42,6 +43,7 @@ contract RiscVDeinsnr {
                 ((insn >> (21 - 1)) & 0x7fe) |
                 ((insn >> (20 - 11)) & (1 << 11)) |
                 (insn & 0xff000));
+    //TO-DO: use arithmetic shift on BitManipulation library
     //int shift - cant do
     imm = (imm << 11) >> 11;
     return imm;
