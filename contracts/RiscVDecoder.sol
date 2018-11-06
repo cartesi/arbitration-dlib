@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-contract RiscVDeinsnr {
+contract RiscVDecoder {
   function insn_rd(uint32 insn) public pure returns(uint32){
     return (insn >> 7) & 0x1F;
   }
