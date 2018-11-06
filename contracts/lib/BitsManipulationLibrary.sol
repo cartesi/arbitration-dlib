@@ -31,7 +31,7 @@ library BitsManipulationLibrary {
     uint64 u_number = uint64(number);
     uint sign_bit = u_number >> 63;
 
-    int32 output = int32((u_number >> shiftAmount) |
+    int64 output = int64((u_number >> shiftAmount) |
           (((0 - sign_bit) << 1) << (63 - shiftAmount)));
 
     return output;
