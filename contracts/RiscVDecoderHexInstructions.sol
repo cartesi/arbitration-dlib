@@ -4,29 +4,29 @@ contract RiscVDeinsnr {
   function insn_rd(uint32 insn) public pure returns(uint32){
     return (insn >> 7) & 0x1F;
   }
-  
+
   function insn_rs1(uint32 insn) public pure returns(uint32){
     return (insn >> 15) & 0x1F;
   }
-  
+
   function insn_rs2(uint32 insn) public pure returns(uint32){
     return (insn >> 20) & 0x1F;
   }
-  
+
   function insn_I_imm(uint32 insn) public pure returns(int32){
      return int32(insn >> 20);
   }
-  
+
   function insn_I_uimm(uint32 insn) public pure returns(uint32){
     return insn >> 20;
   }
-  
+
   function insn_U_imm(uint32 insn) public pure returns(int32){
     //this was a static_cast
     // return static_cast<int32_t>(insn & 0xfffff000);
     return int32(insn & 0xfffff000);
   }
-  
+
   function insn_B_imm(uint32 insn) public pure returns(int32){
     int32 imm = int32(((insn >> (31 - 12)) & (1 << 12)) |
                   ((insn >> (25 - 5)) & 0x7e0) |
@@ -36,7 +36,7 @@ contract RiscVDeinsnr {
     imm = (imm << 19) >> 19;
     return imm;
   }
-  
+
   function insn_J_imm(uint32 insn) public pure returns(int32){
     int32 imm = int32(((insn >> (31 - 20)) & (1 << 20)) |
                 ((insn >> (21 - 1)) & 0x7fe) |
@@ -46,7 +46,7 @@ contract RiscVDeinsnr {
     imm = (imm << 11) >> 11;
     return imm;
   }
-  
+
   function insn_S_imm(uint32 insn) public pure returns(int32){
     //this was a static_cast
     // return (static_cast<int32_t>(insn & 0xfe000000) >> (25 - 5)) | ((insn>> 7) & 0x1F);
@@ -56,7 +56,7 @@ contract RiscVDeinsnr {
   function inst_opinsn(uint32 insn) public pure returns (uint32){
     return insn & 0x7F;
   }
-  
+
   function inst_funct3(uint32 insn) public pure returns (uint32){
     return (insn >> 12) & 0x07;
   }
@@ -95,11 +95,10 @@ contract RiscVDeinsnr {
           /*insn is 0x0023*/
           return "store_group";
         }
-      
       }else{
         /*insn == 0x0017*/
-        return "AUIPC";     
-      } 
+        return "AUIPC";
+      }
     }else if (insn > 0x002f){
       if (insn < 0x0063){
         if (insn < 0x0037){
@@ -126,13 +125,13 @@ contract RiscVDeinsnr {
       }else {
         /*insn == 0x0063*/
         return "branch_group";
-      } 
+      }
     }else{
       /*insn == 0x002f*/
       return "atomic_group";
     }
   }
-  
+
   function branch_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0005){
       if(insn < 0x0001){
@@ -186,9 +185,9 @@ contract RiscVDeinsnr {
     }else{
       /*insn == 0x0003*/
       return "LD";
-    } 
+    }
   }
-  
+
   function store_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0001){
       /*insn == 0x0000*/
@@ -240,7 +239,7 @@ contract RiscVDeinsnr {
       return "SLTIU";
     }
   }
-  
+
   function shift_right_immediate_funct6(uint32 insn) public pure returns (bytes32) {
     if(insn < 0x0010){
       /*insn == 0x0000*/
@@ -248,7 +247,7 @@ contract RiscVDeinsnr {
     }else{
       /*insn == 0x0010*/
       return "SRAI";
-    } 
+    }
   }
 
   function arithmetic_immediate_32_funct3(uint32 insn) public pure returns (bytes32) {
@@ -296,7 +295,7 @@ contract RiscVDeinsnr {
           }else{
             /*insn == 0x0281*/
             return "DIVU";
-          } 
+          }
         }else {
           /*insn == 0x0201*/
           return "DIV";
@@ -363,7 +362,7 @@ contract RiscVDeinsnr {
       return "SRET";
     }
   }
-  
+
   function csr_env_trap_int_mm_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0003){
       if(insn < 0x0001){
@@ -404,7 +403,7 @@ contract RiscVDeinsnr {
       return "SLLIW";
     }
   }
-  
+
   function whichShiftRightImmediate32Func3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0020){
       /*insn == 0x0000*/
@@ -412,9 +411,9 @@ contract RiscVDeinsnr {
     }else{
       /*insn == 0x0020*/
       return "SRAIW";
-    } 
+    }
   }
- 
+
   function which_arithmetic_32_funct3_funct7(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0280){
       if(insn < 0x0020){
