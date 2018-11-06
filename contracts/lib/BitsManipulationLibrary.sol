@@ -1,42 +1,34 @@
 /// @title Bits Manipulation Library
-
 pragma solidity 0.4.24;
 
 import "./strings.sol";
 
 //change to lib after testing
-contract BitsManipulationLibrary {
+library BitsManipulationLibrary {
   using strings for *;
 
-  event Print(string message);
-
-  function int32_arith_shift_right(int32 number, uint shiftAmount)
-  public returns (int32)
+  function int32_shift_right(int32 number, uint shiftAmount)
+  public returns(int32)
   {
-    string memory bitString = int32_toBitString(number);
-    string[] memory afterShift = new string[](32);
+    uint32 u_number = uint32(number);
+    uint sign_bit = u_number >> 31;
 
-    var s = bitString.toSlice();
-    var delim = ".".toSlice();
-    var bitsArray = new string[](s.count(delim) + 1);
-    for(uint256 i = 0; i < bitsArray.length; i++) {
-      bitsArray[i] = s.split(delim).toString();
-    }
+    int32 output = int32((u_number >> shiftAmount) |
+          (((0 - sign_bit) << 1) << (31 - shiftAmount)));
 
-    if((keccak256(bitsArray[0]) == keccak256("1"))){
-      emit Print("primeiro if");
-      for(i = 0; i < shiftAmount; i++){
-        emit Print("primeiro 1231if");
-        afterShift[i] = "1";
-      }
-      for(i = shiftAmount; i <= (32 - shiftAmount); i++){
-        afterShift[i] = bitsArray[i - shiftAmount];
-      }
+    return output;
+  }
 
-      return int32(bitsArray_toUint32(afterShift));
-    }
+  function int64_shift_right(int64 number, uint shiftAmount)
+  public returns(int64)
+  {
+    uint64 u_number = uint64(number);
+    uint sign_bit = u_number >> 63;
 
-      return number >> shiftAmount;
+    int32 output = int32((u_number >> shiftAmount) |
+          (((0 - sign_bit) << 1) << (63 - shiftAmount)));
+
+    return output;
   }
 
   function uint64_swapEndian(uint64 num) public pure returns(uint64){
@@ -62,7 +54,6 @@ contract BitsManipulationLibrary {
     return output;
   }
 
-  //with delimiter
   function uint32_toBitString(uint32 num) public pure returns (string) {
     bytes memory bitString = new bytes(64);
 
@@ -74,8 +65,6 @@ contract BitsManipulationLibrary {
     return string(bitString);
   }
 
-  //delim has to be added:
-  //example output: 1.0 = 2; 1.1.1 = 7;
   function bitString_toUint32(string bitString) public returns (uint32) {
     var s = bitString.toSlice();
     var delim = ".".toSlice();
@@ -96,7 +85,6 @@ contract BitsManipulationLibrary {
   }
 
   function bitsArray_toUint32(string[] bitsArray) internal returns (uint32){
-//    require(bitsArray.length <= 32);
     uint32 num = 0;
 
     for (uint256 i = 0; i < bitsArray.length; i++) {
@@ -104,8 +92,6 @@ contract BitsManipulationLibrary {
       //cant compare string memory and literal_string
       if (keccak256(abi.encodePacked(bitsArray[i])) == keccak256("1")) {
         num += 1;
-      }else {
-//        require(keccak256(abi.encodePacked(bitsArray[i])) == keccak256("0"));
       }
     }
     return num;
