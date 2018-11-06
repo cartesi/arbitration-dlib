@@ -7,7 +7,10 @@ import "./strings.sol";
 library BitsManipulationLibrary {
   using strings for *;
 
-  function int32_shift_right(int32 number, uint shiftAmount)
+  /// @notice Arithmetic right shift for int32
+  //  @param number to be shifted
+  //  @param number of shifts
+  function int32_arith_shift_right(int32 number, uint shiftAmount)
   public returns(int32)
   {
     uint32 u_number = uint32(number);
@@ -19,7 +22,10 @@ library BitsManipulationLibrary {
     return output;
   }
 
-  function int64_shift_right(int64 number, uint shiftAmount)
+  /// @notice Arithmetic right shift for int64
+  //  @param number to be shifted
+  //  @param number of shifts
+  function int64_arith_shift_right(int64 number, uint shiftAmount)
   public returns(int64)
   {
     uint64 u_number = uint64(number);
@@ -31,6 +37,8 @@ library BitsManipulationLibrary {
     return output;
   }
 
+  /// @notice Swap byte order of unsigned ints with 64 bytes
+  //  @param  number to have bytes swapped
   function uint64_swapEndian(uint64 num) public pure returns(uint64){
     uint64 output =
       ((num &  0x00000000000000ff) << 56)|
@@ -45,6 +53,8 @@ library BitsManipulationLibrary {
     return output;
   }
 
+  /// @notice Swap byte order of unsigned ints with 32 bytes
+  //  @param  number to have bytes swapped
   function uint32_swapEndian(uint32 num) public pure returns(uint32) {
     uint32 output =
       ((num >> 24) & 0xff) |
@@ -54,6 +64,9 @@ library BitsManipulationLibrary {
     return output;
   }
 
+  /// @notice Convert a unsigned 32 int num to a string of bits with delimiter
+  //  @param number to to be transformed
+  //  @example: 7 = 1.1.1.
   function uint32_toBitString(uint32 num) public pure returns (string) {
     bytes memory bitString = new bytes(64);
 
@@ -65,6 +78,9 @@ library BitsManipulationLibrary {
     return string(bitString);
   }
 
+  /// @notice Convert a string of bits with delimiter to unsigned 32 int.
+  //  @param string of bits ***with delim .** to be converted
+  //  @example:  1.1.1 = 7
   function bitString_toUint32(string bitString) public returns (uint32) {
     var s = bitString.toSlice();
     var delim = ".".toSlice();
@@ -76,14 +92,21 @@ library BitsManipulationLibrary {
     return bitsArray_toUint32(bitsArray);
   }
 
+  /// @notice Convert a signed 32 int num to a string of bits with delimiter
+  //  @param number to to be transformed
   function int32_toBitString(int32 num) public returns (string) {
     return uint32_toBitString(uint32(num));
   }
 
+  /// @notice Convert a string of bits with delimiter to unsigned 32 int.
+  //  @param string of bits ***with delim .** to be converted
+  //  @example:  1.1.1.(...).1 = -1
   function bitString_toInt32(string bitString) public returns (int32) {
     return int32(bitString_toUint32(bitString));
   }
 
+  /// @notice Convert array of bits to uint32
+  //  @param array of strings of 0 or 1
   function bitsArray_toUint32(string[] bitsArray) internal returns (uint32){
     uint32 num = 0;
 
