@@ -28,7 +28,7 @@ contract MMInstantiator is MMInterface, Decorated {
     state currentState;
   }
 
-  mapping(uint256 => MMCtx) private instance;
+  mapping(uint256 => MMCtx) internal instance;
 
   // These are the possible states and transitions of the contract.
   //
@@ -67,15 +67,16 @@ contract MMInstantiator is MMInterface, Decorated {
                        bytes32 _initialHash) public returns (uint256)
   {
     require(_provider != _client);
-    instance[currentIndex].provider = _provider;
-    instance[currentIndex].client = _client;
-    instance[currentIndex].initialHash = _initialHash;
-    instance[currentIndex].newHash = _initialHash;
-    instance[currentIndex].historyPointer = 0;
-    instance[currentIndex].currentState = state.WaitingProofs;
+    MMCtx storage currentInstance = instance[currentIndex];
+    currentInstance.provider = _provider;
+    currentInstance.client = _client;
+    currentInstance.initialHash = _initialHash;
+    currentInstance.newHash = _initialHash;
+    currentInstance.historyPointer = 0;
+    currentInstance.currentState = state.WaitingProofs;
     emit MemoryCreated(currentIndex, _initialHash);
-    currentIndex++;
-    return(currentIndex - 1);
+    
+    return currentIndex++;
   }
 
   /// @notice Proves that a certain value in current memory is correct
@@ -138,9 +139,10 @@ contract MMInstantiator is MMInterface, Decorated {
     require(instance[_index].currentState == state.WaitingReplay);
     require((_position & 7) == 0);
     uint pointer = instance[_index].historyPointer;
-    require(instance[_index].history[pointer].wasRead);
-    require(instance[_index].history[pointer].position == _position);
-    bytes8 value = instance[_index].history[pointer].value;
+    ReadWrite storage  pointInHistory = instance[_index].history[pointer];
+    require(pointInHistory.wasRead);
+    require(pointInHistory.position == _position);
+    bytes8 value = pointInHistory.value;
     delete(instance[_index].history[pointer]);
     instance[_index].historyPointer++;
     emit ValueRead(_index, _position, value);
@@ -157,9 +159,10 @@ contract MMInstantiator is MMInterface, Decorated {
     require(instance[_index].currentState == state.WaitingReplay);
     require((_position & 7) == 0);
     uint pointer = instance[_index].historyPointer;
-    require(!instance[_index].history[pointer].wasRead);
-    require(instance[_index].history[pointer].position == _position);
-    require(instance[_index].history[pointer].value == _value);
+    ReadWrite storage pointInHistory = instance[_index].history[pointer];
+    require(!pointInHistory.wasRead);
+    require(pointInHistory.position == _position);
+    require(pointInHistory.value == _value);
     delete(instance[_index].history[pointer]);
     instance[_index].historyPointer++;
     emit ValueWritten(_index, _position, _value);
