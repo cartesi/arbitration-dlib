@@ -12,6 +12,9 @@ var TestHash = artifacts.require("./TestHash.sol");
 
 var MMInstantiatorTestAux = artifacts.require("./testAuxiliaries/MMInstantiatorTestAux.sol");
 
+//test aux
+var PartitionTestAux = artifacts.require("./testAuxiliaries/PartitionTestAux.sol");
+
 module.exports = function(deployer) {
   deployer.deploy(Token);
   deployer.deploy(MMInstantiator);
@@ -19,6 +22,7 @@ module.exports = function(deployer) {
   deployer.deploy(Subleq);
   deployer.deploy(PartitionInstantiator);
   deployer.deploy(DepthLib);
+  deployer.deploy(PartitionTestAux);
   deployer.deploy(MMInstantiatorTestAux);
   deployer.link(DepthLib, DepthInterface);
   deployer.deploy(TestHash);
