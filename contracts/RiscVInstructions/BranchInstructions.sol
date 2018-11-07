@@ -27,4 +27,28 @@ library BranchInstructions {
     //call execute_branch then:
     return int64(rs1) < int64(rs2);
   }
+
+  function execute_BGE (uint64 pc, uint32 insn, uint64 rs1, uint64 rs2)
+  public returns (bool)
+  {
+    emit Print("BGE");
+    //call execute_branch then:
+    return int64(rs1) >= int64(rs2);
+  }
+
+  function execute_BLTU (uint64 pc, uint32 insn, uint64 rs1, uint64 rs2)
+  public returns (bool)
+  {
+    emit Print("BLTU");
+    //call execute_branch then:
+    return rs1 < rs2;
+  }
+
+  function execute_BGEU (uint64 pc, uint32 insn, uint64 rs1, uint64 rs2)
+  public returns (bool)
+  {
+    emit Print("BGEU");
+    //call execute_branch then:
+    return rs1 >= rs2;
+  }
 }
