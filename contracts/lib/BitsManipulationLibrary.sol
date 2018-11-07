@@ -14,10 +14,11 @@ library BitsManipulationLibrary {
   public returns(int32)
   {
     uint32 u_number = uint32(number);
-    uint sign_bit = u_number >> 31;
+    uint lastPos = 31;
+    uint sign_bit = u_number >> lastPos;
 
     int32 output = int32((u_number >> shiftAmount) |
-          (((0 - sign_bit) << 1) << (31 - shiftAmount)));
+          (((0 - sign_bit) << 1) << (lastPos - shiftAmount)));
 
     return output;
   }
@@ -29,10 +30,11 @@ library BitsManipulationLibrary {
   public returns(int64)
   {
     uint64 u_number = uint64(number);
-    uint sign_bit = u_number >> 63;
+    uint lastPos = 63;
+    uint sign_bit = u_number >> lastPos;
 
     int64 output = int64((u_number >> shiftAmount) |
-          (((0 - sign_bit) << 1) << (63 - shiftAmount)));
+          (((0 - sign_bit) << 1) << (lastPos - shiftAmount)));
 
     return output;
   }
@@ -69,10 +71,11 @@ library BitsManipulationLibrary {
   //  @example: 7 = 1.1.1.
   function uint32_toBitString(uint32 num) public pure returns (string) {
     bytes memory bitString = new bytes(64);
+    uint lastIndex = 63;
 
-    for (uint256 i = 0; i < 63; i+=2) {
-        bitString[63 - i] = ".";
-        bitString[63 - (i+1)] = (num % 2 == 0) ? byte("0") : byte("1");
+    for (uint256 i = 0; i < lastIndex; i+=2) {
+        bitString[lastIndex - i] = ".";
+        bitString[lastIndex - (i + 1)] = (num % 2 == 0) ? byte("0") : byte("1");
         num /= 2;
     }
     return string(bitString);
