@@ -6,6 +6,11 @@ var PartitionInstantiator = artifacts.require("./PartitionInstantiator.sol");
 var DepthLib = artifacts.require("./DepthLib.sol");
 var DepthInterface = artifacts.require("./DepthInterface.sol");
 var VGInstantiator = artifacts.require("./VGInstantiator.sol");
+var TestHash = artifacts.require("./TestHash.sol");
+
+//test aux
+
+var MMInstantiatorTestAux = artifacts.require("./testAuxiliaries/MMInstantiatorTestAux.sol");
 
 //test aux
 var PartitionTestAux = artifacts.require("./testAuxiliaries/PartitionTestAux.sol");
@@ -18,5 +23,7 @@ module.exports = function(deployer) {
   deployer.deploy(PartitionInstantiator);
   deployer.deploy(DepthLib);
   deployer.deploy(PartitionTestAux);
+  deployer.deploy(MMInstantiatorTestAux);
   deployer.link(DepthLib, DepthInterface);
+  deployer.deploy(TestHash);
 };

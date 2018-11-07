@@ -12,7 +12,7 @@ contract VGInstantiator is Decorated, Instantiator
 {
   using SafeMath for uint;
 
-  Token private tokenContract; // address of Themis ERC20 contract
+  Token private tokenContract; // address of Cartesi's ERC20 contract
   PartitionInterface private partition;
   MMInterface private mm;
 
@@ -35,8 +35,8 @@ contract VGInstantiator is Decorated, Instantiator
     uint timeOfLastMove; // last time someone made a move with deadline
     uint256 mmInstance; // the instance of the memory that was given to this game
     uint256 partitionInstance; // the partition instance given to this game
-    bytes32 hashBeforeDivergence;
-    bytes32 hashAfterDivergence;
+    bytes32 hashBeforeDivergence; // hash aggreed right before divergence
+    bytes32 hashAfterDivergence; // hash in conflict right after divergence
     state currentState;
   }
 
@@ -63,13 +63,13 @@ contract VGInstantiator is Decorated, Instantiator
   //   | winByPartitionTimeout   | startMachineRunChallenge  |
   //   |                         v                           |
   //   |           +-----------------------+                 |
-  //   | +---------| WaitMemoryProveValues |                 |
-  //   | |         +-----------------------+                 |
-  //   | |                       |                           |
-  //   | |claimVictoryByDeadline | settleVerificationGame    |
-  //   v v                       |                           v
-  // +--------------------+      |        +-----------------------+
-  // | FinishedClaimerWon |      +------->| FinishedChallengerWon |
+  //   | +---------| WaitMemoryProveValues |---------------+ |
+  //   | |         +-----------------------+               | |
+  //   | |                                                 | |
+  //   | |claimVictoryByDeadline   settleVerificationGame  | |
+  //   v v                                                 v v
+  // +--------------------+               +-----------------------+
+  // | FinishedClaimerWon |               | FinishedChallengerWon |
   // +--------------------+               +-----------------------+
   //
 
