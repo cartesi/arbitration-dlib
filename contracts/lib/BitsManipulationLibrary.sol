@@ -11,7 +11,7 @@ library BitsManipulationLibrary {
   //  @param number to be shifted
   //  @param number of shifts
   function int32_arith_shift_right(int32 number, uint shiftAmount)
-  public returns(int32)
+  public pure returns(int32)
   {
     uint32 u_number = uint32(number);
     uint lastPos = 31;
@@ -27,7 +27,7 @@ library BitsManipulationLibrary {
   //  @param number to be shifted
   //  @param number of shifts
   function int64_arith_shift_right(int64 number, uint shiftAmount)
-  public returns(int64)
+  public pure returns(int64)
   {
     uint64 u_number = uint64(number);
     uint lastPos = 63;
