@@ -1,11 +1,8 @@
 /// @title Bits Manipulation Library
 pragma solidity 0.4.24;
 
-import "./strings.sol";
-
 //change to lib after testing
 library BitsManipulationLibrary {
-  using strings for *;
 
   /// @notice Arithmetic right shift for int32
   //  @param number to be shifted
@@ -64,63 +61,6 @@ library BitsManipulationLibrary {
       ((num >> 8)  & 0xff00) |
       ((num << 24) & 0xff000000);
     return output;
-  }
-
-  /// @notice Convert a unsigned 32 int num to a string of bits with delimiter
-  //  @param number to to be transformed
-  //  @example: 7 = 1.1.1.
-  function uint32_toBitString(uint32 num) public pure returns (string) {
-    bytes memory bitString = new bytes(64);
-    uint lastIndex = 63;
-
-    for (uint256 i = 0; i < lastIndex; i+=2) {
-        bitString[lastIndex - i] = ".";
-        bitString[lastIndex - (i + 1)] = (num % 2 == 0) ? byte("0") : byte("1");
-        num /= 2;
-    }
-    return string(bitString);
-  }
-
-  /// @notice Convert a string of bits with delimiter to unsigned 32 int.
-  //  @param string of bits ***with delim .** to be converted
-  //  @example:  1.1.1 = 7
-  function bitString_toUint32(string bitString) public returns (uint32) {
-    var s = bitString.toSlice();
-    var delim = ".".toSlice();
-    var bitsArray = new string[](s.count(delim) + 1);
-    for(uint32 i = 0; i < bitsArray.length; i++) {
-      bitsArray[i] = s.split(delim).toString();
-    }
-
-    return bitsArray_toUint32(bitsArray);
-  }
-
-  /// @notice Convert a signed 32 int num to a string of bits with delimiter
-  //  @param number to to be transformed
-  function int32_toBitString(int32 num) public returns (string) {
-    return uint32_toBitString(uint32(num));
-  }
-
-  /// @notice Convert a string of bits with delimiter to unsigned 32 int.
-  //  @param string of bits ***with delim .** to be converted
-  //  @example:  1.1.1.(...).1 = -1
-  function bitString_toInt32(string bitString) public returns (int32) {
-    return int32(bitString_toUint32(bitString));
-  }
-
-  /// @notice Convert array of bits to uint32
-  //  @param array of strings of 0 or 1
-  function bitsArray_toUint32(string[] bitsArray) internal returns (uint32){
-    uint32 num = 0;
-
-    for (uint256 i = 0; i < bitsArray.length; i++) {
-      num *= 2;
-      //cant compare string memory and literal_string
-      if (keccak256(abi.encodePacked(bitsArray[i])) == keccak256("1")) {
-        num += 1;
-      }
-    }
-    return num;
   }
 }
 
