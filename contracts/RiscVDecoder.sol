@@ -79,384 +79,395 @@ contract RiscVDecoder {
   function opinsn(uint32 insn) public pure returns (bytes32){
     if(insn < 0x002f){
       if(insn < 0x0017){
-        if(insn < 0x000f){
+        if(insn == 0x0003){
           /*insn is 0x0003*/
           return "load_group";
-        }else if(insn < 0x0013){
+        }else if(insn == 0x000f){
           /*insn is 0x000f*/
           return "fence_group";
-        }else {
+        }else if(insn == 0x0013){
           /*insn is 0x0013*/
           return "arithmetic_immediate_group";
         }
       }else if (insn > 0x0017){
-        if (insn < 0x0023){
+        if (insn == 0x001b){
           /*insn is 0x001b*/
           return "arithmetic_immediate_32_group";
-        }else {
+        }else if(insn == 0x0023){
           /*insn is 0x0023*/
           return "store_group";
         }
-      }else{
+      }else if(insn == 0x0017){
         /*insn == 0x0017*/
         return "AUIPC";
       }
     }else if (insn > 0x002f){
       if (insn < 0x0063){
-        if (insn < 0x0037){
+        if (insn == 0x0033){
           /*insn is 0x0033*/
           return "arithmetic_group";
-        }else if (insn > 0x0037){
+        }else if (insn == 0x003b){
           /*insn is 0x003b*/
           return "arithmetic_32_group";
-        }else{
+        }else if(insn == 0x0037){
           /*insn == 0x0037*/
           return "LUI";
         }
       }else if (insn > 0x0063){
-        if(insn < 0x006f){
+        if(insn == 0x0067){
           /*insn == 0x0067*/
           return "JALR";
-        }else if(insn > 0x006f){
+        }else if(insn == 0x0073){
           /*insn == 0x0073*/
           return "csr_env_trap_int_mm_group";
-        }else {
+        }else if(insn == 0x006f){
           /*insn == 0x006f*/
           return "JAL";
         }
-      }else {
+      }else if (insn == 0x0063){
         /*insn == 0x0063*/
         return "branch_group";
       }
-    }else{
+    }else if(insn == 0x002f){
       /*insn == 0x002f*/
       return "atomic_group";
     }
+    return "illegal insn";
   }
 
   function branch_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0005){
-      if(insn < 0x0001){
+      if(insn == 0x0000){
         /*insn == 0x0000*/
         return "BEQ";
-      }else if(insn > 0x0001){
+      }else if(insn == 0x0004){
         /*insn == 0x0004*/
         return "BLT";
-      }else{
+      }else if(insn == 0x0001){
         /*insn == 0x0001*/
         return "BNE";
       }
-
     }else if(insn > 0x0005){
-      if(insn > 0x0006){
+      if(insn == 0x0007){
         /*insn == 0x0007*/
         return "BGEU";
-      }else {
+      }else if(insn == 0x006){
         /*insn == 0x0006*/
         return "BLTU";
       }
-    }else{
+    }else if(insn == 0x0005){
       /*insn==0x0005*/
       return "BGE";
     }
+    return "illegal insn";
   }
 
   function load_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0003){
-      if(insn < 0x0001){
+      if(insn == 0x0000){
         /*insn == 0x0000*/
         return "LB";
-      }else if(insn >0x0001){
+      }else if(insn == 0x0002){
         /*insn == 0x0002*/
         return "LW";
-      }else{
+      }else if(insn == 0x0001){
         /*insn == 0x0001*/
         return "LH";
       }
     }else if(insn > 0x0003){
-      if(insn < 0x0005){
+      if(insn == 0x0004){
         /*insn == 0x0004*/
         return "LBU";
-      }else if(insn > 0x0005){
+      }else if(insn == 0x0006){
         /*insn == 0x0006*/
         return "LWU";
-      }else{
+      }else if(insn == 0x0005){
         /*insn == 0x0005*/
         return "LHU";
       }
-    }else{
+    }else if(insn == 0x0003){
       /*insn == 0x0003*/
       return "LD";
     }
+    return "illegal insn";
   }
 
   function store_funct3(uint32 insn) public pure returns (bytes32){
-    if(insn < 0x0001){
+    if(insn == 0x0000){
       /*insn == 0x0000*/
       return "SB";
     }else if(insn > 0x0001){
-      if(insn < 0x0003){
+      if(insn == 0x0002){
         /*insn == 0x0002*/
         return "SW";
-      }else{
+      }else if(insn == 0x0003){
         /*insn == 0x0003*/
         return "SD";
       }
-    }else{
+    }else if(insn == 0x0001){
       /*insn == 0x0001*/
       return "SH";
     }
+    return "illegal insn";
   }
 
   function arithmetic_immediate_funct3(uint32 insn) public pure returns (bytes32) {
     if(insn < 0x0003){
-      if(insn < 0x0001){
+      if(insn == 0x0000){
         /*insn == 0x0000*/
         return "ADDI";
-      }else if(insn > 0x0001){
+      }else if(insn == 0x0002){
         /*insn == 0x0002*/
         return "SLTI";
-      }else {
+      }else if(insn == 0x0001){
         /*insn == 0x0001*/
         return "SLLI";
       }
     }else if(insn > 0x0003){
       if(insn < 0x0006){
-        if(insn < 0x0005){
+        if(insn == 0x0004){
           /*insn == 0x0004*/
           return "XORI";
-        }else{
+        }else if(insn == 0x0005){
           /*insn == 0x0005*/
           return "shift_right_immediate_group";
         }
-      }else if(insn > 0x0006){
+      }else if(insn == 0x0007){
         /*insn == 0x0007*/
         return "ANDU";
-      }else {
+      }else if(insn == 0x0006){
         /*insn == 0x0006*/
         return "ORI";
       }
-    }else {
+    }else if(insn == 0x0003){
       /*insn == 0x0003*/
       return "SLTIU";
     }
+    return "illegal insn";
   }
 
   function shift_right_immediate_funct6(uint32 insn) public pure returns (bytes32) {
-    if(insn < 0x0010){
+    if(insn == 0x0000){
       /*insn == 0x0000*/
       return "SRLI";
-    }else{
+    }else if(insn == 0x0010){
       /*insn == 0x0010*/
       return "SRAI";
     }
+    return "illegal insn";
   }
 
   function arithmetic_immediate_32_funct3(uint32 insn) public pure returns (bytes32) {
     if(insn < 0x0181){
       if(insn < 0x0081){
         if(insn < 0x0020){
-          if(insn < 0x0001){
+          if(insn == 0x0000){
             /*insn == 0x0000*/
             return "ADD";
-          }else{
+          }else if(insn == 0x0001){
             /*insn == 0x0001*/
             return "MUL";
           }
-        }else if(insn > 0x0020){
+        }else if(insn == 0x0080){
           /*insn == 0x0080*/
           return "SLL";
-        }else{
+        }else if(insn == 0x0020){
           /*insn == 0x0020*/
           return "SUB";
         }
       }else if(insn > 0x0081){
-        if(insn < 0x0101){
+        if(insn == 0x0100){
           /*insn == 0x0100*/
           return "SLT";
-        }else if(insn > 0x0101){
+        }else if(insn == 0x0180){
           /*insn == 0x0180*/
           return "SLTU";
-        }else{
+        }else if(insn == 0x0101){
           /*insn == 0x0101*/
           return "MULHSU";
         }
-      }else{
+      }else if(insn == 0x0081){
         /* insn == 0x0081*/
         return "MULH";
       }
-    }else if( insn > 0x0181){
+    }else if(insn > 0x0181){
       if(insn < 0x02a0){
-        if(insn < 0x0201){
+        if(insn == 0x0200){
           /*insn == 0x0200*/
           return "XOR";
         }else if(insn > 0x0201){
-          if(insn < 0x0281){
+          if(insn ==  0x0280){
             /*insn == 0x0280*/
             return "SRL";
-          }else{
+          }else if(insn == 0x0281){
             /*insn == 0x0281*/
             return "DIVU";
           }
-        }else {
+        }else if(insn == 0x0201){
           /*insn == 0x0201*/
           return "DIV";
         }
       }else if(insn > 0x02a0){
         if(insn < 0x0380){
-          if(insn < 0x0301){
+          if(insn == 0x0300){
           /*insn == 0x0300*/
           return "OR";
-          }else{
+          }else if(insn == 0x0301){
             /*insn == 0x0301*/
             return "REM";
           }
-        }else if(insn > 0x0380){
+        }else if(insn == 0x0381){
           /*insn == 0x0381*/
           return "REMU";
-        }else{
+        }else if(insn == 0x380){
           /*insn == 0x0380*/
           return "AND";
         }
-      }else{
+      }else if(insn == 0x02a0){
         /*insn == 0x02a0*/
         return "SRA";
       }
-    }else{
+    }else if(insn == 0x0181){
       /*insn == 0x0181*/
       return "MULHU";
     }
-
+    return "illegal insn";
   }
 
   function fence_group_funct3(uint32 insn) public pure returns(bytes32){
-    if(insn < 0x0001){
+    if(insn == 0x0000){
       /*insn == 0x0000*/
       return "FENCE";
-    }else{
+    }else if(insn == 0x0001){
       /*insn == 0x0001*/
       return "FENCE_I";
     }
+    return "illegal insn";
   }
 
   function env_trap_int_group_insn(uint32 insn) public pure returns (bytes32){
     if(insn < 0x10200073){
-      if(insn < 0x100073){
+      if(insn == 0x0073){
         /*insn == 0x0073*/
         return "ECALL";
-      }else if(insn > 0x100073){
+      }else if(insn == 0x200073){
         /*insn == 0x200073*/
         return "URET";
-      }else{
+      }else if(insn == 0x100073){
         /*insn == 0x100073*/
         return "EBREAK";
       }
     }else if(insn > 0x10200073){
-      if(insn < 0x30200073){
+      if(insn == 0x10500073){
         /*insn == 0x10500073*/
         return "WFI";
-      }else{
+      }else if(insn == 0x30200073){
         /*insn == 0x30200073*/
         return "MRET";
       }
-    }else{
+    }else if(insn == 0x10200073){
       /*insn = 0x10200073*/
       return "SRET";
     }
+    return "illegal expression";
   }
 
   function csr_env_trap_int_mm_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0003){
-      if(insn < 0x0001){
+      if(insn == 0x0000){
         /*insn == 0x0000*/
         return "env_trap_int_mm_group";
-      }else if(insn > 0x0001){
+      }else if(insn ==  0x0002){
         /*insn == 0x0002*/
         return "CSRRS";
-      }else{
+      }else if(insn == 0x0001){
         /*insn == 0x0001*/
         return "CSRRW";
       }
     }else if(insn > 0x0003){
-      if(insn < 0x0006){
+      if(insn == 0x0005){
         /*insn == 0x0005*/
         return "CSRRWI";
-      }else if(insn > 0x0006){
+      }else if(insn == 0x0007){
         /*insn == 0x0007*/
         return "CSRRCI";
-      }else{
+      }else if(insn == 0x0006){
         /*insn == 0x0006*/
         return "CSRRSI";
       }
-    }else{
+    }else if(insn == 0x0003){
       /*insn == 0x0003*/
       return "CSRRC";
     }
+    return "illegal insn";
   }
   function whichArithmeticImmediate32Func3(uint32 insn) public pure returns (bytes32){
-    if(insn < 0x0001){
+    if(insn == 0x0000){
       /*insn == 0x0000*/
       return "ADDI";
-    }else if(insn > 0x0001){
+    }else if(insn ==  0x0005){
       /*insn == 0x0005*/
       return "shift_right_immediate_32_group";
-    }else{
+    }else if(insn == 0x0001){
       /*insn == 0x0001*/
       return "SLLIW";
     }
+    return "illegal insn";
   }
 
   function whichShiftRightImmediate32Func3(uint32 insn) public pure returns (bytes32){
-    if(insn < 0x0020){
+    if(insn == 0x0000){
       /*insn == 0x0000*/
       return "SRLIW";
-    }else{
+    }else if(insn == 0x0020){
       /*insn == 0x0020*/
       return "SRAIW";
     }
+    return "illegal insn";
   }
 
   function which_arithmetic_32_funct3_funct7(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0280){
       if(insn < 0x0020){
-        if(insn < 0x0001){
+        if(insn == 0x0000){
           /*insn == 0x0000*/
           return "ADDW";
-        }else{
+        }else if(insn == 0x0001){
           /*insn == 0x0001*/
           return "MULW";
         }
       }else if(insn > 0x0020){
-        if(insn < 0x0201){
+        if(insn == 0x0080){
           /*insn == 0x0080*/
           return "SLLW";
-        }else{
+        }else if(insn == 0x0201){
           /*insn == 0x0201*/
           return "DIVUW";
         }
-      }else{
+      }else if(insn == 0x0020){
         /*insn == 0x0020*/
         return "SUBW";
       }
     }else if(insn > 0x0280){
       if(insn < 0x0301){
-        if(insn < 0x02a0){
+        if(insn == 0x0281){
           /*insn == 0x0281*/
           return "DIVUW";
-        }else{
+        }else if(insn == 0x02a0){
           /*insn == 0x02a0*/
           return "SRAW";
         }
-      }else if(insn > 0x0301){
+      }else if(insn == 0x0381){
         /*insn == 0x0381*/
         return "REMUW";
-      }else{
+      }else if(insn == 0x0301){
         /*insn == 0x0301*/
         return "REMW";
       }
-    }else {
+    }else if(insn == 0x0280) {
       /*insn == 0x0280*/
       return "SRLW";
     }
+    return "illegal insn";
   }
 }
