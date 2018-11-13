@@ -1,4 +1,4 @@
-/// @title RiscVDecoder
+// @title RiscVDecoder
 pragma solidity 0.4.24;
 
 contract RiscVDecoder {
@@ -40,8 +40,6 @@ contract RiscVDecoder {
   /// @notice Get the U-type instruction's immediate value
   //  @param insn Instruction
   function insn_U_imm(uint32 insn) public pure returns(int32){
-    //this was a static_cast
-    // return static_cast<int32_t>(insn & 0xfffff000);
     return int32(insn & 0xfffff000);
   }
 
@@ -74,8 +72,6 @@ contract RiscVDecoder {
   /// @notice Get the S-type instruction's immediate value
   //  @param insn Instruction
   function insn_S_imm(uint32 insn) public pure returns(int32){
-    //this was a static_cast
-    // return (static_cast<int32_t>(insn & 0xfe000000) >> (25 - 5)) | ((insn>> 7) & 0x1F);
     return int32(((insn & 0xfe000000) >> (25 - 5)) | ((insn>> 7) & 0x1F));
   }
 
