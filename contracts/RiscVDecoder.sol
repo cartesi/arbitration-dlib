@@ -111,6 +111,9 @@ contract RiscVDecoder {
     return (insn >> 26) & 0x3F;
   }
 
+  /// @notice Given an op code, finds the group of instructions it belongs to
+  //  using a binary search for performance.
+  //  @param insn for opcode fields.
   function opinsn(uint32 insn) public pure returns (bytes32){
     if(insn < 0x002f){
       if(insn < 0x0017){
@@ -170,6 +173,9 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
+  /// @notice Given a branch funct3 group instruction, finds the function
+  //  associated with it. Uses binary search for performance.
+  //  @param insn for branch funct3 field.
   function branch_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0005){
       if(insn == 0x0000){
@@ -197,6 +203,9 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
+  /// @notice Given a load funct3 group instruction, finds the function
+  //  associated with it. Uses binary search for performance
+  //  @param insn for load funct3 field
   function load_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0003){
       if(insn == 0x0000){
@@ -227,6 +236,9 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
+  /// @notice Given a store funct3 group insn, finds the function  associated.
+  //  Uses binary search for performance
+  //  @param insn for store funct3 field
   function store_funct3(uint32 insn) public pure returns (bytes32){
     if(insn == 0x0000){
       /*insn == 0x0000*/
@@ -246,6 +258,9 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
+  /// @notice Given a arithmetic immediate funct3 insn, finds the func associated.
+  //  Uses binary search for performance.
+  //  @param insn for arithmetic immediate funct3 field.
   function arithmetic_immediate_funct3(uint32 insn) public pure returns (bytes32) {
     if(insn < 0x0003){
       if(insn == 0x0000){
@@ -281,6 +296,9 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
+  /// @notice Given a right immediate funct6 insn, finds the func associated.
+  //  Uses binary search for performance.
+  //  @param insn for right immediate funct6 field.
   function shift_right_immediate_funct6(uint32 insn) public pure returns (bytes32) {
     if(insn == 0x0000){
       /*insn == 0x0000*/
@@ -292,7 +310,10 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
-  function arithmetic_immediate_32_funct3(uint32 insn) public pure returns (bytes32) {
+  /// @notice Given a arithmetic funct3 funct7 insn, finds the func associated.
+  //  Uses binary search for performance.
+  //  @param insn for arithmetic 32 funct3 funct7 field.
+  function arithmetic_funct3_funct7(uint32 insn) public pure returns (bytes32) {
     if(insn < 0x0181){
       if(insn < 0x0081){
         if(insn < 0x0020){
@@ -369,6 +390,9 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
+  /// @notice Given a fence funct3 insn, finds the func associated.
+  //  Uses binary search for performance.
+  //  @param insn for fence funct3 field.
   function fence_group_funct3(uint32 insn) public pure returns(bytes32){
     if(insn == 0x0000){
       /*insn == 0x0000*/
@@ -380,6 +404,9 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
+  /// @notice Given a env trap int group insn, finds the func associated.
+  //  Uses binary search for performance.
+  //  @param insn for env trap int group field.
   function env_trap_int_group_insn(uint32 insn) public pure returns (bytes32){
     if(insn < 0x10200073){
       if(insn == 0x0073){
@@ -407,6 +434,9 @@ contract RiscVDecoder {
     return "illegal expression";
   }
 
+  /// @notice Given csr env trap int mm funct3 insn, finds the func associated.
+  //  Uses binary search for performance.
+  //  @param insn for csr env trap int mm funct3 field.
   function csr_env_trap_int_mm_funct3(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0003){
       if(insn == 0x0000){
@@ -436,7 +466,11 @@ contract RiscVDecoder {
     }
     return "illegal insn";
   }
-  function whichArithmeticImmediate32Func3(uint32 insn) public pure returns (bytes32){
+
+  /// @notice Given a arithmetic immediate32 funct3 insn, finds the associated func.
+  //  Uses binary search for performance.
+  //  @param insn for arithmetic immediate32 funct3 field.
+  function arithmetic_immediate_32_funct3(uint32 insn) public pure returns (bytes32){
     if(insn == 0x0000){
       /*insn == 0x0000*/
       return "ADDI";
@@ -450,7 +484,10 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
-  function whichShiftRightImmediate32Func3(uint32 insn) public pure returns (bytes32){
+  /// @notice Given a shift right immediate32 funct3 insn, finds the associated func.
+  //  Uses binary search for performance.
+  //  @param insn for shift right immediate32 funct3 field.
+  function shift_right_immediate_32_funct3(uint32 insn) public pure returns (bytes32){
     if(insn == 0x0000){
       /*insn == 0x0000*/
       return "SRLIW";
@@ -461,7 +498,10 @@ contract RiscVDecoder {
     return "illegal insn";
   }
 
-  function which_arithmetic_32_funct3_funct7(uint32 insn) public pure returns (bytes32){
+  /// @notice Given an arithmetic32 funct3 funct7 insn, finds the associated func.
+  //  Uses binary search for performance.
+  //  @param insn for arithmetic32 funct3 funct7 field.
+  function arithmetic_32_funct3_funct7(uint32 insn) public pure returns (bytes32){
     if(insn < 0x0280){
       if(insn < 0x0020){
         if(insn == 0x0000){
