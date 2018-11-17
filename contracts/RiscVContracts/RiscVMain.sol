@@ -31,15 +31,28 @@ contract RiscVMain is RiscVDecoder {
     if(branch_funct3(insn, rs1, rs2)){
       uint64 new_pc = uint64(int32(pc) + insn_B_imm(insn));
       if((new_pc & 3) != 0) {
-        return execute_status.illegal;
-        //return misaligned_fetch_exception;
+        return misaligned_fetch_exception(new_pc);
       }else {
-        return execute_status.illegal;
-        //return execute_jump(a, new_pc);
+        return execute_jump(new_pc);
       }
     }
 //    should this be done on the blockchain?
         return execute_status.illegal;
 //    return execute_next_insn(a, pc);
+  }
+
+  function execute_jump(uint64 new_pc) returns (execute_status){
+    a.pc = new_pc;
+    return execute_status.retired;
+  }
+
+  function misaligned_fetch_exception(uint64 pc) returns (execute_status){
+    //TO-DO: Raise excecption - Misaligned fetch
+    return execute_status.retired;
+  }
+
+  function execute_next_insn(uint64 pc) returns (execute_status){
+    a.pc = pc + 4;
+    return execute_status.retired;
   }
 }
