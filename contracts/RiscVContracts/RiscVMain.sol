@@ -21,6 +21,7 @@ contract RiscVMain is RiscVDecoder {
   RiscVMachineState.Machine_state a;
 
   function execute_branch(uint64 pc, uint32 insn) returns (execute_status){
+    //TO-DO: Make sure that a.x[insn_rs1(insn)] works
     //does this work? If yes, why?
     uint64 rs1 = a.x[insn_rs1(insn)]; //read_register rs1
     uint64 rs2 = a.x[insn_rs2(insn)]; //read_register rs2
