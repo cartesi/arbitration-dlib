@@ -9,7 +9,7 @@ contract RiscVMain is RiscVDecoder {
   //next instruction and perform the step function following RiscV defined behaviour
 
   //this shouldnt be in storage - too expensive. How can we have this in memory
-  //and accessing it withou passing by param (only accepted on experimental pragma)
+  //and access it without passing by param (only accepted on experimental pragma)
   RiscVMachineState.Machine_state a;
 
   function execute_branch(uint64 pc, uint32 insn){
