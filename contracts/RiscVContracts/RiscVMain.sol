@@ -38,8 +38,7 @@ contract RiscVMain is RiscVDecoder {
       }
     }
 //    should this be done on the blockchain?
-        return execute_status.illegal;
-//    return execute_next_insn(a, pc);
+    return execute_next_insn(pc);
   }
 
   function execute_jump(uint64 new_pc) returns (execute_status){
