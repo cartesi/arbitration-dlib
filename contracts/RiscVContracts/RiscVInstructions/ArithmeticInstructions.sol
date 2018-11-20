@@ -97,7 +97,6 @@ library ArithmeticInstructions {
   function execute_MULHSU(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("MULHSU");
     int64 srs1 = int64(rs1);
-    int64 srs2 = int64(rs2);
 
     //SHOULD BE ARITHMETIC SHIFT - >> of signed int
     return uint64((int128(srs1) * int128(rs2)) >> 64);
