@@ -41,6 +41,16 @@ contract RiscVMain {
     return execute_next_insn(pc);
   }
 
+  function execute_arithmetic(uint64 pc, uint32 insn) returns (execute_status){
+    uint32 rd = RiscVDecoder.insn_rd(insn);
+    if(rd != 0){
+      uint64 rs1 = a.x[RiscVDecoder.insn_rs1(insn)]; //read_register rs1
+      uint64 rs2 = a.x[RiscVDecoder.insn_rs2(insn)]; //read_register rs2
+      a.x[rd] = RiscVDecoder.arithmetic_funct3_funct7(insn, rs1, rs2);
+    }
+    return execute_next_insn(pc);
+  }
+
   function execute_jump(uint64 new_pc) public returns (execute_status){
     a.pc = new_pc;
     return execute_status.retired;
