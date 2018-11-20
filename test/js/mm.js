@@ -1,4 +1,4 @@
-const mm = require('../../utils/mm.js')
+const mm = require('../../subleq/mm.js')
 var BigNumber = require('bignumber.js');
 
 const expect = require("chai").expect;

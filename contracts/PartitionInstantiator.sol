@@ -20,8 +20,9 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     state currentState;
     uint divergenceTime;
   }
-
-  mapping(uint256 => PartitionCtx) private instance;
+  
+  //Swap internal/private when done with testing
+  mapping(uint256 => PartitionCtx) internal instance;
 
   // These are the possible states and transitions of the contract.
   //
