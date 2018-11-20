@@ -4,7 +4,7 @@ pragma solidity 0.4.24;
 import "./RiscVDecoder.sol";
 import "./RiscVMachineState.sol";
 
-contract RiscVMain is RiscVDecoder {
+contract RiscVMain {
   // Main RiscV contract - should be able to receive a machine state, receive the
   //next instruction and perform the step function following RiscV defined behaviour
 
@@ -23,14 +23,14 @@ contract RiscVMain is RiscVDecoder {
   function execute_branch(uint64 pc, uint32 insn) returns (execute_status){
     //TO-DO: Make sure that a.x[insn_rs1(insn)] works
     //does this work? If yes, why?
-    uint64 rs1 = a.x[insn_rs1(insn)]; //read_register rs1
-    uint64 rs2 = a.x[insn_rs2(insn)]; //read_register rs2
+    uint64 rs1 = a.x[RiscVDecoder.insn_rs1(insn)]; //read_register rs1
+    uint64 rs2 = a.x[RiscVDecoder.insn_rs2(insn)]; //read_register rs2
 
     emit Print(rs1);
     emit Print(rs2);
 
-    if(branch_funct3(insn, rs1, rs2)){
-      uint64 new_pc = uint64(int32(pc) + insn_B_imm(insn));
+    if(RiscVDecoder.branch_funct3(insn, rs1, rs2)){
+      uint64 new_pc = uint64(int32(pc) + RiscVDecoder.insn_B_imm(insn));
       if((new_pc & 3) != 0) {
         return misaligned_fetch_exception(new_pc);
       }else {
