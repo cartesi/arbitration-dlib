@@ -1,5 +1,14 @@
 /// @title ArithmeticInstructions
+
 pragma solidity 0.4.24;
+
+// Overflow/Underflow behaviour in solidity is to allow them to happen freely.
+// This mimics the RiscV behaviour, so we can use the arithmetic operators normally.
+// RiscV-spec-v2.2 - Section 2.4:
+// https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
+// Solidity docs Twos Complement/Underflow/Overflow: 
+// https://solidity.readthedocs.io/en/latest/security-considerations.html?highlight=overflow#two-s-complement-underflows-overflows
+
 
 library ArithmeticInstructions {
   uint constant XLEN = 64;
@@ -9,17 +18,15 @@ library ArithmeticInstructions {
   //TO-DO: _builtin_add_overflow
   function execute_ADD(uint64 rs1, uint64 rs2) returns (uint64){
     emit Print("ADD");
-    uint64 val = 0;
     //_builtin_add_overflow(rs1, rs2, &val)
-    return val;
+    return rs1 + rs2;
   }
 
   //TO-DO: _builtin_sub_overflow
   function execute_SUB(uint64 rs1, uint64 rs2) returns (uint64){
     emit Print("SUB");
-    uint64 val = 0;
     //_builtin_sub_overflow(rs1, rs2, &val)
-    return val;
+    return rs1 - rs2;
   }
 
   function execute_SLL(uint64 rs1, uint64 rs2) returns (uint64){
@@ -69,16 +76,16 @@ library ArithmeticInstructions {
 
     return rs1 & rs2;
   }
-  //TO-DO: _builtin_mul_overflow
+  
   function execute_MUL(uint64 rs1, uint64 rs2) returns (uint64){
     emit Print("MUL");
-    int64 val = 0;
     int64 srs1 = int64(rs1);
     int64 srs2 = int64(rs2);
     //_builtin_mul_overflow(srs1, srs2, &val);
 
-    return uint64(val);
+    return uint64(srs1 * srs2);
   }
+  
   //TO-DO: Use bitmanipulation library for shift
   function execute_MULH(uint64 rs1, uint64 rs2) returns (uint64){
     emit Print("MULH");
@@ -88,6 +95,7 @@ library ArithmeticInstructions {
     //SHOULD BE ARITHMETIC SHIFT - >> of signed int
     return uint64((int128(srs1) * int128(srs2)) >> 64);
   }
+  
   //TO-DO: Use bitmanipulation library for shift
   function execute_MULHSU(uint64 rs1, uint64 rs2) returns (uint64){
     emit Print("MULHSU");
