@@ -14,67 +14,67 @@ library ArithmeticInstructions {
 
   event Print(string message);
 
-  function execute_ADD(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_ADD(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("ADD");
     //_builtin_add_overflow(rs1, rs2, &val)
     return rs1 + rs2;
   }
 
-  function execute_SUB(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_SUB(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("SUB");
     //_builtin_sub_overflow(rs1, rs2, &val)
     return rs1 - rs2;
   }
 
-  function execute_SLL(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_SLL(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("SLL");
 
     return rs1 << (rs2 & (XLEN - 1));
   }
 
-  function execute_SLT(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_SLT(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("SLT");
 
     return (int64(rs1) < int64(rs2))? 1:0;
   }
 
-  function execute_SLTU(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_SLTU(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("SLTU");
 
     return (rs1 < rs2)? 1:0;
   }
 
-  function execute_XOR(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_XOR(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("XOR");
 
     return rs1 ^ rs2;
   }
 
-  function execute_SRL(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_SRL(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("SRL");
 
     return rs1 >> (rs2 & (XLEN-1));
   }
 
-  function execute_SRA(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_SRA(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("SRA");
 
     return uint64(int64(rs1) >> (rs2 & (XLEN-1)));
   }
 
-  function execute_OR(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_OR(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("OR");
 
     return rs1 | rs2;
   }
 
-  function execute_AND(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_AND(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("AND");
 
     return rs1 & rs2;
   }
 
-  function execute_MUL(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_MUL(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("MUL");
     int64 srs1 = int64(rs1);
     int64 srs2 = int64(rs2);
@@ -84,7 +84,7 @@ library ArithmeticInstructions {
   }
 
   //TO-DO: Use bitmanipulation library for shift
-  function execute_MULH(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_MULH(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("MULH");
     int64 srs1 = int64(rs1);
     int64 srs2 = int64(rs2);
@@ -94,7 +94,7 @@ library ArithmeticInstructions {
   }
 
   //TO-DO: Use bitmanipulation library for shift
-  function execute_MULHSU(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_MULHSU(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("MULHSU");
     int64 srs1 = int64(rs1);
     int64 srs2 = int64(rs2);
@@ -104,7 +104,7 @@ library ArithmeticInstructions {
   }
 
   //TO-DO: Use bitmanipulation library for shift
-  function execute_MULHU(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_MULHU(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("MULHU");
 
     //SHOULD BE ARITHMETIC SHIFT - >> of signed int
@@ -112,7 +112,7 @@ library ArithmeticInstructions {
   }
 
   //TO-DO: Ask Diego if the regular cast (chooses the first working cast) is unsafe
-  function execute_DIV(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_DIV(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("DIV");
     int64 srs1 = int64(rs1);
     int64 srs2 = int64(rs2);
@@ -129,7 +129,7 @@ library ArithmeticInstructions {
     }
   }
 
-  function execute_DIVU(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_DIVU(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("DIVU");
 
     if(rs2 == 0){
@@ -140,7 +140,7 @@ library ArithmeticInstructions {
   }
 
   //TO-DO: Make sure cast is not changing behaviour
-  function execute_REM(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_REM(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("REM");
     int64 srs1 = int64(rs1);
     int64 srs2 = int64(rs2);
@@ -155,7 +155,7 @@ library ArithmeticInstructions {
     }
   }
 
-  function execute_REMU(uint64 rs1, uint64 rs2) returns (uint64){
+  function execute_REMU(uint64 rs1, uint64 rs2) public returns (uint64){
     emit Print("REMU");
 
     if(rs2 == 0){
