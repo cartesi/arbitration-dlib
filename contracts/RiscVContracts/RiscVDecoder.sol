@@ -2,8 +2,9 @@
 pragma solidity 0.4.24;
 
 import "./RiscVInstructions/BranchInstructions.sol";
+import "./RiscVInstructions/ArithmeticInstructions.sol";
 
-contract RiscVDecoder {
+library RiscVDecoder {
   // Contract responsible for decoding the riscv's instructions
   // It applies different bitwise operations and masks to reach
   // specific positions and use that positions to identify the
@@ -198,7 +199,7 @@ contract RiscVDecoder {
         /*insn == 0x0007*/
         //return "BGEU";
         return BranchInstructions.execute_BGEU(rs1, rs2);
-      }else if(insn == 0x006){
+      }else if(insn == 0x0006){
         /*insn == 0x0006*/
         //return "BLTU";
         return BranchInstructions.execute_BLTU(rs1, rs2);
