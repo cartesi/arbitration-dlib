@@ -20,7 +20,7 @@ contract RiscVMain {
   //and access it without passing by param (only accepted on experimental pragma)
   RiscVMachineState.Machine_state a;
 
-  function execute_branch(uint64 pc, uint32 insn) returns (execute_status){
+  function execute_branch(uint64 pc, uint32 insn) public returns (execute_status){
     //TO-DO: Make sure that a.x[insn_rs1(insn)] works
     //does this work? If yes, why?
     uint64 rs1 = a.x[RiscVDecoder.insn_rs1(insn)]; //read_register rs1
@@ -41,17 +41,17 @@ contract RiscVMain {
     return execute_next_insn(pc);
   }
 
-  function execute_jump(uint64 new_pc) returns (execute_status){
+  function execute_jump(uint64 new_pc) public returns (execute_status){
     a.pc = new_pc;
     return execute_status.retired;
   }
 
-  function misaligned_fetch_exception(uint64 pc) returns (execute_status){
+  function misaligned_fetch_exception(uint64 pc) public returns (execute_status){
     //TO-DO: Raise excecption - Misaligned fetch
     return execute_status.retired;
   }
 
-  function execute_next_insn(uint64 pc) returns (execute_status){
+  function execute_next_insn(uint64 pc) public returns (execute_status){
     a.pc = pc + 4;
     return execute_status.retired;
   }
