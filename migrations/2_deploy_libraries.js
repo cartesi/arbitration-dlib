@@ -9,7 +9,6 @@ var DepthInterface = artifacts.require("./DepthInterface.sol");
 var VGInstantiator = artifacts.require("./VGInstantiator.sol");
 var TestHash = artifacts.require("./TestHash.sol");
 
-var BitsManipulation = artifacts.require("./lib/BitsManipulationLibrary.sol");
 //test aux
 
 var MMInstantiatorTestAux = artifacts.require("./testAuxiliaries/MMInstantiatorTestAux.sol");
