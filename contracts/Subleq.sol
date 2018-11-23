@@ -2,16 +2,12 @@
 pragma solidity 0.4.24;
 
 import "./MachineInterface.sol";
-
-contract mmInterface {
-  function read(uint256 _index, uint64 _address) public view returns (bytes8);
-  function write(uint256 _index, uint64 _address, bytes8 _value) public;
-  function finishReplayPhase(uint256 _index) public;
-}
+import "./MMInterface.sol";
 
 contract Subleq is MachineInterface {
 
   event StepGiven(uint8 exitCode);
+  event Debug(bytes32 message, bytes8 word);
 
   // use storage because of solidity's problem with locals ("Stack too deep")
   uint64 pcPosition;
@@ -39,7 +35,7 @@ contract Subleq is MachineInterface {
 
   function endStep(address _mmAddress, uint256 _mmIndex, uint8 _exitCode)
     internal returns (uint8) {
-    mmInterface mm = mmInterface(_mmAddress);
+    MMInterface mm = MMInterface(_mmAddress);
     mm.finishReplayPhase(_mmIndex);
     emit StepGiven(_exitCode);
     return _exitCode;
@@ -70,7 +66,7 @@ contract Subleq is MachineInterface {
     // 11 -
     // 12 -
     // 13 -
-    mmInterface mm = mmInterface(_mmAddress);
+    MMInterface mm = MMInterface(_mmAddress);
     pcPosition = 0x4000000000000000;
     icPosition = 0x4000000000000008;
     ocPosition = 0x4000000000000010;
@@ -78,11 +74,11 @@ contract Subleq is MachineInterface {
     rSizePosition = 0x4000000000000020;
     iSizePosition = 0x4000000000000028;
     oSizePosition = 0x4000000000000030;
+
     pc = uint64(mm.read(_mmIndex, pcPosition));
     ic = uint64(mm.read(_mmIndex, icPosition));
     oc = uint64(mm.read(_mmIndex, ocPosition));
     hs = uint64(mm.read(_mmIndex, hsPosition));
-
 
     rSize = uint64(mm.read(_mmIndex, rSizePosition));
     iSize = uint64(mm.read(_mmIndex, iSizePosition));
@@ -108,6 +104,9 @@ contract Subleq is MachineInterface {
     if (memAddrB >= 0 && uint64(memAddrB) > rSize)
       { return(endStep(_mmAddress, _mmIndex, 6)); }
     // if first operator is -1, read from input
+
+    //emit Debug("memAddrA", bytes8(memAddrA));
+
     if (memAddrA == -1) {
       // test if input is out of range
       if (ic - 0x8000000000000000 > iSize)

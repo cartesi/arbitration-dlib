@@ -28,11 +28,11 @@ contract MemoryGameInstantiator is Decorated, Instantiator
     uint64 positionWritten;
     bytes8 valueWritten;
     uint timeOfLastMove; // last time someone made a move with deadline
-    uint32 mmInstance; // the instance of the memory that was given to this game
+    uint256 mmInstance; // the instance of the memory that was given to this game
     state currentState;
   }
 
-  mapping(uint32 => MGCtx) private instance;
+  mapping(uint256 => MGCtx) private instance;
 
   // These are the possible states and transitions of the contract.
   //
@@ -53,10 +53,10 @@ contract MemoryGameInstantiator is Decorated, Instantiator
   // +--------------------+               +-----------------------+
   //
 
-  event MGCreated(uint32 _index, address _challenger, address _claimer,
+  event MGCreated(uint256 _index, address _challenger, address _claimer,
                   uint _valueXYZ, uint _roundDuration, bytes32 _initialHash,
-                  bytes32 _claimerFinalHash, uint32 _mmInstance);
-  event MemoryWriten(uint32 _index);
+                  bytes32 _claimerFinalHash, uint256 _mmInstance);
+  event MemoryWriten(uint256 _index);
   event MGFinished(state _finalState);
 
   constructor(address _tokenContractAddress,
@@ -69,7 +69,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
                        uint _roundDuration, bytes32 _initialHash,
                        bytes32 _claimerFinalHash, uint64 _positionWritten,
                        bytes8 _valueWritten)
-    public returns (uint32)
+    public returns (uint256)
   {
     require(tokenContract.transferFrom(msg.sender, address(this), _valueXYZ));
     require((_positionWritten & 7) == 0);
@@ -94,12 +94,12 @@ contract MemoryGameInstantiator is Decorated, Instantiator
 
   /// @notice After having filled the memory manager with the necessary data,
   /// the claimer calls this function to verify the change
-  function settleMemoryGame(uint32 _index) public
+  function settleMemoryGame(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
   {
     require(instance[_index].currentState == state.WaitMemoryProveValues);
-    uint32 mmIndex = instance[_index].mmInstance;
+    uint256 mmIndex = instance[_index].mmInstance;
     require(mm.stateIsWaitingReplay(mmIndex));
     mm.write(instance[_index].mmInstance,
              instance[_index].positionWritten,
@@ -111,7 +111,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
 
   /// @notice Claimer can claim victory if challenger has lost the deadline
   /// for some of the steps in the protocol.
-  function claimVictoryByDeadline(uint32 _index) public
+  function claimVictoryByDeadline(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
     onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
@@ -121,7 +121,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
   }
 
   // !!!!!!!!! SEND THESE TWO METHODS TO A GAME BASE CONTRACT !!!!!!!!!
-  function challengerWins(uint32 _index) private
+  function challengerWins(uint256 _index) private
     onlyInstantiated(_index)
   {
       tokenContract.transfer(instance[_index].challenger,
@@ -131,7 +131,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
       emit MGFinished(instance[_index].currentState);
   }
 
-  function claimerWins(uint32 _index) private
+  function claimerWins(uint256 _index) private
     onlyInstantiated(_index)
   {
       tokenContract.transfer(instance[_index].claimer,
@@ -141,7 +141,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
       emit MGFinished(instance[_index].currentState);
   }
 
-  function clearInstance(uint32 _index) internal
+  function clearInstance(uint256 _index) internal
     onlyInstantiated(_index)
   {
     delete instance[_index].challenger;
@@ -158,18 +158,18 @@ contract MemoryGameInstantiator is Decorated, Instantiator
   }
 
   // state getters
-  function stateIsWaitMemoryProveValues(uint32 _index) public view
+  function stateIsWaitMemoryProveValues(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitMemoryProveValues; }
 
   // !!!!!!!!! SEND THESE TWO METHODS TO A GAME BASE CONTRACT !!!!!!!!!
-  function stateIsFinishedClaimerWon(uint32 _index) public view
+  function stateIsFinishedClaimerWon(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.FinishedClaimerWon; }
 
-  function stateIsFinishedChallengerWon(uint32 _index) public view
+  function stateIsFinishedChallengerWon(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.FinishedClaimerWon; }
