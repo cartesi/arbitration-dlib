@@ -88,8 +88,9 @@ contract MemoryGameInstantiator is Decorated, Instantiator
     emit MGCreated(currentIndex, _challenger, _claimer, _valueXYZ,
                    _roundDuration, _initialHash,
                    _claimerFinalHash, instance[currentIndex].mmInstance);
-    currentIndex++;
-    return(currentIndex - 1);
+
+    active[currentIndex] = true;
+    return(currentIndex++);
   }
 
   /// @notice After having filled the memory manager with the necessary data,
@@ -97,6 +98,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
   function settleMemoryGame(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitMemoryProveValues);
     uint256 mmIndex = instance[_index].mmInstance;
@@ -155,9 +157,16 @@ contract MemoryGameInstantiator is Decorated, Instantiator
     delete instance[_index].timeOfLastMove;
     // !!!!!!!!! should call delete in mmInstance !!!!!!!!!
     delete instance[_index].mmInstance;
+    deactivate(_index);
   }
 
   // state getters
+  function isConcerned(uint256 _index, address _user) public view returns(bool)
+  {
+    return ((instance[_index].challenger == _user)
+            || (instance[_index].claimer == _user));
+  }
+
   function stateIsWaitMemoryProveValues(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
