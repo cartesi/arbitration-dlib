@@ -1,7 +1,7 @@
 const BigNumber = require('bignumber.js');
 const expect = require('chai').expect;
 
-const mm = require('../utils/mm.js');
+const mm = require('../subleq/mm.js');
 const getEvent = require('../utils/tools.js').getEvent;
 const unwrap = require('../utils/tools.js').unwrap;
 const getError = require('../utils/tools.js').getError;
@@ -38,9 +38,17 @@ contract('MMInstantiator', function(accounts) {
       myMM.setWord(key, initialValues[key])
     }
     initialHash = myMM.merkel()
-
+    
     // launch contract from account[2], who will be the owner
     let mmInstantiator = await MMInstantiator.new();
+    
+    // provider and client cant have same address
+    expect(await getError(
+      mmInstantiator.instantiate(
+        accounts[1], accounts[1], initialHash,
+        { from: accounts[2], gas: 2000000 })
+    )).to.have.string('VM Exception');
+
     response = await mmInstantiator.instantiate(
       accounts[0], accounts[1], initialHash,
       { from: accounts[2], gas: 2000000 });
@@ -82,7 +90,15 @@ contract('MMInstantiator', function(accounts) {
         expect(event._value.toString()).to.equal(
           twoComplement32(myMM.getWord(u.position)));
       } else {
-        // submit write
+              
+        // submit write with wrong proof          
+        expect(await getError(
+          mmInstantiator.proveWrite(index, u.position, myMM.getWord(u.position),
+            twoComplement32(u.value),["falseProof"],
+            { from: accounts[0], gas: 2000000 })
+        )).to.have.string('VM Exception');
+              
+        
         response = await mmInstantiator
           .proveWrite(index, u.position, myMM.getWord(u.position),
                       twoComplement32(u.value), proof,
