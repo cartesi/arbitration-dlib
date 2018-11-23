@@ -13,9 +13,9 @@ contract MMInterface is Instantiator
   function read(uint256 _index, uint64 _position) public returns (bytes8);
   function write(uint256 _index, uint64 _position, bytes8 _value) public;
   function newHash(uint256 _index) public view returns (bytes32);
+  function finishProofPhase(uint256 _index) public;
+  function finishReplayPhase(uint256 _index) public;
   function stateIsWaitingProofs(uint256 _index) public view returns(bool);
   function stateIsWaitingReplay(uint256 _index) public view returns(bool);
   function stateIsFinishedReplay(uint256 _index) public view returns(bool);
-  function finishReplayPhase(uint256 _index) public;
-  function finishProofPhase(uint256 _index) public;
 }

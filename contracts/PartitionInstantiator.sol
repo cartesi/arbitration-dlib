@@ -20,7 +20,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     state currentState;
     uint divergenceTime;
   }
-  
+
   //Swap internal/private when done with testing
   mapping(uint256 => PartitionCtx) internal instance;
 
@@ -85,7 +85,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     instance[currentIndex].currentState = state.WaitingHashes;
     emit PartitionCreated(currentIndex);
     emit QueryPosted(currentIndex);
-    
+
+    active[currentIndex] = true;
     return currentIndex++;
   }
 
@@ -128,6 +129,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
                       bytes32[] postedHashes) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingHashes, "State is not WaitingHashes");
     require(postedTimes.length == instance[_index].querySize, "postedTimes.length != querySize");
@@ -157,6 +159,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
                      uint leftPoint, uint rightPoint) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingQuery, "State is not WaitingQuery");
     require(queryPiece < instance[_index].querySize - 1, "queryPiece is bigger thatn querySize -1");
@@ -175,11 +178,13 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   /// @notice Claim victory for opponent timeout.
   function claimVictoryByTime(uint256 _index) public
     onlyInstantiated(_index)
+    increasesNonce(_index)
   {
     if ((msg.sender == instance[_index].challenger)
         && (instance[_index].currentState == state.WaitingHashes)
         && (now > instance[_index].timeOfLastMove + instance[_index].roundDuration)) {
       instance[_index].currentState = state.ChallengerWon;
+      deactivate(_index);
       emit ChallengeEnded(_index, uint8(instance[_index].currentState));
       return;
     }
@@ -187,6 +192,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         && (instance[_index].currentState == state.WaitingQuery)
         && (now > instance[_index].timeOfLastMove + instance[_index].roundDuration)) {
       instance[_index].currentState = state.ClaimerWon;
+      deactivate(_index);
       emit ChallengeEnded(_index, uint8(instance[_index].currentState));
       return;
     }
@@ -201,6 +207,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   function presentDivergence(uint256 _index, uint _divergenceTime) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
+    increasesNonce(_index)
   {
     require(_divergenceTime < instance[_index].finalTime, "divergence time has to be less than finalTime");
     require(instance[_index].timeSubmitted[_divergenceTime],"_divergenceTime has to have been submitted");
@@ -208,6 +215,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
 
     instance[_index].divergenceTime = _divergenceTime;
     instance[_index].currentState = state.DivergenceFound;
+    deactivate(_index);
     emit ChallengeEnded(_index, uint8(instance[_index].currentState));
     emit DivergenceFound(_index, instance[_index].divergenceTime,
                          instance[_index].timeHash[instance[_index].divergenceTime],
@@ -283,6 +291,12 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   { return instance[_index].queryArray[i]; }
 
   // state getters
+
+  function isConcerned(uint256 _index, address _user) public view returns(bool)
+  {
+    return ((instance[_index].challenger == _user)
+            || (instance[_index].claimer == _user));
+  }
 
   function stateIsWaitingQuery(uint256 _index) public view
     onlyInstantiated(_index)

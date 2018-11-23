@@ -45,14 +45,14 @@ contract MMInstantiator is MMInterface, Decorated {
   //   | finishProofPhase
   //   v
   // +----------------+    |read
-  // | FinishedReplay |----|write
+  // | WaitingReplay  |----|write
   // +----------------+
   //   |
   //   | finishReplayPhase
   //   v
-  // +---------------+
-  // | WaitingReplay |
-  // +---------------+
+  // +----------------+
+  // | FinishedReplay |
+  // +----------------+
   //
 
   event MemoryCreated(uint256 _index, bytes32 _initialHash);
@@ -75,7 +75,8 @@ contract MMInstantiator is MMInterface, Decorated {
     currentInstance.historyPointer = 0;
     currentInstance.currentState = state.WaitingProofs;
     emit MemoryCreated(currentIndex, _initialHash);
-    
+
+    active[currentIndex] = true;
     return currentIndex++;
   }
 
@@ -87,6 +88,7 @@ contract MMInstantiator is MMInterface, Decorated {
                      bytes32[] proof) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingProofs);
     require(Merkle.getRoot(_position, _value, proof)
@@ -105,6 +107,7 @@ contract MMInstantiator is MMInterface, Decorated {
                       bytes32[] proof) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingProofs);
     // check proof of old value
@@ -122,6 +125,7 @@ contract MMInstantiator is MMInterface, Decorated {
   function finishProofPhase(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingProofs);
     instance[_index].currentState = state.WaitingReplay;
@@ -134,6 +138,7 @@ contract MMInstantiator is MMInterface, Decorated {
   function read(uint256 _index, uint64 _position) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].client)
+    increasesNonce(_index)
     returns (bytes8)
   {
     require(instance[_index].currentState == state.WaitingReplay);
@@ -155,6 +160,7 @@ contract MMInstantiator is MMInterface, Decorated {
   function write(uint256 _index, uint64 _position, bytes8 _value) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].client)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingReplay);
     require((_position & 7) == 0);
@@ -172,16 +178,25 @@ contract MMInstantiator is MMInterface, Decorated {
   function finishReplayPhase(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].client)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingReplay);
     require(instance[_index].historyPointer == instance[_index].history.length);
     delete(instance[_index].history);
     delete(instance[_index].historyPointer);
     instance[_index].currentState = state.FinishedReplay;
+
+    deactivate(_index);
     emit FinishedReplay(_index);
   }
 
   // getter methods
+  function isConcerned(uint256 _index, address _user) public view returns(bool)
+  {
+    return ((instance[_index].provider == _user)
+            || (instance[_index].client == _user));
+  }
+
   function provider(uint256 _index) public view
     onlyInstantiated(_index)
     returns (address)

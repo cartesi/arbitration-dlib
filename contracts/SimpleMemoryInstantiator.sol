@@ -14,14 +14,14 @@ contract SimpleMemoryInstantiator is MMInterface {
 
   function instantiate(address, address, bytes32) public returns (uint256)
   {
-    currentIndex++;
-    return(currentIndex - 1);
+    active[currentIndex] = true;
+    return(currentIndex++);
   }
 
   /// @notice reads a slot in memory
   /// @param _address of the desired memory
-  function read(uint256 _index, uint64 _address)
-    public returns (bytes8)
+  function read(uint256 _index, uint64 _address) public
+    returns (bytes8)
   {
     require((_address & 7) == 0);
     return instance[_index].value[_address];
@@ -30,24 +30,38 @@ contract SimpleMemoryInstantiator is MMInterface {
   /// @notice writes on a slot of memory during read and write phase
   /// @param _address of the write
   /// @param _value to be written
-  function write(uint256 _index, uint64 _address, bytes8 _value) public {
+  function write(uint256 _index, uint64 _address, bytes8 _value) public
+  {
     require((_address & 7) == 0);
     instance[_index].value[_address] = _value;
   }
 
-  function finishProofPhase(uint256) public { }
-
-  function finishReplayPhase(uint256) public { }
-
   function newHash(uint256) public view returns (bytes32)
   { require(false); }
 
+  function finishProofPhase(uint256) public {}
+
+  function finishReplayPhase(uint256) public {}
+
   function stateIsWaitingProofs(uint256) public view returns(bool)
-  { require(false); }
+  { require(false);
+    return(true);
+  }
 
   function stateIsWaitingReplay(uint256) public view returns(bool)
-  { require(false); }
+  {
+    require(false);
+    return(true);
+  }
 
   function stateIsFinishedReplay(uint256) public view returns(bool)
-  { require(false); }
+  {
+    require(false);
+    return(true);
+  }
+
+  function isConcerned(uint256, address) public view returns(bool)
+  {
+    return(true);
+  }
 }

@@ -70,7 +70,7 @@ contract ShufflerInstantiator is Decorated, Instantiator
   event ShufflerFinished(state _finalState);
 
   constructor(address _tokenContractAddress,
-              address _mmInstantiatorAddress,
+              address,// _mmInstantiatorAddress,
               address _vgInstantiatorAddress) public {
     tokenContract = Token(_tokenContractAddress);
     vg = VGInterface(_vgInstantiatorAddress);
@@ -101,8 +101,9 @@ contract ShufflerInstantiator is Decorated, Instantiator
     instance[currentIndex].currentState = state.WaitExplanation;
     emit ShufflerCreated(currentIndex, _challenger, _claimer, _valueXYZ,
                          _roundDuration);
-    currentIndex++;
-    return(currentIndex - 1);
+
+    active[currentIndex] = true;
+    return(currentIndex++);
   }
 
   /// @notice After having filled the memory manager with the necessary data,
@@ -165,9 +166,16 @@ contract ShufflerInstantiator is Decorated, Instantiator
     // !!!!!!!!! should call delete in mmInstance !!!!!!!!!
     //delete instance[_index].mmInstance;
     // !!!!!!!!! delete the rest of stuff !!!!!!!!!
+    deactivate(_index);
   }
 
   // state getters
+  function isConcerned(uint256 _index, address _user) public view returns(bool)
+  {
+    return ((instance[_index].challenger == _user)
+            || (instance[_index].claimer == _user));
+  }
+
   function stateIsWaitMemoryProveValues(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)

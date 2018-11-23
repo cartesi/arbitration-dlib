@@ -119,8 +119,9 @@ contract VGInstantiator is Decorated, VGInterface
                    _roundDuration, _machineAddress, _initialHash,
                    _claimerFinalHash, _finalTime,
                    instance[currentIndex].partitionInstance);
-    currentIndex++;
-    return(currentIndex - 1);
+
+    active[currentIndex] = true;
+    return(currentIndex++);
   }
 
   /// @notice Set a new price for the instance and possibly increase its value
@@ -131,6 +132,7 @@ contract VGInstantiator is Decorated, VGInterface
                               uint _doubleDown) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
@@ -144,6 +146,7 @@ contract VGInstantiator is Decorated, VGInterface
                            uint _doubleDown) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
@@ -156,6 +159,7 @@ contract VGInstantiator is Decorated, VGInterface
   /// @notice During sale phase, anyone can buy this instance from challenger
   function buyInstanceFromChallenger(uint256 _index) public
     onlyInstantiated(_index)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this),
@@ -169,6 +173,7 @@ contract VGInstantiator is Decorated, VGInterface
   /// @notice During sale phase, anyone can buy this instance from claimer
   function buyInstanceFromClaimer(uint256 _index) public
     onlyInstantiated(_index)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitSale);
     require(tokenContract.transferFrom(msg.sender, address(this),
@@ -184,6 +189,7 @@ contract VGInstantiator is Decorated, VGInterface
   function finishSalePhase(uint256 _index) public
     onlyInstantiated(_index)
     onlyAfter(instance[_index].timeOfLastMove + instance[_index].salesDuration)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitSale);
     instance[_index].timeOfLastMove = now;
@@ -225,6 +231,7 @@ contract VGInstantiator is Decorated, VGInterface
   /// machine.
   function startMachineRunChallenge(uint256 _index) public
     onlyInstantiated(_index)
+    increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitPartition);
     require(partition
@@ -310,9 +317,16 @@ contract VGInstantiator is Decorated, VGInterface
     delete instance[_index].mmInstance;
     delete instance[_index].hashBeforeDivergence;
     delete instance[_index].hashAfterDivergence;
+    deactivate(_index);
   }
 
   // state getters
+
+  function isConcerned(uint256 _index, address _user) public view returns(bool)
+  {
+    return ((instance[_index].challenger == _user)
+            || (instance[_index].claimer == _user));
+  }
 
   function stateIsWaitSale(uint256 _index) public view
     onlyInstantiated(_index)
