@@ -1,4 +1,5 @@
 const BigNumber = require('bignumber.js');
+const Web3 = require('web3');
 
 const mm = require('../subleq/mm.js');
 const expect = require('chai').expect;
@@ -6,6 +7,8 @@ const getEvent = require('../utils/tools.js').getEvent;
 const unwrap = require('../utils/tools.js').unwrap;
 const getError = require('../utils/tools.js').getError;
 const twoComplement32 = require('../utils/tools.js').twoComplement32;
+
+var web3 = new Web3('http://127.0.0.1:9545');
 
 var Subleq = artifacts.require("./Subleq.sol");
 var SimpleMemoryInstantiator = artifacts.require("./SimpleMemoryInstantiator.sol");
@@ -43,6 +46,7 @@ contract('Subleq', function(accounts) {
     let simpleMemoryInstantiator = await SimpleMemoryInstantiator
         .new({ from: accounts[2], gas: 2000000 });
     mmAddress = simpleMemoryInstantiator.address;
+
     // write program to memory contract
     //console.log('write program to memory contract');
     var softwareLength = echo_binary.length;
@@ -52,7 +56,6 @@ contract('Subleq', function(accounts) {
         .write(0, 8 * i, twoComplement32(echo_binary[i]),
                { from: accounts[0], gas: 1500000 })
     }
-
     // write ic
     response = await simpleMemoryInstantiator.write(0, icPosition, icInitial)
     // write oc
@@ -66,7 +69,6 @@ contract('Subleq', function(accounts) {
     // write oSize
     response = await simpleMemoryInstantiator
       .write(0, oSizePosition, "0x0000000000100000")
-
     // write input in memory contract
 
     var inputLength = input_string.length;
@@ -80,7 +82,6 @@ contract('Subleq', function(accounts) {
 
     // launch subleq from accounts[2]
     let subleq = await Subleq.new({ from: accounts[2], gas: 3000000 });
-
     let running = 0;
 
     while (running === 0) {
@@ -114,10 +115,12 @@ contract('Subleq', function(accounts) {
         mmAddress, 0,
         { from: accounts[2], gas: 1500000 })
       expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
-
       running = getEvent(response, 'StepGiven').exitCode.toNumber();
+      //var debug = getEvent(response, 'Debug');
+      //console.log(web3.utils.toAscii(debug.message) + ": " + debug.word);
       //console.log(running);
     }
+
     expect(running).to.equal(7);
 
     let j = 0;

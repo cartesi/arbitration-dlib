@@ -7,19 +7,19 @@ import "../../contracts/PartitionInstantiator.sol";
 contract TestMakeQuery is PartitionInstantiator{
   uint nextIndex = 0;
   address mockAddress = 0x0014060Ff383C9B21C6840A3b14AAb06741E5c49;
-   
+
   function testMakeQuery() public {
     uint newIndex;
     uint queryPiece;
     uint leftPoint;
-    uint rightPoint;     
-    
+    uint rightPoint;
+
     //arbitrary seeds to simulate initial and final hash
     uint initialHashSeed = 3;
     uint finalHashSeed = 4;
-    
+
     for(uint i = 1; i < 5; i++) {
-      newIndex = instantiate(msg.sender,mockAddress, bytes32( + initialHashSeed), bytes32(i + finalHashSeed), 5000 * i, i * 3, i * 55);   
+      newIndex = instantiate(msg.sender,mockAddress, bytes32( + initialHashSeed), bytes32(i + finalHashSeed), 5000 * i, i * 3, i * 55);
       queryPiece = instance[newIndex].querySize - 2;
       leftPoint  = instance[newIndex].queryArray[queryPiece];
       rightPoint = instance[newIndex].queryArray[queryPiece + 1];
@@ -31,4 +31,3 @@ contract TestMakeQuery is PartitionInstantiator{
     }
   }
 }
-

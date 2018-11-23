@@ -1,7 +1,7 @@
 const BigNumber = require('bignumber.js');
 const expect = require('chai').expect;
 
-const mm = require('../subleq/mm.js');
+const mm = require('./mm.js');
 const getEvent = require('../utils/tools.js').getEvent;
 const unwrap = require('../utils/tools.js').unwrap;
 const getError = require('../utils/tools.js').getError;
@@ -19,6 +19,6 @@ contract('MMInstantiator', function(accounts) {
     response = await th.testing(
       '0x012345678abcdeff', 1234678987,
       { from: accounts[2], gas: 2000000 });
-    console.log(response.logs);
+    //console.log(response.logs);
   })
 })
