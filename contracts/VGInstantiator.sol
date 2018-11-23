@@ -3,21 +3,19 @@ pragma solidity ^0.4.23;
 
 import "./Decorated.sol";
 import "./Instantiator.sol";
+import "./VGInterface.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
 import "./MachineInterface.sol";
 import "./lib/bokkypoobah/Token.sol";
 
-contract VGInstantiator is Decorated, Instantiator
+contract VGInstantiator is Decorated, VGInterface
 {
   using SafeMath for uint;
 
   Token private tokenContract; // address of Themis ERC20 contract
   PartitionInterface private partition;
   MMInterface private mm;
-
-  enum state { WaitSale, WaitPartition, WaitMemoryProveValues,
-               FinishedClaimerWon, FinishedChallengerWon }
 
   struct VGCtx
   {
