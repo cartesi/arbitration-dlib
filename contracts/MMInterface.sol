@@ -15,5 +15,4 @@ contract MMInterface is Instantiator
   function stateIsWaitingProofs(uint256 _index) public view returns(bool);
   function stateIsWaitingReplay(uint256 _index) public view returns(bool);
   function stateIsFinishedReplay(uint256 _index) public view returns(bool);
->>>>>>> master
 }
