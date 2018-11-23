@@ -1,5 +1,5 @@
 // @title Verification game instantiator
-pragma solidity ^0.4.23;
+pragma solidity 0.4.24;
 
 import "./Decorated.sol";
 import "./Instantiator.sol";
@@ -13,7 +13,7 @@ contract VGInstantiator is Decorated, VGInterface
 {
   using SafeMath for uint;
 
-  Token private tokenContract; // address of Themis ERC20 contract
+  Token private tokenContract; // address of Cartesi's ERC20 contract
   PartitionInterface private partition;
   MMInterface private mm;
 
@@ -33,14 +33,14 @@ contract VGInstantiator is Decorated, VGInterface
     bytes32 claimerFinalHash; // hash claimer commited for machine after running
     uint finalTime; // the time for which the machine should run
     uint timeOfLastMove; // last time someone made a move with deadline
-    uint32 mmInstance; // the instance of the memory that was given to this game
-    uint32 partitionInstance; // the partition instance given to this game
-    bytes32 hashBeforeDivergence;
-    bytes32 hashAfterDivergence;
+    uint256 mmInstance; // the instance of the memory that was given to this game
+    uint256 partitionInstance; // the partition instance given to this game
+    bytes32 hashBeforeDivergence; // hash aggreed right before divergence
+    bytes32 hashAfterDivergence; // hash in conflict right after divergence
     state currentState;
   }
 
-  mapping(uint32 => VGCtx) private instance;
+  mapping(uint256 => VGCtx) private instance;
 
   // These are the possible states and transitions of the contract.
   //
@@ -63,25 +63,25 @@ contract VGInstantiator is Decorated, VGInterface
   //   | winByPartitionTimeout   | startMachineRunChallenge  |
   //   |                         v                           |
   //   |           +-----------------------+                 |
-  //   | +---------| WaitMemoryProveValues |                 |
-  //   | |         +-----------------------+                 |
-  //   | |                       |                           |
-  //   | |claimVictoryByDeadline | settleVerificationGame    |
-  //   v v                       |                           v
-  // +--------------------+      |        +-----------------------+
-  // | FinishedClaimerWon |      +------->| FinishedChallengerWon |
+  //   | +---------| WaitMemoryProveValues |---------------+ |
+  //   | |         +-----------------------+               | |
+  //   | |                                                 | |
+  //   | |claimVictoryByDeadline   settleVerificationGame  | |
+  //   v v                                                 v v
+  // +--------------------+               +-----------------------+
+  // | FinishedClaimerWon |               | FinishedChallengerWon |
   // +--------------------+               +-----------------------+
   //
 
-  event VGCreated(uint32 _index, address _challenger, address _claimer,
+  event VGCreated(uint256 _index, address _challenger, address _claimer,
                   uint _valueXYZ, uint _roundDuration, address _machineAddress,
                   bytes32 _initialHash, bytes32 _claimerFinalHash,
-                  uint _finalTime, uint32 _partitionInstance);
-  event SetPrice(bool _isChallenger, uint32 _index, uint _value,
+                  uint _finalTime, uint256 _partitionInstance);
+  event SetPrice(bool _isChallenger, uint256 _index, uint _value,
                  uint _doubleDown);
-  event StartChallenge(uint32 _index, uint32 _partitionInstance);
-  event PartitionDivergenceFound(uint32 _index, uint32 _mmInstance);
-  event MemoryWriten(uint32 _index);
+  event StartChallenge(uint256 _index, uint256 _partitionInstance);
+  event PartitionDivergenceFound(uint256 _index, uint256 _mmInstance);
+  event MemoryWriten(uint256 _index);
   event VGFinished(state _finalState);
 
   constructor(address _tokenContractAddress,
@@ -96,7 +96,7 @@ contract VGInstantiator is Decorated, VGInterface
                        uint _roundDuration, uint _salesDuration,
                        address _machineAddress, bytes32 _initialHash,
                        bytes32 _claimerFinalHash, uint _finalTime)
-    public returns (uint32)
+    public returns (uint256)
   {
     require(tokenContract.transferFrom(msg.sender, address(this), _valueXYZ));
     require(_finalTime > 0);
@@ -126,8 +126,8 @@ contract VGInstantiator is Decorated, VGInterface
   /// @notice Set a new price for the instance and possibly increase its value
   /// During sale phase, anyone can increase the value of an instance
   /// this can be used to signal to buyers that the player is convinced of the
-  /// victory and incentivise them to pre-execute the verification off-chain.
-  function setChallengerPrice(uint32 _index, uint _newPrice,
+  /// victory and incentivise them to execute the verification off-chain.
+  function setChallengerPrice(uint256 _index, uint _newPrice,
                               uint _doubleDown) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
@@ -140,7 +140,7 @@ contract VGInstantiator is Decorated, VGInterface
     emit SetPrice(true, _index, _newPrice, _doubleDown);
   }
 
-  function setClaimerPrice(uint32 _index, uint _newPrice,
+  function setClaimerPrice(uint256 _index, uint _newPrice,
                            uint _doubleDown) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
@@ -154,7 +154,7 @@ contract VGInstantiator is Decorated, VGInterface
   }
 
   /// @notice During sale phase, anyone can buy this instance from challenger
-  function buyInstanceFromChallenger(uint32 _index) public
+  function buyInstanceFromChallenger(uint256 _index) public
     onlyInstantiated(_index)
   {
     require(instance[_index].currentState == state.WaitSale);
@@ -167,7 +167,7 @@ contract VGInstantiator is Decorated, VGInterface
   }
 
   /// @notice During sale phase, anyone can buy this instance from claimer
-  function buyInstanceFromClaimer(uint32 _index) public
+  function buyInstanceFromClaimer(uint256 _index) public
     onlyInstantiated(_index)
   {
     require(instance[_index].currentState == state.WaitSale);
@@ -181,7 +181,7 @@ contract VGInstantiator is Decorated, VGInterface
 
   /// @notice After the sales duration, the sale phase can be
   /// finished by anyone.
-  function finishSalePhase(uint32 _index) public
+  function finishSalePhase(uint256 _index) public
     onlyInstantiated(_index)
     onlyAfter(instance[_index].timeOfLastMove + instance[_index].salesDuration)
   {
@@ -205,11 +205,11 @@ contract VGInstantiator is Decorated, VGInterface
   /// @notice In case one of the parties wins the partition challenge by
   /// timeout, then he or she can call this function to claim victory in
   /// the hireCPU contract as well.
-  function winByPartitionTimeout(uint32 _index) public
+  function winByPartitionTimeout(uint256 _index) public
     onlyInstantiated(_index)
   {
     require(instance[_index].currentState == state.WaitPartition);
-    uint32 partitionIndex = instance[_index].partitionInstance;
+    uint256 partitionIndex = instance[_index].partitionInstance;
     if (partition.stateIsChallengerWon(partitionIndex))
       { challengerWins(_index); return; }
     if (partition.stateIsClaimerWon(partitionIndex))
@@ -223,13 +223,13 @@ contract VGInstantiator is Decorated, VGInterface
   /// This function call solely instantiate a memory manager, so the
   /// provider must fill the appropriate addresses that will be read by the
   /// machine.
-  function startMachineRunChallenge(uint32 _index) public
+  function startMachineRunChallenge(uint256 _index) public
     onlyInstantiated(_index)
   {
     require(instance[_index].currentState == state.WaitPartition);
     require(partition
             .stateIsDivergenceFound(instance[_index].partitionInstance));
-    uint32 partitionIndex = instance[_index].partitionInstance;
+    uint256 partitionIndex = instance[_index].partitionInstance;
     uint divergenceTime = partition.divergenceTime(partitionIndex);
     instance[_index].hashBeforeDivergence
       = partition.timeHash(partitionIndex, divergenceTime);
@@ -250,12 +250,12 @@ contract VGInstantiator is Decorated, VGInterface
   /// the provider calls this function to instantiate the machine and perform
   /// one step on it. The machine will write to memory now. Later, the
   /// provider will be expected to update the memory hash accordingly.
-  function settleVerificationGame(uint32 _index) public
+  function settleVerificationGame(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].challenger)
   {
     require(instance[_index].currentState == state.WaitMemoryProveValues);
-    uint32 mmIndex = instance[_index].mmInstance;
+    uint256 mmIndex = instance[_index].mmInstance;
     require(mm.stateIsWaitingReplay(mmIndex));
     instance[_index].machine.step(address(mm), mmIndex);
     require(mm.stateIsFinishedReplay(mmIndex));
@@ -265,7 +265,7 @@ contract VGInstantiator is Decorated, VGInterface
 
   /// @notice Claimer can claim victory if challenger has lost the deadline
   /// for some of the steps in the protocol.
-  function claimVictoryByDeadline(uint32 _index) public
+  function claimVictoryByDeadline(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
     onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
@@ -274,7 +274,7 @@ contract VGInstantiator is Decorated, VGInterface
     claimerWins(_index);
   }
 
-  function challengerWins(uint32 _index) private
+  function challengerWins(uint256 _index) private
     onlyInstantiated(_index)
   {
       tokenContract.transfer(instance[_index].challenger,
@@ -284,7 +284,7 @@ contract VGInstantiator is Decorated, VGInterface
       emit VGFinished(instance[_index].currentState);
   }
 
-  function claimerWins(uint32 _index) private
+  function claimerWins(uint256 _index) private
     onlyInstantiated(_index)
   {
       tokenContract.transfer(instance[_index].claimer,
@@ -294,7 +294,7 @@ contract VGInstantiator is Decorated, VGInterface
       emit VGFinished(instance[_index].currentState);
   }
 
-  function clearInstance(uint32 _index) internal
+  function clearInstance(uint256 _index) internal
     onlyInstantiated(_index)
   {
     delete instance[_index].challenger;
@@ -314,27 +314,27 @@ contract VGInstantiator is Decorated, VGInterface
 
   // state getters
 
-  function stateIsWaitSale(uint32 _index) public view
+  function stateIsWaitSale(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitSale; }
 
-  function stateIsWaitPartition(uint32 _index) public view
+  function stateIsWaitPartition(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitPartition; }
 
-  function stateIsWaitMemoryProveValues(uint32 _index) public view
+  function stateIsWaitMemoryProveValues(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.WaitMemoryProveValues; }
 
-  function stateIsFinishedClaimerWon(uint32 _index) public view
+  function stateIsFinishedClaimerWon(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.FinishedClaimerWon; }
 
-  function stateIsFinishedChallengerWon(uint32 _index) public view
+  function stateIsFinishedChallengerWon(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.FinishedClaimerWon; }

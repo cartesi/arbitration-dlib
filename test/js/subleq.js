@@ -1,8 +1,8 @@
 const BigNumber = require('bignumber.js');
 const expect = require("chai").expect;
 
-const mm = require('../../utils/mm.js')
-const subleq = require('../../utils/subleq.js')
+const mm = require('../../subleq/mm.js')
+const subleq = require('../../subleq/subleq.js')
 const twoComplement32 = require('../../utils/tools.js').twoComplement32;
 
 describe('Testing subleq', function() {
