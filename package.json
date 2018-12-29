@@ -5,6 +5,7 @@
   "dependencies": {
     "bignumber.js": "^6.0.0",
     "chai": "^4.2.0",
+    "ganache-cli": "^6.2.5",
     "truffle": "^4.1.13",
     "web3": "^1.0.0-beta.36"
   },
