@@ -1,0 +1,48 @@
+#!/bin/bash
+
+export G_TEMP_OUT=`mktemp`
+
+echo $G_TEMP_OUT
+
+# Change to stderr
+echo -n "Starting Ganache... "
+./node_modules/.bin/ganache-cli -s secret > $G_TEMP_OUT &
+export G_PID=$!
+
+# In case of user interruption, terminate ganache
+trap ctrl_c INT
+function ctrl_c {
+    echo "Terminating ganache..."
+    kill $G_PID
+}
+
+# Wait until ganache sends "Gas Limit" to sdtout
+tail -f -n1 ${G_TEMP_OUT} | grep -m 1 "Gas Limit"
+
+echo "Ganache ready."
+
+export G_ADDRESS=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
+export CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
+
+# Change to stderr
+echo -n "Starting Truffle..."
+function get_address {
+    ./node_modules/.bin/truffle migrate \
+        | grep "PartitionInstantiator:" \
+        | sed -e 's/^[[:space:]]*//' \
+        | cut -d ' ' -f 2
+}
+
+export CONCERN_CONTRACT=`get_address`
+export CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
+
+echo "Truffle finished."
+
+echo "PartitionInstantiator address: " $CONCERN_CONTRACT
+
+# Change this
+bash --noprofile --norc
+
+cd ~
+
+ctrl_c
