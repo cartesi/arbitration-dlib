@@ -17,10 +17,17 @@ var PartitionTestAux = artifacts.require("./testAuxiliaries/PartitionTestAux.sol
 module.exports = function(deployer) {
   deployer.deploy(Token);
 //  deployer.deploy(Strings);
-  deployer.deploy(MMInstantiator);
   deployer.deploy(SimpleMemoryInstantiator);
   deployer.deploy(Subleq);
-  deployer.deploy(PartitionInstantiator);
+  deployer.deploy(PartitionInstantiator).then(function(){
+    return deployer.deploy(MMInstantiator).then(function() {
+      return deployer.deploy(VGInstantiator,
+                             PartitionInstantiator.address,
+                             MMInstantiator.address).then(function() {
+                               console.log("AAA " + VGInstantiator.address);
+                             });
+    })
+  })
   deployer.deploy(PartitionTestAux);
   deployer.deploy(MMInstantiatorTestAux);
 //  deployer.deploy(BitsManipulation);

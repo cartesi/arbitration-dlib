@@ -19,17 +19,24 @@ function ctrl_c {
     cd ~
 }
 
-PYTHON_SCRIPT_PATH=`mktemp`
-cat > PYTHON_SCRIPT_PATH << EOF
-while True:
-  line = p.stdout.readline()
-  if "Gas Limit" in line: break
-EOF
+#export PYTHON_SCRIPT_PATH=`mktemp`
+#cat > $PYTHON_SCRIPT_PATH << EOF
+#import sys
+#while True:
+#  line = sys.stdin.readline()
+#  if "Gas Limit" in line: break
+#EOF
 
 # Wait until ganache sends "Gas Limit" to sdtout
 # this is not working always:
 #    tail -f -n1 ${TEMP_OUT} | grep -q "Gas Limit"
-tail -f -n1 ${TEMP_OUT} | python $PYTHON_SCRIPT_PATH
+#tail -f -n1 ${TEMP_OUT} | python $PYTHON_SCRIPT_PATH
+
+
+until grep -q "Gas Limit" "$TEMP_OUT"
+do
+  sleep 1s
+done
 
 echo " Ganache ready."
 
