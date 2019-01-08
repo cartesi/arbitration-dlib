@@ -1,45 +1,61 @@
 #!/bin/bash
 
-export G_TEMP_OUT=`mktemp`
+TEMP_OUT=`mktemp`
 
-echo $G_TEMP_OUT
+export CARTESI_WORKING_PATH=`mktemp -d`
+
+echo $TEMP_OUT
 
 # Change to stderr
-echo -n "Starting Ganache... "
-./node_modules/.bin/ganache-cli -s secret > $G_TEMP_OUT &
-export G_PID=$!
+echo -n "Starting Ganache..."
+./node_modules/.bin/ganache-cli -s secret -b 1 > $TEMP_OUT &
+PID=$!
 
 # In case of user interruption, terminate ganache
 trap ctrl_c INT
 function ctrl_c {
     echo "Terminating ganache..."
-    kill $G_PID
+    kill $PID
     cd ~
 }
 
+PYTHON_SCRIPT_PATH=`mktemp`
+cat > PYTHON_SCRIPT_PATH << EOF
+while True:
+  line = p.stdout.readline()
+  if "Gas Limit" in line: break
+EOF
+
 # Wait until ganache sends "Gas Limit" to sdtout
-tail -f -n1 ${G_TEMP_OUT} | grep -m 1 "Gas Limit"
+# this is not working always:
+#    tail -f -n1 ${TEMP_OUT} | grep -q "Gas Limit"
+tail -f -n1 ${TEMP_OUT} | python $PYTHON_SCRIPT_PATH
 
-echo "Ganache ready."
-
-export G_ADDRESS=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
-export CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
+echo " Ganache ready."
 
 # Change to stderr
 echo -n "Starting Truffle..."
 function get_address {
     ./node_modules/.bin/truffle migrate \
-        | grep "PartitionInstantiator:" \
+        | grep "VGInstantiator:" \
         | sed -e 's/^[[:space:]]*//' \
         | cut -d ' ' -f 2
 }
 
-export CONCERN_CONTRACT=`get_address`
-export CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
+export CARTESI_TESTING="true"
+export CARTESI_CONCERN_CONTRACT=`get_address`
+export CARTESI_CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
+export CARTESI_CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
 
-echo "Truffle finished."
+echo " Truffle finished."
 
-echo "PartitionInstantiator address: " $CONCERN_CONTRACT
+echo "VGInstantiator address: " $CARTESI_CONCERN_CONTRACT
+
+echo -n "Creating some instances..."
+
+./mock_instances.js > /dev/null
+
+echo " instantiation finished."
 
 # Change this
 bash --noprofile --norc
