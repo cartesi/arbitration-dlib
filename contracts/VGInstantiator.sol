@@ -7,13 +7,11 @@ import "./VGInterface.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
 import "./MachineInterface.sol";
-import "./lib/bokkypoobah/Token.sol";
 
 contract VGInstantiator is Decorated, VGInterface
 {
-  using SafeMath for uint;
+  //  using SafeMath for uint;
 
-  Token private tokenContract; // address of Cartesi's ERC20 contract
   PartitionInterface private partition;
   MMInterface private mm;
 
@@ -21,12 +19,6 @@ contract VGInstantiator is Decorated, VGInterface
   {
     address challenger; // the two parties involved in each instance
     address claimer;
-    uint valueXYZ; // the value given to the winner in XYZ
-    uint challengerPriceXYZ; // price if someone wants to buy from challenger
-    uint challengerDoubleDown; // amount added by challenger to instance
-    uint claimerPriceXYZ; // price if someone wants to buy from claimer
-    uint claimerDoubleDown; // amount added by claimer to instance
-    uint salesDuration; // time interval to sell the instance
     uint roundDuration; // time interval to interact with this contract
     MachineInterface machine; // the machine which will run the challenge
     bytes32 initialHash; // hash of machine memory that both aggree uppon
@@ -49,12 +41,6 @@ contract VGInstantiator is Decorated, VGInterface
   //               +---+
   //                 |
   //                 | instantiate
-  //                 v                     | setChallengerPrice
-  //               +----------+            | setClaimerPrice
-  //               | WaitSale |------------| buyInstanceFromChallenger
-  //               +----------+            | buyInstanceFromClaimer
-  //                 |
-  //                 | finishSalePhase
   //                 v
   //               +----------------+  winByPartitionTimeout
   //   +-----------| WaitPartition  |------------------------+
@@ -74,138 +60,50 @@ contract VGInstantiator is Decorated, VGInterface
   //
 
   event VGCreated(uint256 _index, address _challenger, address _claimer,
-                  uint _valueXYZ, uint _roundDuration, address _machineAddress,
+                  uint _roundDuration, address _machineAddress,
                   bytes32 _initialHash, bytes32 _claimerFinalHash,
                   uint _finalTime, uint256 _partitionInstance);
-  event SetPrice(bool _isChallenger, uint256 _index, uint _value,
-                 uint _doubleDown);
-  event StartChallenge(uint256 _index, uint256 _partitionInstance);
   event PartitionDivergenceFound(uint256 _index, uint256 _mmInstance);
   event MemoryWriten(uint256 _index);
   event VGFinished(state _finalState);
 
-  constructor(address _tokenContractAddress,
-              address _partitionInstantiatorAddress,
+  constructor(address _partitionInstantiatorAddress,
               address _mmInstantiatorAddress) public {
-    tokenContract = Token(_tokenContractAddress);
     partition = PartitionInterface(_partitionInstantiatorAddress);
     mm = MMInterface(_mmInstantiatorAddress);
   }
 
-  function instantiate(address _challenger, address _claimer, uint _valueXYZ,
-                       uint _roundDuration, uint _salesDuration,
-                       address _machineAddress, bytes32 _initialHash,
-                       bytes32 _claimerFinalHash, uint _finalTime)
+  function instantiate(address _challenger, address _claimer,
+                       uint _roundDuration, address _machineAddress,
+                       bytes32 _initialHash, bytes32 _claimerFinalHash,
+                       uint _finalTime)
     public returns (uint256)
   {
-    require(tokenContract.transferFrom(msg.sender, address(this), _valueXYZ));
     require(_finalTime > 0);
     instance[currentIndex].challenger = _challenger;
     instance[currentIndex].claimer = _claimer;
-    instance[currentIndex].valueXYZ = _valueXYZ;
-    instance[currentIndex].challengerPriceXYZ = _valueXYZ;
-    instance[currentIndex].challengerDoubleDown = 0;
-    instance[currentIndex].claimerPriceXYZ = _valueXYZ;
-    instance[currentIndex].claimerDoubleDown = 0;
-    instance[currentIndex].salesDuration = _salesDuration;
     instance[currentIndex].roundDuration = _roundDuration;
     instance[currentIndex].machine = MachineInterface(_machineAddress);
     instance[currentIndex].initialHash = _initialHash;
     instance[currentIndex].claimerFinalHash = _claimerFinalHash;
     instance[currentIndex].finalTime = _finalTime;
     instance[currentIndex].timeOfLastMove = now;
-    instance[currentIndex].currentState = state.WaitSale;
-    emit VGCreated(currentIndex, _challenger, _claimer, _valueXYZ,
+    instance[currentIndex].partitionInstance =
+      partition.instantiate(_challenger,
+                            _claimer,
+                            _initialHash,
+                            _claimerFinalHash,
+                            _finalTime,
+                            10,
+                            _roundDuration);
+    instance[currentIndex].currentState = state.WaitPartition;
+    emit VGCreated(currentIndex, _challenger, _claimer,
                    _roundDuration, _machineAddress, _initialHash,
                    _claimerFinalHash, _finalTime,
                    instance[currentIndex].partitionInstance);
 
     active[currentIndex] = true;
     return(currentIndex++);
-  }
-
-  /// @notice Set a new price for the instance and possibly increase its value
-  /// During sale phase, anyone can increase the value of an instance
-  /// this can be used to signal to buyers that the player is convinced of the
-  /// victory and incentivise them to execute the verification off-chain.
-  function setChallengerPrice(uint256 _index, uint _newPrice,
-                              uint _doubleDown) public
-    onlyInstantiated(_index)
-    onlyBy(instance[_index].challenger)
-    increasesNonce(_index)
-  {
-    require(instance[_index].currentState == state.WaitSale);
-    require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
-    instance[_index].challengerPriceXYZ = _newPrice;
-    instance[_index].valueXYZ += _doubleDown;
-    instance[_index].challengerDoubleDown += _doubleDown;
-    emit SetPrice(true, _index, _newPrice, _doubleDown);
-  }
-
-  function setClaimerPrice(uint256 _index, uint _newPrice,
-                           uint _doubleDown) public
-    onlyInstantiated(_index)
-    onlyBy(instance[_index].claimer)
-    increasesNonce(_index)
-  {
-    require(instance[_index].currentState == state.WaitSale);
-    require(tokenContract.transferFrom(msg.sender, address(this), _doubleDown));
-    instance[_index].claimerPriceXYZ = _newPrice;
-    instance[_index].valueXYZ += _doubleDown;
-    instance[_index].claimerDoubleDown += _doubleDown;
-    emit SetPrice(false, _index, _newPrice, _doubleDown);
-  }
-
-  /// @notice During sale phase, anyone can buy this instance from challenger
-  function buyInstanceFromChallenger(uint256 _index) public
-    onlyInstantiated(_index)
-    increasesNonce(_index)
-  {
-    require(instance[_index].currentState == state.WaitSale);
-    require(tokenContract.transferFrom(msg.sender, address(this),
-                                       instance[_index].challengerPriceXYZ));
-    require(tokenContract.transfer(instance[_index].challenger,
-                                   instance[_index].challengerPriceXYZ));
-    instance[_index].challenger = msg.sender;
-    instance[_index].challengerPriceXYZ = instance[_index].valueXYZ;
-  }
-
-  /// @notice During sale phase, anyone can buy this instance from claimer
-  function buyInstanceFromClaimer(uint256 _index) public
-    onlyInstantiated(_index)
-    increasesNonce(_index)
-  {
-    require(instance[_index].currentState == state.WaitSale);
-    require(tokenContract.transferFrom(msg.sender, address(this),
-                                       instance[_index].claimerPriceXYZ));
-    require(tokenContract.transfer(instance[_index].claimer,
-                                   instance[_index].claimerPriceXYZ));
-    instance[_index].claimer = msg.sender;
-    instance[_index].claimerPriceXYZ = instance[_index].valueXYZ;
-  }
-
-  /// @notice After the sales duration, the sale phase can be
-  /// finished by anyone.
-  function finishSalePhase(uint256 _index) public
-    onlyInstantiated(_index)
-    onlyAfter(instance[_index].timeOfLastMove + instance[_index].salesDuration)
-    increasesNonce(_index)
-  {
-    require(instance[_index].currentState == state.WaitSale);
-    instance[_index].timeOfLastMove = now;
-    instance[_index].partitionInstance =
-      partition.instantiate(instance[_index].challenger,
-                            instance[_index].claimer,
-                            instance[_index].initialHash,
-                            instance[_index].claimerFinalHash,
-                            instance[_index].finalTime,
-                            10,
-                            instance[_index].roundDuration);
-    delete instance[_index].challengerPriceXYZ;
-    delete instance[_index].claimerPriceXYZ;
-    delete instance[_index].salesDuration;
-    instance[_index].currentState = state.WaitPartition;
-    emit StartChallenge(_index, instance[_index].partitionInstance);
   }
 
   /// @notice In case one of the parties wins the partition challenge by
@@ -246,7 +144,7 @@ contract VGInstantiator is Decorated, VGInterface
       mm.instantiate(instance[_index].challenger,
                      instance[_index].machine,
                      instance[_index].hashBeforeDivergence);
-    // !!!!!!!!! should call delete in partitionInstance !!!!!!!!!
+    // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!
     delete instance[_index].partitionInstance;
     instance[_index].timeOfLastMove = now;
     instance[_index].currentState = state.WaitMemoryProveValues;
@@ -284,8 +182,6 @@ contract VGInstantiator is Decorated, VGInterface
   function challengerWins(uint256 _index) private
     onlyInstantiated(_index)
   {
-      tokenContract.transfer(instance[_index].challenger,
-                             instance[_index].valueXYZ);
       clearInstance(_index);
       instance[_index].currentState = state.FinishedChallengerWon;
       emit VGFinished(instance[_index].currentState);
@@ -294,8 +190,6 @@ contract VGInstantiator is Decorated, VGInterface
   function claimerWins(uint256 _index) private
     onlyInstantiated(_index)
   {
-      tokenContract.transfer(instance[_index].claimer,
-                             instance[_index].valueXYZ);
       clearInstance(_index);
       instance[_index].currentState = state.FinishedClaimerWon;
       emit VGFinished(instance[_index].currentState);
@@ -306,14 +200,13 @@ contract VGInstantiator is Decorated, VGInterface
   {
     delete instance[_index].challenger;
     delete instance[_index].claimer;
-    delete instance[_index].valueXYZ;
     delete instance[_index].roundDuration;
     delete instance[_index].machine;
     delete instance[_index].initialHash;
     delete instance[_index].claimerFinalHash;
     delete instance[_index].finalTime;
     delete instance[_index].timeOfLastMove;
-    // !!!!!!!!! should call delete in mmInstance !!!!!!!!!
+    // !!!!!!!!! should call clear in mmInstance !!!!!!!!!
     delete instance[_index].mmInstance;
     delete instance[_index].hashBeforeDivergence;
     delete instance[_index].hashAfterDivergence;
@@ -322,16 +215,47 @@ contract VGInstantiator is Decorated, VGInterface
 
   // state getters
 
+  function getState(uint256 _index) public view returns
+    ( address _challenger,
+      address _claimer,
+      MachineInterface _machine,
+      bytes32 _initialHash,
+      bytes32 _claimerFinalHash,
+      bytes32 _hashBeforeDivergence,
+      bytes32 _hashAfterDivergence,
+      state _currentState,
+      uint[5] _uintValues
+      )
+  {
+    VGCtx memory i = instance[_index];
+
+    uint[5] memory uintValues =
+      [i.roundDuration,
+       i.finalTime,
+       i.timeOfLastMove,
+       i.mmInstance,
+       i.partitionInstance
+       ];
+
+    return
+      (
+       i.challenger,
+       i.claimer,
+       i.machine,
+       i.initialHash,
+       i.claimerFinalHash,
+       i.hashBeforeDivergence,
+       i.hashAfterDivergence,
+       i.currentState,
+       uintValues
+       );
+  }
+
   function isConcerned(uint256 _index, address _user) public view returns(bool)
   {
     return ((instance[_index].challenger == _user)
             || (instance[_index].claimer == _user));
   }
-
-  function stateIsWaitSale(uint256 _index) public view
-    onlyInstantiated(_index)
-    returns(bool)
-  { return instance[_index].currentState == state.WaitSale; }
 
   function stateIsWaitPartition(uint256 _index) public view
     onlyInstantiated(_index)
