@@ -6,6 +6,7 @@
     "bignumber.js": "^6.0.0",
     "chai": "^4.2.0",
     "ganache-cli": "^6.2.5",
+    "js-yaml": "^3.12.1",
     "truffle": "^4.1.13",
     "web3": "^1.0.0-beta.36"
   },

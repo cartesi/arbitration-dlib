@@ -1,10 +1,12 @@
 #!/bin/bash
 
 TEMP_OUT=`mktemp`
+echo "Redirecting sdtout to: " $TEMP_OUT
 
 export CARTESI_WORKING_PATH=`mktemp -d`
 
-echo $TEMP_OUT
+export CARTESI_CONFIG=`mktemp --tmpdir=$CARTESI_WORKING_PATH`
+echo "Configuration file: " $CARTESI_CONFIG
 
 # Change to stderr
 echo -n "Starting Ganache..."
@@ -19,20 +21,6 @@ function ctrl_c {
     cd ~
 }
 
-#export PYTHON_SCRIPT_PATH=`mktemp`
-#cat > $PYTHON_SCRIPT_PATH << EOF
-#import sys
-#while True:
-#  line = sys.stdin.readline()
-#  if "Gas Limit" in line: break
-#EOF
-
-# Wait until ganache sends "Gas Limit" to sdtout
-# this is not working always:
-#    tail -f -n1 ${TEMP_OUT} | grep -q "Gas Limit"
-#tail -f -n1 ${TEMP_OUT} | python $PYTHON_SCRIPT_PATH
-
-
 until grep -q "Gas Limit" "$TEMP_OUT"
 do
   sleep 1s
@@ -42,27 +30,31 @@ echo " Ganache ready."
 
 # Change to stderr
 echo -n "Starting Truffle..."
+./node_modules/.bin/truffle migrate
+
 function get_address {
     ./node_modules/.bin/truffle migrate \
-        | grep "VGInstantiator:" \
+        | grep "ComputeInstantiator:" \
         | sed -e 's/^[[:space:]]*//' \
         | cut -d ' ' -f 2
 }
-
-export CARTESI_TESTING="true"
 export CARTESI_CONCERN_CONTRACT=`get_address`
-export CARTESI_CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
-export CARTESI_CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
 
 echo " Truffle finished."
 
-echo "VGInstantiator address: " $CARTESI_CONCERN_CONTRACT
+export CARTESI_TESTING="true"
+export CARTESI_CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
+export CARTESI_CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
+
+echo "ComputeInstantiator address: " $CARTESI_CONCERN_CONTRACT
 
 echo -n "Creating some instances..."
 
 ./mock_instances.js > /dev/null
 
 echo " instantiation finished."
+
+
 
 # Change this
 bash --noprofile --norc
