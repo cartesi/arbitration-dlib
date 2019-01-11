@@ -29,7 +29,7 @@ abi = JSON.parse(truffle_dump).abi;
 
 var myContract = new web3.eth.Contract(
   abi,
-  process.env.CARTESI_CONCERN_CONTRACT,
+  process.env.CARTESI_MAIN_CONCERN_CONTRACT,
 );
 
 let claimer, challenger, duration;
@@ -58,7 +58,7 @@ async function main() {
       "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       z,
       "120",
-    ).send({from: process.env.CARTESI_CONCERN_USER,
+    ).send({from: process.env.CARTESI_MAIN_CONCERN_USER,
             gas: "3000000"});
   }
   let new_index = await myContract.methods.currentIndex().call()
