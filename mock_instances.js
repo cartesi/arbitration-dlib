@@ -22,7 +22,7 @@ const THIRD_ACCOUNT = "0xc21f17badcf5b3db4fdc825f9bc281245fe20c7d";
 
 var truffle_dump =
     fs.readFileSync(
-      "/home/augusto/contracts/build/contracts/VGInstantiator.json"
+      "/home/augusto/contracts/build/contracts/ComputeInstantiator.json"
     ).toString('utf8');
 
 abi = JSON.parse(truffle_dump).abi;
@@ -57,7 +57,6 @@ async function main() {
       duration,
       "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       z,
-      z,
       "120",
     ).send({from: process.env.CARTESI_CONCERN_USER,
             gas: "3000000"});
@@ -68,14 +67,14 @@ async function main() {
                                    method: "evm_increaseTime",
                                    params: [100], id: Date.now() });
   for (var i = current_index; i < current_index + TOTAL_NUMBER; i++) {
-    // if (i & 2) {
-    //   await myContract.methods.claimVictoryByTime(i)
-    //     .send({ from: THIRD_ACCOUNT, gas: 1500000 })
-    //     .catch((error) => {
-    //       console.log("Error in claim victory. i = " + i
-    //                   + " error = " + error);
-    //     });
-    // }
+    if (i & 2) {
+      await myContract.methods.claimVictoryByTime(i)
+        .send({ from: THIRD_ACCOUNT, gas: 1500000 })
+        .catch((error) => {
+          console.log("Error in claim victory. i = " + i
+                      + " error = " + error);
+        });
+    }
   }
 
 }
