@@ -52,13 +52,25 @@ module.exports = function(deployer, network, accounts) {
         url: "http://127.0.0.1:8545",
         max_delay: 500,
         warn_delay: 30,
-        concerns: [],
-        abis: {
-          [PartitionContract.address]: PartitionPath,
-          [MMContract.address]: MMPath,
-          [VGContract.address]: VGPath,
-          [ComputeContract.address]: ComputePath,
-        }
+        // main_concern: {
+        //   contract_address: ComputeContract.address,
+        //   user_address: accounts[0],
+        //   abi: ComputePath,
+        // },
+        concerns: [
+          { contract_address: PartitionContract.address,
+            user_address: accounts[0],
+            abi: PartitionPath,
+          },
+          { contract_address: MMContract.address,
+            user_address: accounts[0],
+            abi: MMPath,
+          },
+          { contract_address: VGContract.address,
+            user_address: accounts[0],
+            abi: VGPath,
+          },
+        ],
       }));
     }
   });

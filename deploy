@@ -3,14 +3,15 @@
 TEMP_OUT=`mktemp`
 echo "Redirecting sdtout to: " $TEMP_OUT
 
+export CARTESI_TESTING="true"
 export CARTESI_WORKING_PATH=`mktemp -d`
-
 export CARTESI_CONFIG=`mktemp --tmpdir=$CARTESI_WORKING_PATH`
+
 echo "Configuration file: " $CARTESI_CONFIG
 
 # Change to stderr
 echo -n "Starting Ganache..."
-./node_modules/.bin/ganache-cli -s secret -b 1 > $TEMP_OUT &
+./node_modules/.bin/ganache-cli -s secret -b .5 > $TEMP_OUT &
 PID=$!
 
 # In case of user interruption, terminate ganache
@@ -28,25 +29,24 @@ done
 
 echo " Ganache ready."
 
-# Change to stderr
-echo -n "Starting Truffle..."
-./node_modules/.bin/truffle migrate
-
 function get_address {
     ./node_modules/.bin/truffle migrate \
         | grep "ComputeInstantiator:" \
         | sed -e 's/^[[:space:]]*//' \
         | cut -d ' ' -f 2
 }
-export CARTESI_CONCERN_CONTRACT=`get_address`
 
+
+# Change to stderr
+echo -n "Starting Truffle..."
+export CARTESI_MAIN_CONCERN_CONTRACT=`get_address`
+export CARTESI_MAIN_CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
+export CARTESI_MAIN_CONCERN_ABI="${HOME}/contracts/build/contracts/ComputeInstantiator.json"
 echo " Truffle finished."
 
-export CARTESI_TESTING="true"
-export CARTESI_CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
 export CARTESI_CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
 
-echo "ComputeInstantiator address: " $CARTESI_CONCERN_CONTRACT
+echo "ComputeInstantiator address: " $CARTESI_MAIN_CONCERN_CONTRACT
 
 echo -n "Creating some instances..."
 
