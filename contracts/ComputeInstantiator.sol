@@ -209,17 +209,23 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
   }
 
 
-    address challenger;
-    address claimer;
-    uint256 roundDuration; // time interval to interact with this contract
-    uint256 timeOfLastMove; // last time someone made a move with deadline
-    address machine; // machine which will run the challenge
-    bytes32 initialHash;
-    uint256 finalTime;
-    bytes32 claimedFinalHash;
-    uint256 vgInstance; // instance of verification game in case of dispute
-    state currentState;
-
+  function getSubInstances(uint256 _index)
+    public view returns(address[] _addresses, uint256[] _indices)
+  {
+    address[] memory a;
+    uint256[] memory i;
+    if (instance[_index].currentState == state.WaitingChallenge)
+      {
+        a = new address[](1);
+        i = new uint256[](1);
+        a[0] = vg;
+        i[0] = instance[_index].vgInstance;
+        return (a, i);
+      }
+    a = new address[](0);
+    i = new uint256[](0);
+    return (a, i);
+  }
 
   function getState(uint256 _index) public view returns
     ( address _challenger,
@@ -277,6 +283,4 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     onlyInstantiated(_index)
     returns(bool)
   { return instance[_index].currentState == state.ConsensusResult; }
-
-
 }

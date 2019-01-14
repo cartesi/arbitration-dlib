@@ -41,19 +41,15 @@ async function main() {
     //console.log("i = " + i
     //            + ", current + total = " + (current_index + TOTAL_NUMBER));
     if (i & 1) {
-      challenger = MAIN_ACCOUNT; // main account
+      claimer = MAIN_ACCOUNT; // main account
     } else {
-      challenger = SECOND_ACCOUNT;
+      claimer = THIRD_ACCOUNT;
     }
-    claimer = THIRD_ACCOUNT;
-    if (i & 2) {
-      duration = "51";
-    } else {
-      duration = "10000";
-    }
+    challenger = SECOND_ACCOUNT;
+    duration = "51";
     await myContract.methods.instantiate(
-      claimer,
       challenger,
+      claimer,
       duration,
       "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       z,
@@ -69,7 +65,23 @@ async function main() {
   for (var i = current_index; i < current_index + TOTAL_NUMBER; i++) {
     if (i & 2) {
       await myContract.methods.claimVictoryByTime(i)
-        .send({ from: THIRD_ACCOUNT, gas: 1500000 })
+        .send({ from: challenger, gas: 1500000 })
+        .catch((error) => {
+          console.log("Error in claim victory. i = " + i
+                      + " error = " + error);
+        });
+    }
+    if (i & 4) {
+      await myContract.methods.submitClaim(i, z)
+        .send({ from: claimer, gas: 1500000 })
+        .catch((error) => {
+          console.log("Error in claim victory. i = " + i
+                      + " error = " + error);
+        });
+    }
+    if (i & 8) {
+      await myContract.methods.challenge(i)
+        .send({ from: challenger, gas: 1500000 })
         .catch((error) => {
           console.log("Error in claim victory. i = " + i
                       + " error = " + error);

@@ -46,4 +46,7 @@ contract Instantiator
   }
 
   function isConcerned(uint256 _index, address _user) public view returns(bool);
+
+  function getSubInstances(uint256 _index)
+    public view returns(address[] _addresses, uint256[] _indices);
 }

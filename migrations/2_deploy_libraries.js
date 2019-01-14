@@ -1,31 +1,36 @@
 const yaml = require('js-yaml');
 const fs   = require('fs');
+var path = require('path');
 
 //var Token = artifacts.require("./lib/bokkypoobah/Token.sol")
 //var Strings = artifacts.require("./lib/strings.sol")
 
-var MMPath = __dirname + "/MMInstantiator.sol";
-var SimpleMemoryPath = __dirname + "/SimpleMemoryInstantiator.sol";
-var SubleqPath = __dirname + "/Subleq.sol";
-var PartitionPath = __dirname + "/PartitionInstantiator.sol";
-var VGPath = __dirname + "/VGInstantiator.sol";
-var ComputePath = __dirname + "/ComputeInstantiator.sol";
-var TestHashPath = __dirname + "/TestHash.sol";
+var rel = "../build/contracts";
 
-var MMInstantiator = artifacts.require(MMPath);
-var SimpleMemoryInstantiator = artifacts.require(SimpleMemoryPath);
-var Subleq = artifacts.require(SubleqPath);
-var PartitionInstantiator = artifacts.require(PartitionPath);
-var VGInstantiator = artifacts.require(VGPath);
-var ComputeInstantiator = artifacts.require(ComputePath);
-var TestHash = artifacts.require(TestHashPath);
+var MMPath = path.join(__dirname, rel, "/MMInstantiator.json");
+var SimpleMemoryPath = path.join(__dirname, rel, "/SimpleMemoryInstantiator.json");
+var SubleqPath = path.join(__dirname, rel, "/Subleq.json");
+var PartitionPath = path.join(__dirname, rel, "/PartitionInstantiator.json");
+var VGPath = path.join(__dirname, rel, "/VGInstantiator.json");
+var ComputePath = path.join(__dirname, rel, "/ComputeInstantiator.json");
+var TestHashPath = path.join(__dirname, rel, "/TestHash.json");
 
-//test aux
-
-var MMInstantiatorTestAux = artifacts.require("./testAuxiliaries/MMInstantiatorTestAux.sol");
+var MMInstantiator = artifacts.require("./MMInstantiator.sol");
+var SimpleMemoryInstantiator = artifacts.require("./SimpleMemoryInstantiator.sol");
+var Subleq = artifacts.require("./Subleq.sol");
+var PartitionInstantiator = artifacts.require("./PartitionInstantiator.sol");
+var VGInstantiator = artifacts.require("./VGInstantiator.sol");
+var ComputeInstantiator = artifacts.require("./ComputeInstantiator.sol");
+var TestHash = artifacts.require("./TestHash.sol");
 
 //test aux
-var PartitionTestAux = artifacts.require("./testAuxiliaries/PartitionTestAux.sol");
+
+var MMInstantiatorTestAux =
+    artifacts.require("./testAuxiliaries/MMInstantiatorTestAux.sol");
+
+//test aux
+var PartitionTestAux =
+    artifacts.require("./testAuxiliaries/PartitionTestAux.sol");
 
 module.exports = function(deployer, network, accounts) {
   deployer.then(async () => {
@@ -47,8 +52,8 @@ module.exports = function(deployer, network, accounts) {
     await deployer.deploy(PartitionTestAux);
     await deployer.deploy(MMInstantiatorTestAux);
     await deployer.deploy(TestHash);
-    if (typeof process.env.CARTESI_CONFIG !== "undefined"){
-      fs.writeFile(process.env.CARTESI_CONFIG, yaml.dump({
+    if (typeof process.env.CARTESI_CONFIG_PATH !== "undefined"){
+      fs.writeFile(process.env.CARTESI_CONFIG_PATH, yaml.dump({
         url: "http://127.0.0.1:8545",
         max_delay: 500,
         warn_delay: 30,

@@ -18,5 +18,4 @@ contract ComputeInterface is Instantiator
   function winByVG(uint256 _index) public;
   function claimVictoryByTime(uint256 _index) public;
   function isConcerned(uint256 _index, address _user) public view returns(bool);
-
 }

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 TEMP_OUT=`mktemp`
-echo "Redirecting sdtout to: " $TEMP_OUT
+echo "Redirect sdtout to:" $TEMP_OUT
 
 export CARTESI_TESTING="true"
 export CARTESI_WORKING_PATH=`mktemp -d`
-export CARTESI_CONFIG=`mktemp --tmpdir=$CARTESI_WORKING_PATH`
+export CARTESI_CONFIG_PATH=`mktemp --tmpdir=$CARTESI_WORKING_PATH`
 
-echo "Configuration file: " $CARTESI_CONFIG
+echo "Configuration file:" $CARTESI_CONFIG_PATH
 
 # Change to stderr
 echo -n "Starting Ganache..."
@@ -46,9 +46,9 @@ echo " Truffle finished."
 
 export CARTESI_CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
 
-echo "ComputeInstantiator address: " $CARTESI_MAIN_CONCERN_CONTRACT
+echo "ComputeInstantiator" $CARTESI_MAIN_CONCERN_CONTRACT
 
-echo -n "Creating some instances..."
+echo -n "Moking instances..."
 
 ./mock_instances.js > /dev/null
 
