@@ -215,17 +215,17 @@ contract VGInstantiator is Decorated, VGInterface
 
   // state getters
 
-  function getState(uint256 _index) public view returns
-    ( address _challenger,
-      address _claimer,
-      MachineInterface _machine,
-      bytes32 _initialHash,
-      bytes32 _claimerFinalHash,
-      bytes32 _hashBeforeDivergence,
-      bytes32 _hashAfterDivergence,
-      state _currentState,
-      uint[5] _uintValues
-      )
+  function getState(uint256 _index) public view
+    onlyInstantiated(_index)
+    returns ( address _challenger,
+              address _claimer,
+              MachineInterface _machine,
+              bytes32 _initialHash,
+              bytes32 _claimerFinalHash,
+              bytes32 _hashBeforeDivergence,
+              bytes32 _hashAfterDivergence,
+              state _currentState,
+              uint[5] _uintValues)
   {
     VGCtx memory i = instance[_index];
 
@@ -255,6 +255,32 @@ contract VGInstantiator is Decorated, VGInterface
   {
     return ((instance[_index].challenger == _user)
             || (instance[_index].claimer == _user));
+  }
+
+  function getSubInstances(uint256 _index)
+    public view returns(address[] _addresses, uint256[] _indices)
+  {
+    address[] memory a;
+    uint256[] memory i;
+    if (instance[_index].currentState == state.WaitPartition)
+      {
+        a = new address[](1);
+        i = new uint256[](1);
+        a[0] = partition;
+        i[0] = instance[_index].partitionInstance;
+        return (a, i);
+      }
+    if (instance[_index].currentState == state.WaitMemoryProveValues)
+      {
+        a = new address[](1);
+        i = new uint256[](1);
+        a[0] = mm;
+        i[0] = instance[_index].mmInstance;
+        return (a, i);
+      }
+    a = new address[](0);
+    i = new uint256[](0);
+    return (a, i);
   }
 
   function stateIsWaitPartition(uint256 _index) public view

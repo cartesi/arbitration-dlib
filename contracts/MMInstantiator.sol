@@ -197,6 +197,33 @@ contract MMInstantiator is MMInterface, Decorated {
             || (instance[_index].client == _user));
   }
 
+  function getState(uint256 _index) public view
+    onlyInstantiated(_index)
+    returns (address _provider,
+             address _client,
+             bytes32 _initialHash,
+             bytes32 _newHash,
+             uint _numberSubmitted,
+             state _currentState)
+  {
+    MMCtx memory i = instance[_index];
+
+    return (i.provider,
+            i.client,
+            i.initialHash,
+            i.newHash,
+            i.history.length,
+            i.currentState);
+  }
+
+  function getSubInstances(uint256)
+    public view returns(address[], uint256[])
+  {
+    address[] memory a = new address[](0);
+    uint256[] memory i = new uint256[](0);
+    return (a, i);
+  }
+
   function provider(uint256 _index) public view
     onlyInstantiated(_index)
     returns (address)
