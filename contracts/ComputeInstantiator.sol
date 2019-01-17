@@ -230,30 +230,46 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
   function getState(uint256 _index) public view returns
     ( address _challenger,
       address _claimer,
+      uint256 _roundDuration,
+      uint256 _timeOfLastMove,
       address _machine,
       bytes32 _initialHash,
+      uint256 _finalTime,
       bytes32 _claimedFinalHash,
-      bytes32 _currentState,
-      uint256[3] _uintValues
+      bytes32 _currentState
       )
   {
     ComputeCtx memory i = instance[_index];
 
-    uint[3] memory uintValues =
-      [i.roundDuration,
-       i.timeOfLastMove,
-       i.finalTime
-       ];
+    // we have to duplicate the code for getCurrentState because of
+    // "stack too deep"
+    bytes32 currentState;
+    if (instance[_index].currentState == state.WaitingClaim)
+      { currentState = "WaitingClaim"; }
+    if (instance[_index].currentState == state.WaitingConfirmation)
+      { currentState = "WaitingConfirmation"; }
+    if (instance[_index].currentState == state.ClaimerMissedDeadline)
+      { currentState = "ClaimerMissedDeadline"; }
+    if (instance[_index].currentState == state.WaitingChallenge)
+      { currentState = "WaitingChallenge"; }
+    if (instance[_index].currentState == state.ChallengerWon)
+      { currentState = "ChallengerWon"; }
+    if (instance[_index].currentState == state.ClaimerWon)
+      { currentState = "ClaimerWon"; }
+    if (instance[_index].currentState == state.ConsensusResult)
+      { currentState = "ConsensusResult"; }
 
     return
       (
        i.challenger,
        i.claimer,
+       i.roundDuration,
+       i.timeOfLastMove,
        i.machine,
        i.initialHash,
+       i.finalTime,
        i.claimedFinalHash,
-       getCurrentState(_index),
-       uintValues
+       currentState
        );
   }
 
