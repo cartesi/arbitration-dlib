@@ -1,5 +1,5 @@
 /// @title Interface for memory manager instantiator
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 import "./Instantiator.sol";
 
@@ -7,6 +7,8 @@ contract ComputeInterface is Instantiator
 {
   enum state { WaitingClaim, WaitingConfirmation, ClaimerMissedDeadline,
                WaitingChallenge, ChallengerWon, ClaimerWon, ConsensusResult }
+  function getCurrentState(uint256 _index) public view
+    returns (bytes32);
 
   function instantiate(address _challenger, address _claimer,
                        uint256 _roundDuration, address _machineAddress,

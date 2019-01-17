@@ -1,5 +1,5 @@
 /// @title Library for Merkle proofs
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 library Merkle {
   function getRoot(uint64 _position, bytes8 _value, bytes32[] proof)

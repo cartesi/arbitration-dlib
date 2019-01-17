@@ -1,5 +1,5 @@
 // @title Verification game instantiator
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.25;
 
 import "./Decorated.sol";
 import "./Instantiator.sol";
@@ -11,6 +11,8 @@ contract VGInterface is Instantiator
 {
   enum state { WaitPartition, WaitMemoryProveValues,
                FinishedClaimerWon, FinishedChallengerWon }
+  function getCurrentState(uint256 _index) public view
+    returns (bytes32);
 
   function instantiate(address _challenger, address _claimer,
                        uint _roundDuration, address _machineAddress,

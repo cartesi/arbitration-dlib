@@ -1,5 +1,5 @@
 /// @title Abstract interface for partition instantiator
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 import "./Instantiator.sol";
 
@@ -7,6 +7,8 @@ contract PartitionInterface is Instantiator
 {
   enum state { WaitingQuery, WaitingHashes,
                ChallengerWon, ClaimerWon, DivergenceFound }
+  function getCurrentState(uint256 _index) public view
+    returns (bytes32);
 
   function instantiate(address _challenger, address _claimer,
                        bytes32 _initialHash, bytes32 _claimerFinalHash,
