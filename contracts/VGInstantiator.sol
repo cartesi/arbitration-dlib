@@ -1,5 +1,5 @@
 // @title Verification game instantiator
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 import "./Decorated.sol";
 import "./Instantiator.sol";
@@ -224,7 +224,7 @@ contract VGInstantiator is Decorated, VGInterface
               bytes32 _claimerFinalHash,
               bytes32 _hashBeforeDivergence,
               bytes32 _hashAfterDivergence,
-              state _currentState,
+              bytes32 _currentState,
               uint[5] _uintValues)
   {
     VGCtx memory i = instance[_index];
@@ -237,6 +237,18 @@ contract VGInstantiator is Decorated, VGInterface
        i.partitionInstance
        ];
 
+    // we have to duplicate the code for getCurrentState because of
+    // "stack too deep"
+    bytes32 currentState;
+    if (i.currentState == state.WaitPartition)
+      { currentState = "WaitPartition"; }
+    if (i.currentState == state.WaitMemoryProveValues)
+      { currentState = "WaitMemoryProveValues"; }
+    if (i.currentState == state.FinishedClaimerWon)
+      { currentState = "FinishClaimerWon"; }
+    if (i.currentState == state.FinishedChallengerWon)
+      { currentState = "FinishedChallengerWon"; }
+
     return
       (
        i.challenger,
@@ -246,7 +258,7 @@ contract VGInstantiator is Decorated, VGInterface
        i.claimerFinalHash,
        i.hashBeforeDivergence,
        i.hashAfterDivergence,
-       i.currentState,
+       currentState,
        uintValues
        );
   }
@@ -283,6 +295,22 @@ contract VGInstantiator is Decorated, VGInterface
     return (a, i);
   }
 
+  function getCurrentState(uint256 _index) public view
+    onlyInstantiated(_index)
+    returns (bytes32)
+  {
+    if (instance[_index].currentState == state.WaitPartition)
+      { return "WaitPartition"; }
+    if (instance[_index].currentState == state.WaitMemoryProveValues)
+      { return "WaitMemoryProveValues"; }
+    if (instance[_index].currentState == state.FinishedClaimerWon)
+      { return "FinishClaimerWon"; }
+    if (instance[_index].currentState == state.FinishedChallengerWon)
+      { return "FinishedChallengerWon"; }
+    require(false, "Unrecognized state");
+  }
+
+  // remove these functions and change tests accordingly
   function stateIsWaitPartition(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)

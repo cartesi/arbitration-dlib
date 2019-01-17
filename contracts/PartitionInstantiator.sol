@@ -1,5 +1,5 @@
 /// @title Partition instantiator
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 import "./Decorated.sol";
 import "./PartitionInterface.sol";
@@ -238,13 +238,13 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   // Getters methods
 
   function getState(uint256 _index) public view
-    onlyInstantiated(_index)
+    //onlyInstantiated(_index)
     returns (address _challenger,
              address _claimer,
              uint[] _queryArray,
              bool[] _submittedArray,
              bytes32[] _hashArray,
-             state _currentState,
+             bytes32 _currentState,
              uint[5] _uintValues)
   {
     PartitionCtx memory i = instance[_index];
@@ -265,12 +265,26 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
       hashArray[j] = instance[_index].timeHash[i.queryArray[j]];
     }
 
+    // we have to duplicate the code for getCurrentState because of
+    // "stack too deep"
+    bytes32 currentState;
+    if (i.currentState == state.WaitingQuery)
+      { currentState = "WaitingQuery"; }
+    if (i.currentState == state.WaitingHashes)
+      { currentState = "WaitingHashes"; }
+    if (i.currentState == state.ChallengerWon)
+      { currentState = "ChallengerWon"; }
+    if (i.currentState == state.ClaimerWon)
+      { currentState = "ClaimerWon"; }
+    if (i.currentState == state.DivergenceFound)
+      { currentState = "DivergenceFound"; }
+
     return (i.challenger,
             i.claimer,
             i.queryArray,
             submittedArray,
             hashArray,
-            i.currentState,
+            currentState,
             uintValues);
   }
 
@@ -335,6 +349,24 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     return (a, i);
   }
 
+  function getCurrentState(uint256 _index) public view
+    onlyInstantiated(_index)
+    returns (bytes32)
+  {
+    if (instance[_index].currentState == state.WaitingQuery)
+      { return "WaitingQuery"; }
+    if (instance[_index].currentState == state.WaitingHashes)
+      { return "WaitingHashes"; }
+    if (instance[_index].currentState == state.ChallengerWon)
+      { return "ChallengerWon"; }
+    if (instance[_index].currentState == state.ClaimerWon)
+      { return "ClaimerWon"; }
+    if (instance[_index].currentState == state.DivergenceFound)
+      { return "DivergenceFound"; }
+    require(false, "Unrecognized state");
+  }
+
+  // remove these functions and change tests accordingly
   function stateIsWaitingQuery(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)

@@ -1,5 +1,5 @@
 /// @title An instantiator of memory managers
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 import "./Decorated.sol";
 import "./MMInterface.sol";
@@ -204,7 +204,7 @@ contract MMInstantiator is MMInterface, Decorated {
              bytes32 _initialHash,
              bytes32 _newHash,
              uint _numberSubmitted,
-             state _currentState)
+             bytes32 _currentState)
   {
     MMCtx memory i = instance[_index];
 
@@ -213,7 +213,7 @@ contract MMInstantiator is MMInterface, Decorated {
             i.initialHash,
             i.newHash,
             i.history.length,
-            i.currentState);
+            getCurrentState(_index));
   }
 
   function getSubInstances(uint256)
@@ -246,6 +246,20 @@ contract MMInstantiator is MMInterface, Decorated {
 
   // state getters
 
+  function getCurrentState(uint256 _index) public view
+    onlyInstantiated(_index)
+    returns (bytes32)
+  {
+    if (instance[_index].currentState == state.WaitingProofs)
+      { return "WaitingProofs"; }
+    if (instance[_index].currentState == state.WaitingReplay)
+      { return "WaitingReplay"; }
+    if (instance[_index].currentState == state.FinishedReplay)
+      { return "FinishedReplay"; }
+    require(false, "Unrecognized state");
+  }
+
+  // remove these functions and change tests accordingly
   function stateIsWaitingProofs(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)

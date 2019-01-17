@@ -54,7 +54,7 @@ echo -n "Moking instances..."
 
 echo " instantiation finished."
 
-
+export RUST_LOG=dispatcher,transaction,configuration,utils,state,vg
 
 # Change this
 bash --noprofile --norc

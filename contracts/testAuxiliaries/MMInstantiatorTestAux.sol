@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 import "../MMInstantiator.sol";
   contract MMInstantiatorTestAux is MMInstantiator {
     constructor() public {}
@@ -6,7 +6,7 @@ import "../MMInstantiator.sol";
       instance[index].currentState = toState;
     }
     function setHistoryPointerAtIndex(uint index, uint pointer) public {
-      instance[index].historyPointer = pointer; 
+      instance[index].historyPointer = pointer;
     }
 
     function setHistoryAtIndex(uint index, bool[] listOfWasRead, uint64[] listOfPositions, bytes8[] listOfValues) public {
@@ -19,13 +19,13 @@ import "../MMInstantiator.sol";
         instance[index].history.push(dummyReadWrite);
       }
     }
-   
+
     function setNewHashAtIndex(uint index, bytes32 newHash) public {
       instance[index].newHash = newHash;
-    } 
+    }
     //Wrapper because ThrowProxy contract do not work with return values
     //https://github.com/trufflesuite/truffle/issues/1001
     function readWrapper(uint index, uint64 position) public {
-      read(index, position); 
+      read(index, position);
     }
  }

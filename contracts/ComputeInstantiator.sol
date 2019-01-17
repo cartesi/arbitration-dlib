@@ -1,5 +1,5 @@
 /// @title An instantiator of memory managers
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 import "./Decorated.sol";
 import "./ComputeInterface.sol";
@@ -230,31 +230,55 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
   function getState(uint256 _index) public view returns
     ( address _challenger,
       address _claimer,
-      uint256 _roundDuration,
-      uint256 _timeOfLastMove,
       address _machine,
       bytes32 _initialHash,
-      uint256 _finalTime,
       bytes32 _claimedFinalHash,
-      state _currentState
+      bytes32 _currentState,
+      uint256[3] _uintValues
       )
   {
     ComputeCtx memory i = instance[_index];
+
+    uint[3] memory uintValues =
+      [i.roundDuration,
+       i.timeOfLastMove,
+       i.finalTime
+       ];
 
     return
       (
        i.challenger,
        i.claimer,
-       i.roundDuration,
-       i.timeOfLastMove,
        i.machine,
        i.initialHash,
-       i.finalTime,
        i.claimedFinalHash,
-       i.currentState
+       getCurrentState(_index),
+       uintValues
        );
   }
 
+  function getCurrentState(uint256 _index) public view
+    onlyInstantiated(_index)
+    returns (bytes32)
+  {
+    if (instance[_index].currentState == state.WaitingClaim)
+      { return "WaitingClaim"; }
+    if (instance[_index].currentState == state.WaitingConfirmation)
+      { return "WaitingConfirmation"; }
+    if (instance[_index].currentState == state.ClaimerMissedDeadline)
+      { return "ClaimerMissedDeadline"; }
+    if (instance[_index].currentState == state.WaitingChallenge)
+      { return "WaitingChallenge"; }
+    if (instance[_index].currentState == state.ChallengerWon)
+      { return "ChallengerWon"; }
+    if (instance[_index].currentState == state.ClaimerWon)
+      { return "ClaimerWon"; }
+    if (instance[_index].currentState == state.ConsensusResult)
+      { return "ConsensusResult"; }
+    require(false, "Unrecognized state");
+  }
+
+  // remove these functions and change tests accordingly
   function stateIsWaitingClaim(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)

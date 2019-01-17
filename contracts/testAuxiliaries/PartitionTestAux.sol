@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 import "../PartitionInstantiator.sol";
 
@@ -12,13 +12,12 @@ contract PartitionTestAux is PartitionInstantiator {
   function setTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex) public {
     instance[partitionIndex].timeSubmitted[timeIndex] = true;
   }
-  
+
   function getQueryArrayAtIndex(uint partitionIndex, uint queryIndex) public view  returns (uint) {
     return instance[partitionIndex].queryArray[queryIndex];
   }
-  
+
   function getTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex) public view returns (bool) {
     return instance[partitionIndex].timeSubmitted[timeIndex];
   }
 }
-
