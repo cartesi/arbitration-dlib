@@ -53,6 +53,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
   // | WaitingChallenge |--------------->| ChallengerWon |
   // +------------------+                +---------------+
   //   |
+  //   |
   //   |                  winByVG        +------------+
   //   +-------------------------------->| ClaimerWon |
   //                                     +------------+
