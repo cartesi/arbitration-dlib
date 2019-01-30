@@ -11,7 +11,7 @@ echo "Configuration file:" $CARTESI_CONFIG_PATH
 
 # Change to stderr
 echo -n "Starting Ganache..."
-./node_modules/.bin/ganache-cli -s secret -b .5 > $TEMP_OUT &
+./node_modules/.bin/ganache-cli -s secret > $TEMP_OUT &
 PID=$!
 
 # In case of user interruption, terminate ganache
@@ -53,6 +53,12 @@ echo -n "Moking instances..."
 ./mock_instances.js > /dev/null
 
 echo " instantiation finished."
+
+echo -n "Beginning hasher..."
+
+(cd ~/infrastructure/hasher; cargo run --bin hasher 2> /dev/null &)
+
+echo " hasher started."
 
 export RUST_LOG=dispatcher,transaction,configuration,utils,state,compute,hasher
 

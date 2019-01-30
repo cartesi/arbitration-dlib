@@ -58,6 +58,7 @@ module.exports = function(deployer, network, accounts) {
         max_delay: 500,
         warn_delay: 30,
         emulator_port: 50051,
+        confirmations: 0,
         // main_concern: {
         //   contract_address: ComputeContract.address,
         //   user_address: accounts[0],
