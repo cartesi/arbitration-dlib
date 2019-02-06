@@ -1,33 +1,71 @@
 #!/bin/bash
 
+############################# First window ##############################
+byobu new-window -n deploy
+
+############################ Second window ##############################
+byobu split-window -v
+byobu select-layout tiled
+
+############################# Third window ##############################
+byobu split-window -h
+byobu select-layout tiled
+
+############################# Forth window ##############################
+byobu split-window -v
+byobu select-layout tiled
+
+############################# Fifth window ##############################
+byobu split-window -h
+byobu select-layout tiled
+
+############################# Sixth window ##############################
+byobu split-window -v
+byobu select-layout tiled
+
+#byobu select-layout "aff9,169x41,0,0{84x41,0,0[84x4,0,0,1,84x15,0,5,6,84x15,0,21,4,84x4,0,37,5],84x41,85,0[84x20,85,0,2,84x20,85,21,3]}"
+
+############################# Seventh window ############################
+byobu split-window -v
+byobu select-layout "dae7,169x41,0,0{84x41,0,0[84x4,0,0{42x4,0,0,3,41x4,43,0,9},84x15,0,5,4,84x15,0,21,5,84x4,0,37,6],84x41,85,0[84x20,85,0,7,84x20,85,21,8]}"
+
+sleep 2
+
+export RUST_LOG=dispatcher,transaction,configuration,utils,state,compute,hasher
+byobu send-keys -t 0 "export RUST_LOG=$RUST_LOG" ENTER
+byobu send-keys -t 1 "export RUST_LOG=$RUST_LOG" ENTER
+byobu send-keys -t 2 "export RUST_LOG=$RUST_LOG" ENTER
+byobu send-keys -t 3 "export RUST_LOG=$RUST_LOG" ENTER
+
+byobu send-keys -t 5 "# Wait to start hashers... "
+byobu send-keys -t 0 "cargo run --manifest-path \
+    ~/infrastructure/hasher/Cargo.toml --bin hasher 50051 false" ENTER
+byobu send-keys -t 1 "cargo run --manifest-path \
+    ~/infrastructure/hasher/Cargo.toml --bin hasher 50052 true" ENTER
+byobu send-keys -t 5 "hashers finished." ENTER
+
 TEMP_OUT=`mktemp`
-echo "Redirect sdtout to:" $TEMP_OUT
-
-export CARTESI_TESTING="true"
-export CARTESI_WORKING_PATH=`mktemp -d`
-export CARTESI_CONFIG_PATH=`mktemp --tmpdir=$CARTESI_WORKING_PATH`
-
-echo "Configuration file:" $CARTESI_CONFIG_PATH
-
 # Change to stderr
+echo "Ganache sdtout now:" $TEMP_OUT
+export CARTESI_WORKING_PATH=`mktemp -d`
+export CARTESI_WORKING_PATH_1=`mktemp -d`
+byobu send-keys -t 2 "export CARTESI_WORKING_PATH=$CARTESI_WORKING_PATH" ENTER
+byobu send-keys -t 3 "export CARTESI_WORKING_PATH=$CARTESI_WORKING_PATH_1" ENTER
+export CARTESI_CONCATENATION_SUFIX="_1"
+export CARTESI_CONFIG_PATH=`mktemp --tmpdir=$CARTESI_WORKING_PATH`
+export CARTESI_CONFIG_PATH_1="$CARTESI_CONFIG_PATH$CARTESI_CONCATENATION_SUFIX"
+byobu send-keys -t 2 "export CARTESI_CONFIG_PATH=$CARTESI_CONFIG_PATH" ENTER
+byobu send-keys -t 3 "export CARTESI_CONFIG_PATH=$CARTESI_CONFIG_PATH_1" ENTER
+echo "Configuration file:" $CARTESI_CONFIG_PATH
 echo -n "Starting Ganache..."
-./node_modules/.bin/ganache-cli -s secret > $TEMP_OUT &
-PID=$!
-
-# In case of user interruption, terminate ganache
-trap ctrl_c INT
-function ctrl_c {
-    echo "Terminating ganache..."
-    kill $PID
-    cd ~
-}
-
+byobu send-keys -t 5 "# Wait to start Ganache... "
+byobu send-keys -t 4 "~/contracts/node_modules/.bin/ganache-cli -s secret | tee $TEMP_OUT" ENTER
 until grep -q "Gas Limit" "$TEMP_OUT"
 do
   sleep 1s
 done
-
 echo " Ganache ready."
+byobu send-keys -t 5 "Ganache ready." ENTER
 
 function get_address {
     ./node_modules/.bin/truffle migrate \
@@ -35,34 +73,31 @@ function get_address {
         | sed -e 's/^[[:space:]]*//' \
         | cut -d ' ' -f 2
 }
-
-
-# Change to stderr
 echo -n "Starting Truffle..."
+byobu send-keys -t 5 "# Migrating contracts... "
+byobu send-keys -t 2 "export CARTESI_CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e" ENTER
+byobu send-keys -t 3 "export CARTESI_CONCERN_KEY=0xb3f5b5b29743a80854071a342c2b15c8e31a5d14a6d5d2f2cd93fd93961aa5c7" ENTER
 export CARTESI_MAIN_CONCERN_CONTRACT=`get_address`
-export CARTESI_MAIN_CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de
+byobu send-keys -t 2 "export CARTESI_MAIN_CONCERN_CONTRACT=$CARTESI_MAIN_CONCERN_CONTRACT" ENTER
+byobu send-keys -t 3 "export CARTESI_MAIN_CONCERN_CONTRACT=$CARTESI_MAIN_CONCERN_CONTRACT" ENTER
+byobu send-keys -t 2 "export CARTESI_MAIN_CONCERN_USER=0x2ad38f50f38abc5cbcf175e1962293eecc7936de" ENTER
+byobu send-keys -t 3 "export CARTESI_MAIN_CONCERN_USER=0x8b5432ca3423f3c310eba126c1d15809c61aa0a9" ENTER
 export CARTESI_MAIN_CONCERN_ABI="${HOME}/contracts/build/contracts/ComputeInstantiator.json"
+byobu send-keys -t 2 "export CARTESI_MAIN_CONCERN_ABI=$CARTESI_MAIN_CONCERN_ABI" ENTER
+export CARTESI_MAIN_CONCERN_ABI="${HOME}/contracts/build/contracts/ComputeInstantiator.json"
+byobu send-keys -t 3 "export CARTESI_MAIN_CONCERN_ABI=$CARTESI_MAIN_CONCERN_ABI" ENTER
 echo " Truffle finished."
-
-export CARTESI_CONCERN_KEY=0x339565dd96968ad4fba67e320bc9cf07808298d3654634e1bcc3b46350964f6e
-
+byobu send-keys -t 5 "Truffle finished" ENTER
 echo "ComputeInstantiator" $CARTESI_MAIN_CONCERN_CONTRACT
 
 echo -n "Moking instances..."
-
-./mock_instances.js > /dev/null
-
+byobu send-keys -t 5 "# Wait to mock instances..."
+byobu send-keys -t 2 "./mock_instances.js > /dev/null" ENTER
 echo " instantiation finished."
+byobu send-keys -t 5 "mocking finished" ENTER "clear" ENTER
 
-echo -n "Beginning hasher..."
+byobu send-keys -t 2 "cd ~/infrastructure" ENTER
+byobu send-keys -t 3 "cd ~/infrastructure" ENTER
 
-(cd ~/infrastructure/hasher; cargo run --bin hasher 2> /dev/null &)
-
-echo " hasher started."
-
-export RUST_LOG=dispatcher,transaction,configuration,utils,state,compute,hasher
-
-# Change this
-bash --noprofile --norc
-
-ctrl_c
+byobu send-keys -t 2 "cargo run --bin compute" ENTER
+byobu send-keys -t 3 "cargo run --bin compute" ENTER
