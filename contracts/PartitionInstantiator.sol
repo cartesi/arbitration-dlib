@@ -170,7 +170,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     require(instance[_index].currentState == state.WaitingQuery,
             "State is not WaitingQuery");
     require(queryPiece < instance[_index].querySize - 1,
-            "queryPiece is bigger thatn querySize -1");
+            "queryPiece is bigger than querySize - 1");
     // make sure the challenger knows the previous query
     require(leftPoint == instance[_index].queryArray[queryPiece],
             "leftPoint != queryArray[queryPiece]");

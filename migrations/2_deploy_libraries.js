@@ -55,15 +55,11 @@ module.exports = function(deployer, network, accounts) {
     if (typeof process.env.CARTESI_CONFIG_PATH !== "undefined"){
       fs.writeFile(process.env.CARTESI_CONFIG_PATH, yaml.dump({
         url: "http://127.0.0.1:8545",
+        testing: true,
         max_delay: 500,
         warn_delay: 30,
         emulator_port: 50051,
         confirmations: 0,
-        // main_concern: {
-        //   contract_address: ComputeContract.address,
-        //   user_address: accounts[0],
-        //   abi: ComputePath,
-        // },
         concerns: [
           { contract_address: PartitionContract.address,
             user_address: accounts[0],
@@ -75,6 +71,28 @@ module.exports = function(deployer, network, accounts) {
           },
           { contract_address: VGContract.address,
             user_address: accounts[0],
+            abi: VGPath,
+          },
+        ],
+      }));
+      fs.writeFile(process.env.CARTESI_CONFIG_PATH + "_1", yaml.dump({
+        url: "http://127.0.0.1:8545",
+        testing: true,
+        max_delay: 500,
+        warn_delay: 30,
+        emulator_port: 50052,
+        confirmations: 0,
+        concerns: [
+          { contract_address: PartitionContract.address,
+            user_address: accounts[1],
+            abi: PartitionPath,
+          },
+          { contract_address: MMContract.address,
+            user_address: accounts[1],
+            abi: MMPath,
+          },
+          { contract_address: VGContract.address,
+            user_address: accounts[1],
             abi: VGPath,
           },
         ],
