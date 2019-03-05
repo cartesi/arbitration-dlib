@@ -10,6 +10,7 @@ var rel = "../build/contracts";
 var MMPath = path.join(__dirname, rel, "/MMInstantiator.json");
 var SimpleMemoryPath = path.join(__dirname, rel, "/SimpleMemoryInstantiator.json");
 var SubleqPath = path.join(__dirname, rel, "/Subleq.json");
+var HasherPath = path.join(__dirname, rel, "/Hasher.json");
 var PartitionPath = path.join(__dirname, rel, "/PartitionInstantiator.json");
 var VGPath = path.join(__dirname, rel, "/VGInstantiator.json");
 var ComputePath = path.join(__dirname, rel, "/ComputeInstantiator.json");
@@ -18,6 +19,7 @@ var TestHashPath = path.join(__dirname, rel, "/TestHash.json");
 var MMInstantiator = artifacts.require("./MMInstantiator.sol");
 var SimpleMemoryInstantiator = artifacts.require("./SimpleMemoryInstantiator.sol");
 var Subleq = artifacts.require("./Subleq.sol");
+var Hasher = artifacts.require("./Hasher.sol");
 var PartitionInstantiator = artifacts.require("./PartitionInstantiator.sol");
 var VGInstantiator = artifacts.require("./VGInstantiator.sol");
 var ComputeInstantiator = artifacts.require("./ComputeInstantiator.sol");
@@ -38,6 +40,8 @@ module.exports = function(deployer, network, accounts) {
     await deployer.deploy(SimpleMemoryInstantiator);
     await deployer.deploy(Subleq);
     let SubleqContract = await Subleq.deployed();
+    await deployer.deploy(Hasher);
+    let HasherContract = await Hasher.deployed();
     await deployer.deploy(PartitionInstantiator);
     let PartitionContract = await PartitionInstantiator.deployed();
     await deployer.deploy(MMInstantiator)
@@ -59,6 +63,7 @@ module.exports = function(deployer, network, accounts) {
         max_delay: 500,
         warn_delay: 30,
         emulator_port: 50051,
+        query_port: 3001,
         confirmations: 0,
         concerns: [
           { contract_address: PartitionContract.address,
@@ -81,6 +86,7 @@ module.exports = function(deployer, network, accounts) {
         max_delay: 500,
         warn_delay: 30,
         emulator_port: 50052,
+        query_port: 3002,
         confirmations: 0,
         concerns: [
           { contract_address: PartitionContract.address,
@@ -97,6 +103,8 @@ module.exports = function(deployer, network, accounts) {
           },
         ],
       }));
+      fs.writeFile(process.env.CARTESI_CONFIG_PATH + "_machine",
+                   HasherContract.address);
     }
   });
 };

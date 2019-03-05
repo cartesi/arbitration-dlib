@@ -27,6 +27,7 @@ contract VGInstantiator is Decorated, VGInterface
     uint timeOfLastMove; // last time someone made a move with deadline
     uint256 mmInstance; // the instance of the memory that was given to this game
     uint256 partitionInstance; // the partition instance given to this game
+    uint divergenceTime; // the time in which the divergence happened
     bytes32 hashBeforeDivergence; // hash aggreed right before divergence
     bytes32 hashAfterDivergence; // hash in conflict right after divergence
     state currentState;
@@ -136,6 +137,7 @@ contract VGInstantiator is Decorated, VGInterface
             .stateIsDivergenceFound(instance[_index].partitionInstance));
     uint256 partitionIndex = instance[_index].partitionInstance;
     uint divergenceTime = partition.divergenceTime(partitionIndex);
+    instance[_index].divergenceTime = divergenceTime;
     instance[_index].hashBeforeDivergence
       = partition.timeHash(partitionIndex, divergenceTime);
     instance[_index].hashAfterDivergence
@@ -208,6 +210,7 @@ contract VGInstantiator is Decorated, VGInterface
     delete instance[_index].timeOfLastMove;
     // !!!!!!!!! should call clear in mmInstance !!!!!!!!!
     delete instance[_index].mmInstance;
+    delete instance[_index].divergenceTime;
     delete instance[_index].hashBeforeDivergence;
     delete instance[_index].hashAfterDivergence;
     deactivate(_index);
@@ -225,16 +228,17 @@ contract VGInstantiator is Decorated, VGInterface
               bytes32 _hashBeforeDivergence,
               bytes32 _hashAfterDivergence,
               bytes32 _currentState,
-              uint[5] _uintValues)
+              uint[6] _uintValues)
   {
     VGCtx memory i = instance[_index];
 
-    uint[5] memory uintValues =
+    uint[6] memory uintValues =
       [i.roundDuration,
        i.finalTime,
        i.timeOfLastMove,
        i.mmInstance,
-       i.partitionInstance
+       i.partitionInstance,
+       i.divergenceTime
        ];
 
     // we have to duplicate the code for getCurrentState because of

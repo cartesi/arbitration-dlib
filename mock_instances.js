@@ -14,11 +14,10 @@ const sendRPC = function(web3, param){
   });
 }
 
-const z = "0x8888888888888888888888888888888888888888888888888888888888888888";
-const TOTAL_NUMBER = 16;
+const z = "0xed93a94cd4ec8a56db5c0e7f0d5026adfe3f79a3a3057c38039da60f0c622e83";
+const TOTAL_NUMBER = 8;
 const MAIN_ACCOUNT = "0x2ad38f50f38abc5cbcf175e1962293eecc7936de";
 const SECOND_ACCOUNT = "0x8b5432ca3423f3c310eba126c1d15809c61aa0a9";
-const THIRD_ACCOUNT = "0xc21f17badcf5b3db4fdc825f9bc281245fe20c7d";
 
 var truffle_dump =
     fs.readFileSync(
@@ -26,6 +25,10 @@ var truffle_dump =
     ).toString('utf8');
 
 abi = JSON.parse(truffle_dump).abi;
+
+var machine_address =
+    fs.readFileSync(process.env.CARTESI_CONFIG_PATH + "_machine")
+    .toString('utf8');
 
 var myContract = new web3.eth.Contract(
   abi,
@@ -36,60 +39,40 @@ let claimer, challenger, duration;
 
 async function main() {
   let current_index = parseInt(await myContract.methods.currentIndex().call());
-  console.log("current index: " + current_index);
   for (var i = current_index; i < current_index + TOTAL_NUMBER; i++) {
-    //console.log("i = " + i
-    //            + ", current + total = " + (current_index + TOTAL_NUMBER));
     if (i & 1) {
-      claimer = MAIN_ACCOUNT; // main account
+      claimer = MAIN_ACCOUNT;
+      challenger = SECOND_ACCOUNT;
     } else {
-      claimer = THIRD_ACCOUNT;
+      claimer = SECOND_ACCOUNT;
+      challenger = MAIN_ACCOUNT;
     }
-    challenger = SECOND_ACCOUNT;
-    duration = "51";
+    if (i & 2) {
+      final_time = 10;
+    } else {
+      final_time = 120;
+    }
+    if (i & 4) {
+      round_duration = 50;
+    } else {
+      round_duration = 100000;
+    }
     await myContract.methods.instantiate(
       challenger,
       claimer,
-      duration,
-      "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      round_duration,
+      machine_address,
       z,
-      "120",
+      final_time,
     ).send({from: process.env.CARTESI_MAIN_CONCERN_USER,
             gas: "3000000"});
   }
   let new_index = await myContract.methods.currentIndex().call()
-  console.log("new index: " + new_index);
   response = await sendRPC(web3, { jsonrpc: "2.0",
                                    method: "evm_increaseTime",
                                    params: [100], id: Date.now() });
-  for (var i = current_index; i < current_index + TOTAL_NUMBER; i++) {
-    if (i & 2) {
-      await myContract.methods.claimVictoryByTime(i)
-        .send({ from: challenger, gas: 1500000 })
-        .catch((error) => {
-          console.log("Error in claim victory. i = " + i
-                      + " error = " + error);
-        });
-    }
-    if (i & 4) {
-      await myContract.methods.submitClaim(i, z)
-        .send({ from: claimer, gas: 1500000 })
-        .catch((error) => {
-          console.log("Error in claim victory. i = " + i
-                      + " error = " + error);
-        });
-    }
-    if (i & 8) {
-      await myContract.methods.challenge(i)
-        .send({ from: challenger, gas: 1500000 })
-        .catch((error) => {
-          console.log("Error in claim victory. i = " + i
-                      + " error = " + error);
-        });
-    }
-  }
-
 }
+
 
 
 

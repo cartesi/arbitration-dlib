@@ -43,7 +43,7 @@ byobu set -g pane-border-status top
 byobu set -g pane-border-format " #{pane_title} "
 
 
-export RUST_LOG=dispatcher,transaction,configuration,utils,state,compute,hasher
+export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace
 byobu send-keys -t 0 "export RUST_LOG=$RUST_LOG" ENTER
 byobu send-keys -t 1 "export RUST_LOG=$RUST_LOG" ENTER
 byobu send-keys -t 2 "export RUST_LOG=$RUST_LOG" ENTER
@@ -104,12 +104,17 @@ echo "ComputeInstantiator" $CARTESI_MAIN_CONCERN_CONTRACT
 
 echo -n "Moking instances..."
 byobu send-keys -t 5 "# Wait to mock instances..."
-byobu send-keys -t 2 "./mock_instances.js > /dev/null" ENTER
+byobu send-keys -t 2 "./mock_instances.js" ENTER
 echo " instantiation finished."
 byobu send-keys -t 5 "mocking finished" ENTER "clear" ENTER
 
 byobu send-keys -t 2 "cd ~/infrastructure" ENTER
 byobu send-keys -t 3 "cd ~/infrastructure" ENTER
 
-byobu send-keys -t 2 "cargo run --bin compute" ENTER
-byobu send-keys -t 3 "cargo run --bin compute" ENTER
+byobu send-keys -t 2 "cargo run --bin compute"
+byobu send-keys -t 3 "cargo run --bin compute"
+
+byobu send-keys -t 5 "cd ~/infrastructure" ENTER
+byobu send-keys -t 5 ". ./vir/bin/activate" ENTER
+byobu send-keys -t 5 "python watcher.py"
+byobu send-keys -t 6 "exit" ENTER

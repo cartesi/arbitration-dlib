@@ -224,7 +224,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     require(instance[_index].timeSubmitted[_divergenceTime],
             "_divergenceTime has to have been submitted");
     require(instance[_index].timeSubmitted[_divergenceTime + 1],
-            "_divergenceTime +1 has to have been submitted");
+            "_divergenceTime + 1 has to have been submitted");
 
     instance[_index].divergenceTime = _divergenceTime;
     instance[_index].currentState = state.DivergenceFound;
