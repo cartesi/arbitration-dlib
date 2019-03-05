@@ -81,6 +81,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     currentInstance.challenger = _challenger;
     currentInstance.claimer = _claimer;
     currentInstance.roundDuration = _roundDuration;
+    currentInstance.machine = _machineAddress;
     currentInstance.initialHash = _initialHash;
     currentInstance.finalTime = _finalTime;
     currentInstance.timeOfLastMove = now;
