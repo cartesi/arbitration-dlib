@@ -26,7 +26,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
     bytes32 initialHash; // hash of machine memory that both aggree uppon
     bytes32 claimerFinalHash; // hash claimer commited for machine after running
     uint64 positionWritten;
-    bytes8 valueWritten;
+    uint64 valueWritten;
     uint timeOfLastMove; // last time someone made a move with deadline
     uint256 mmInstance; // the instance of the memory that was given to this game
     state currentState;
@@ -68,7 +68,7 @@ contract MemoryGameInstantiator is Decorated, Instantiator
   function instantiate(address _challenger, address _claimer, uint _valueXYZ,
                        uint _roundDuration, bytes32 _initialHash,
                        bytes32 _claimerFinalHash, uint64 _positionWritten,
-                       bytes8 _valueWritten)
+                       uint64 _valueWritten)
     public returns (uint256)
   {
     require(tokenContract.transferFrom(msg.sender, address(this), _valueXYZ));

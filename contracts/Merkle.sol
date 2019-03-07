@@ -2,11 +2,11 @@
 pragma solidity 0.4.25;
 
 library Merkle {
-  function getRoot(uint64 _position, bytes8 _value, bytes32[] proof)
+  function getRoot(uint64 _position, uint64 _value, bytes32[] proof)
     internal pure returns (bytes32)
   {
-    require((_position & 7) == 0);
-    require(proof.length == 61);
+    require((_position & 7) == 0, "Position is not aligned");
+    require(proof.length == 61, "Proof length does not match");
     bytes32 runningHash = keccak256(abi.encodePacked(_value));
     // iterate the hash with the uncle subtree provided in proof
     uint64 eight = 8;
