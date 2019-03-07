@@ -7,7 +7,7 @@ import "./MMInterface.sol";
 contract Subleq is MachineInterface {
 
   event StepGiven(uint8 exitCode);
-  event Debug(bytes32 message, bytes8 word);
+  event Debug(bytes32 message, uint64 word);
 
   // use storage because of solidity's problem with locals ("Stack too deep")
   uint64 pcPosition;
@@ -105,23 +105,23 @@ contract Subleq is MachineInterface {
       { return(endStep(_mmAddress, _mmIndex, 6)); }
     // if first operator is -1, read from input
 
-    //emit Debug("memAddrA", bytes8(memAddrA));
+    //emit Debug("memAddrA", uint64(memAddrA));
 
     if (memAddrA == -1) {
       // test if input is out of range
       if (ic - 0x8000000000000000 > iSize)
         { return(endStep(_mmAddress, _mmIndex, 8)); }
       // read input at ic
-      bytes8 loaded = mm.read(_mmIndex, ic);
+      uint64 loaded = mm.read(_mmIndex, ic);
       mm.write(_mmIndex, uint64(memAddrB) * 8, loaded);
       // increment ic
-      mm.write(_mmIndex, icPosition, bytes8(ic + 8));
+      mm.write(_mmIndex, icPosition, uint64(ic + 8));
       // increment pc by three words
-      mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
+      mm.write(_mmIndex, pcPosition, uint64(pc + 24));
       return(endStep(_mmAddress, _mmIndex, 0));
     }
     // if first operator is non-negative, load the memory address
-    bytes8 valueA = mm.read(_mmIndex, uint64(memAddrA) * 8);
+    uint64 valueA = mm.read(_mmIndex, uint64(memAddrA) * 8);
     // if first operator is non-negative, but second operator is -1,
     // write to output
     if (memAddrB == -1) {
@@ -131,16 +131,16 @@ contract Subleq is MachineInterface {
       // write contents addressed by first operator into output
       mm.write(_mmIndex, oc, valueA);
       // increment oc
-      mm.write(_mmIndex, ocPosition, bytes8(oc+ 8));
+      mm.write(_mmIndex, ocPosition, uint64(oc+ 8));
       // increment pc by three words
-      mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
+      mm.write(_mmIndex, pcPosition, uint64(pc + 24));
       // cancelling this rule of halting on negative write
       // if (int64(valueA) < 0) { memoryManager.write(hsPosition, 1); }
       return(endStep(_mmAddress, _mmIndex, 0));
     }
     // if valueB is non-negative, make the subleq operation
-    bytes8 valueB = mm.read(_mmIndex, uint64(memAddrB) * 8);
-    bytes8 subtraction = bytes8(int64(valueB) - int64(valueA));
+    uint64 valueB = mm.read(_mmIndex, uint64(memAddrB) * 8);
+    uint64 subtraction = uint64(int64(valueB) - int64(valueA));
     // write subtraction to memory addressed by second operator
     mm.write(_mmIndex, uint64(memAddrB) * 8, subtraction);
     if (int64(subtraction) <= 0) {
@@ -151,10 +151,10 @@ contract Subleq is MachineInterface {
         mm.write(_mmIndex, hsPosition, 1);
         return(endStep(_mmAddress, _mmIndex, 0));
       }
-      mm.write(_mmIndex, pcPosition, bytes8(memAddrC * 8));
+      mm.write(_mmIndex, pcPosition, uint64(memAddrC * 8));
       return(endStep(_mmAddress, _mmIndex, 0));
     }
-    mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
+    mm.write(_mmIndex, pcPosition, uint64(pc + 24));
     return(endStep(_mmAddress, _mmIndex, 0));
   }
 

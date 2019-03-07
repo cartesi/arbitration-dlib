@@ -9,7 +9,7 @@ import "../MMInstantiator.sol";
       instance[index].historyPointer = pointer;
     }
 
-    function setHistoryAtIndex(uint index, bool[] listOfWasRead, uint64[] listOfPositions, bytes8[] listOfValues) public {
+    function setHistoryAtIndex(uint index, bool[] listOfWasRead, uint64[] listOfPositions, uint64[] listOfValues) public {
       for(uint i = 0; i < listOfWasRead.length; i++) {
         ReadWrite memory dummyReadWrite;
         dummyReadWrite.wasRead = listOfWasRead[i];

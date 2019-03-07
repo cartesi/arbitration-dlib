@@ -15,14 +15,14 @@ contract Instantiator
 
   modifier onlyInstantiated(uint256 _index)
   {
-    require(currentIndex > _index);
+    require(currentIndex > _index, "This index has not been instantiated");
     _;
   }
 
   modifier onlyActive(uint256 _index)
   {
-    require(currentIndex > _index);
-    require(isActive(_index));
+    require(currentIndex > _index, "Index has not been instantiated");
+    require(isActive(_index), "Index is inactive");
     _;
   }
 
