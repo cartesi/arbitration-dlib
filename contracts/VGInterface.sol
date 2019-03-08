@@ -22,13 +22,13 @@ contract VGInterface is Instantiator
   function winByPartitionTimeout(uint256 _index) public;
   function startMachineRunChallenge(uint256 _index) public;
   function settleVerificationGame(uint256 _index) public;
-  function claimVictoryByDeadline(uint256 _index) public;
+  function claimVictoryByTime(uint256 _index) public;
   function challengerWins(uint256 _index) private;
   function claimerWins(uint256 _index) private;
   function clearInstance(uint256 _index) internal;
-  function stateIsWaitPartition(uint256 _index) public view returns(bool);
-  function stateIsWaitMemoryProveValues(uint256 _index) public view
-    returns(bool);
+  //function stateIsWaitPartition(uint256 _index) public view returns(bool);
+  //function stateIsWaitMemoryProveValues(uint256 _index) public view
+  //  returns(bool);
   function stateIsFinishedClaimerWon(uint256 _index) public view returns(bool);
   function stateIsFinishedChallengerWon(uint256 _index) public view
     returns(bool);

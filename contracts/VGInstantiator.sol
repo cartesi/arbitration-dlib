@@ -172,7 +172,7 @@ contract VGInstantiator is Decorated, VGInterface
 
   /// @notice Claimer can claim victory if challenger has lost the deadline
   /// for some of the steps in the protocol.
-  function claimVictoryByDeadline(uint256 _index) public
+  function claimVictoryByTime(uint256 _index) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
     onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
@@ -315,15 +315,15 @@ contract VGInstantiator is Decorated, VGInterface
   }
 
   // remove these functions and change tests accordingly
-  function stateIsWaitPartition(uint256 _index) public view
-    onlyInstantiated(_index)
-    returns(bool)
-  { return instance[_index].currentState == state.WaitPartition; }
+  /* function stateIsWaitPartition(uint256 _index) public view */
+  /*   onlyInstantiated(_index) */
+  /*   returns(bool) */
+  /* { return instance[_index].currentState == state.WaitPartition; } */
 
-  function stateIsWaitMemoryProveValues(uint256 _index) public view
-    onlyInstantiated(_index)
-    returns(bool)
-  { return instance[_index].currentState == state.WaitMemoryProveValues; }
+  /* function stateIsWaitMemoryProveValues(uint256 _index) public view */
+  /*   onlyInstantiated(_index) */
+  /*   returns(bool) */
+  /* { return instance[_index].currentState == state.WaitMemoryProveValues; } */
 
   function stateIsFinishedClaimerWon(uint256 _index) public view
     onlyInstantiated(_index)
@@ -333,5 +333,5 @@ contract VGInstantiator is Decorated, VGInterface
   function stateIsFinishedChallengerWon(uint256 _index) public view
     onlyInstantiated(_index)
     returns(bool)
-  { return instance[_index].currentState == state.FinishedClaimerWon; }
+  { return instance[_index].currentState == state.FinishedChallengerWon; }
 }
