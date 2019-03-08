@@ -4,12 +4,12 @@ contract Decorated {
   // This contract defines several modifiers but does not use
   // them - they will be used in derived contracts.
   modifier onlyBy(address user) {
-    require(msg.sender == user, "Function cannot be called by this user");
+    require(msg.sender == user, "Cannot be called by user");
     _;
   }
 
   modifier onlyAfter(uint time) {
-    require(now > time, "Function cannot be called now, need to wait");
+    require(now > time, "Cannot be called now");
     _;
   }
 }

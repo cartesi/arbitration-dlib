@@ -156,13 +156,15 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     onlyInstantiated(_index)
     increasesNonce(_index)
   {
-    require(instance[_index].currentState == state.WaitingChallenge );
+    require(instance[_index].currentState == state.WaitingChallenge,
+            "State is not WaitingChallenge, cannot winByVG"
+            );
     uint256 vgIndex = instance[_index].vgInstance;
     if (vg.stateIsFinishedChallengerWon(vgIndex))
       { challengerWins(_index); return; }
     if (vg.stateIsFinishedClaimerWon(vgIndex))
       { claimerWins(_index); return; }
-    require(false);
+    require(false, "State of VG is not final");
   }
 
   function challengerWins(uint256 _index) private
