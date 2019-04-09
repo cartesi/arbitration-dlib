@@ -1,5 +1,5 @@
 /// @title An instantiator of memory managers
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 
 import "./Decorated.sol";
 import "./MMInterface.sol";
@@ -87,7 +87,7 @@ contract MMInstantiator is MMInterface, Decorated {
   // @param _value The value in that address to be confirmed
   // @param proof The proof that this value is correct
   function proveRead(uint256 _index, uint64 _position, uint64 _value,
-                     bytes32[] proof) public
+                     bytes32[] memory proof) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
     increasesNonce(_index)
@@ -110,7 +110,7 @@ contract MMInstantiator is MMInterface, Decorated {
   /// @param proof The proof that the old value was correct
   function proveWrite(uint256 _index, uint64 _position,
                       uint64 _oldValue, uint64 _newValue,
-                      bytes32[] proof) public
+                      bytes32[] memory proof) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].provider)
     increasesNonce(_index)
@@ -249,7 +249,7 @@ contract MMInstantiator is MMInterface, Decorated {
   }
 
   function getSubInstances(uint256)
-    public view returns(address[], uint256[])
+    public view returns(address[] memory, uint256[] memory)
   {
     address[] memory a = new address[](0);
     uint256[] memory i = new uint256[](0);

@@ -1,5 +1,5 @@
 /// @title Partition instantiator
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 
 import "./Decorated.sol";
 import "./PartitionInterface.sol";
@@ -128,8 +128,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   /// been queried.
   /// @param postedHashes An array (of size querySize) with the hashes
   /// corresponding to the queried times
-  function replyQuery(uint256 _index, uint[] postedTimes,
-                      bytes32[] postedHashes) public
+  function replyQuery(uint256 _index, uint[] memory postedTimes,
+                      bytes32[] memory postedHashes) public
     onlyInstantiated(_index)
     onlyBy(instance[_index].claimer)
     increasesNonce(_index)
@@ -241,11 +241,11 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     //onlyInstantiated(_index)
     returns (address _challenger,
              address _claimer,
-             uint[] _queryArray,
-             bool[] _submittedArray,
-             bytes32[] _hashArray,
+             uint[] memory _queryArray,
+             bool[] memory _submittedArray,
+             bytes32[] memory _hashArray,
              bytes32 _currentState,
-             uint[5] _uintValues)
+             uint[5] memory _uintValues)
   {
     PartitionCtx memory i = instance[_index];
 
@@ -342,7 +342,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   }
 
   function getSubInstances(uint256)
-    public view returns(address[], uint256[])
+    public view returns(address[] memory, uint256[] memory)
   {
     address[] memory a = new address[](0);
     uint256[] memory i = new uint256[](0);

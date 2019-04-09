@@ -1,4 +1,4 @@
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 import "../MMInstantiator.sol";
   contract MMInstantiatorTestAux is MMInstantiator {
     constructor() public {}
@@ -9,7 +9,9 @@ import "../MMInstantiator.sol";
       instance[index].historyPointer = pointer;
     }
 
-    function setHistoryAtIndex(uint index, bool[] listOfWasRead, uint64[] listOfPositions, uint64[] listOfValues) public {
+    function setHistoryAtIndex(uint index, bool[] memory listOfWasRead,
+                               uint64[] memory listOfPositions,
+                               uint64[] memory listOfValues) public {
       for(uint i = 0; i < listOfWasRead.length; i++) {
         ReadWrite memory dummyReadWrite;
         dummyReadWrite.wasRead = listOfWasRead[i];

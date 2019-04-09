@@ -1,5 +1,5 @@
 // @title Verification game instantiator
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 
 import "./Decorated.sol";
 import "./Instantiator.sol";
@@ -144,7 +144,7 @@ contract VGInstantiator is Decorated, VGInterface
       = partition.timeHash(partitionIndex, divergenceTime + 1);
     instance[_index].mmInstance =
       mm.instantiate(instance[_index].challenger,
-                     instance[_index].machine,
+                     address(instance[_index].machine),
                      instance[_index].hashBeforeDivergence);
     // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!
     delete instance[_index].partitionInstance;
@@ -228,7 +228,7 @@ contract VGInstantiator is Decorated, VGInterface
               bytes32 _hashBeforeDivergence,
               bytes32 _hashAfterDivergence,
               bytes32 _currentState,
-              uint[6] _uintValues)
+              uint[6] memory _uintValues)
   {
     VGCtx memory i = instance[_index];
 
@@ -274,7 +274,8 @@ contract VGInstantiator is Decorated, VGInterface
   }
 
   function getSubInstances(uint256 _index)
-    public view returns(address[] _addresses, uint256[] _indices)
+    public view returns(address[] memory _addresses,
+                        uint256[] memory _indices)
   {
     address[] memory a;
     uint256[] memory i;
@@ -282,7 +283,7 @@ contract VGInstantiator is Decorated, VGInterface
       {
         a = new address[](1);
         i = new uint256[](1);
-        a[0] = partition;
+        a[0] = address(partition);
         i[0] = instance[_index].partitionInstance;
         return (a, i);
       }
@@ -290,7 +291,7 @@ contract VGInstantiator is Decorated, VGInterface
       {
         a = new address[](1);
         i = new uint256[](1);
-        a[0] = mm;
+        a[0] = address(mm);
         i[0] = instance[_index].mmInstance;
         return (a, i);
       }

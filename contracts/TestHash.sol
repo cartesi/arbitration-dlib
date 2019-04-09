@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5;
 
 contract TestHash {
 
@@ -7,14 +7,14 @@ contract TestHash {
 
   constructor () public {}
 
-  function testing(bytes8 c, uint64 d) public {
+  function testing(bytes8, uint64) public {
 
     uint64 a = uint64(0x0000000000000001);
     uint64 b = uint64(0x0100000000000000);
 
-    emit OutB32(keccak256(a));
-    emit OutB32(keccak256(b));
+    emit OutB32(keccak256(abi.encodePacked(a)));
+    emit OutB32(keccak256(abi.encodePacked(b)));
     emit OutB32(keccak256(abi.encodePacked(a, b)));
-    emit OutB32(keccak256(a + b));
+    emit OutB32(keccak256(abi.encodePacked(a + b)));
   }
 }

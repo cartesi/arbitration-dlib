@@ -1,5 +1,5 @@
 // @title Verification game instantiator
-pragma solidity ^0.4.25;
+pragma solidity ^0.5;
 
 import "./Decorated.sol";
 import "./Instantiator.sol";
