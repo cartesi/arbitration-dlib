@@ -1,5 +1,5 @@
 /// @title Abstract interface for partition instantiator
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 
 import "./Instantiator.sol";
 

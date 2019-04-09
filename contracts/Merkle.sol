@@ -1,8 +1,9 @@
 /// @title Library for Merkle proofs
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 
 library Merkle {
-  function getRoot(uint64 _position, uint64 _value, bytes32[] proof)
+  function getRoot(uint64 _position, uint64 _value,
+                   bytes32[] memory proof)
     internal pure returns (bytes32)
   {
     require((_position & 7) == 0, "Position is not aligned");

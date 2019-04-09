@@ -1,5 +1,5 @@
 /// @title Subleq interface contract
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 
 contract MachineInterface
 {

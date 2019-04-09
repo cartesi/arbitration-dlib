@@ -1,5 +1,5 @@
 /// @title Partition contract
-pragma solidity 0.4.24;
+pragma solidity 0.5;
 
 import "./MMInterface.sol";
 
@@ -7,7 +7,7 @@ contract SimpleMemoryInstantiator is MMInterface {
   uint256 private currentIndex = 0;
 
   struct SimpleMemoryCtx {
-    mapping(uint64 => bytes8) value; // value present at address
+    mapping(uint64 => uint64) value; // value present at address
   }
 
   mapping(uint256 => SimpleMemoryCtx) private instance;
@@ -21,7 +21,7 @@ contract SimpleMemoryInstantiator is MMInterface {
   /// @notice reads a slot in memory
   /// @param _address of the desired memory
   function read(uint256 _index, uint64 _address) public
-    returns (bytes8)
+    returns (uint64)
   {
     require((_address & 7) == 0);
     return instance[_index].value[_address];
@@ -30,7 +30,7 @@ contract SimpleMemoryInstantiator is MMInterface {
   /// @notice writes on a slot of memory during read and write phase
   /// @param _address of the write
   /// @param _value to be written
-  function write(uint256 _index, uint64 _address, bytes8 _value) public
+  function write(uint256 _index, uint64 _address, uint64 _value) public
   {
     require((_address & 7) == 0);
     instance[_index].value[_address] = _value;

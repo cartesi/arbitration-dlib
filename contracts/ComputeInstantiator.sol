@@ -1,5 +1,5 @@
 /// @title An instantiator of memory managers
-pragma solidity 0.4.25;
+pragma solidity 0.5;
 
 import "./Decorated.sol";
 import "./ComputeInterface.sol";
@@ -214,7 +214,8 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
 
 
   function getSubInstances(uint256 _index)
-    public view returns(address[] _addresses, uint256[] _indices)
+    public view returns(address[] memory _addresses,
+                        uint256[] memory _indices)
   {
     address[] memory a;
     uint256[] memory i;
@@ -222,7 +223,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
       {
         a = new address[](1);
         i = new uint256[](1);
-        a[0] = vg;
+        a[0] = address(vg);
         i[0] = instance[_index].vgInstance;
         return (a, i);
       }
