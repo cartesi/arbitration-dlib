@@ -53,6 +53,7 @@ module.exports = function(deployer, network, accounts) {
     await deployer.deploy(ComputeInstantiator,
                           VGContract.address);
     let ComputeContract = await ComputeInstantiator.deployed();
+    console.log("ComputeInstantiator: " + ComputeContract.address);
     await deployer.deploy(PartitionTestAux);
     await deployer.deploy(MMInstantiatorTestAux);
     await deployer.deploy(TestHash);

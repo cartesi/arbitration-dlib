@@ -38,7 +38,9 @@ var myContract = new web3.eth.Contract(
 let claimer, challenger, duration;
 
 async function main() {
-  let current_index = parseInt(await myContract.methods.currentIndex().call());
+  let current_index = parseInt(
+    await myContract.methods.currentIndex().call()
+  );
   for (var i = current_index; i < current_index + TOTAL_NUMBER; i++) {
     if (i & 1) {
       claimer = MAIN_ACCOUNT;
