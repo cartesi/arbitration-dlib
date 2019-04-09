@@ -29,7 +29,7 @@ contract Hasher is MachineInterface {
     uint64 valuePosition = 0x0000000000000000;
     uint64 value = uint64(mm.read(_mmIndex, valuePosition));
     require(value < 0xFFFFFFFFFFFFFFFF, "Overflowing machine");
-    mm.write(_mmIndex, valuePosition, uint64(value + 1));
+    mm.write(_mmIndex, valuePosition, bytes8(value + 1));
     return(endStep(_mmAddress, _mmIndex, 0));
   }
 

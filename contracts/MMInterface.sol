@@ -11,8 +11,8 @@ contract MMInterface is Instantiator
 
   function instantiate(address _provider, address _client,
                        bytes32 _initialHash) public returns (uint256);
-  function read(uint256 _index, uint64 _position) public returns (uint64);
-  function write(uint256 _index, uint64 _position, uint64 _value) public;
+  function read(uint256 _index, uint64 _position) public returns (bytes8);
+  function write(uint256 _index, uint64 _position, bytes8 _value) public;
   function newHash(uint256 _index) public view returns (bytes32);
   function finishProofPhase(uint256 _index) public;
   function finishReplayPhase(uint256 _index) public;

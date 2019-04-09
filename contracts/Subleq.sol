@@ -112,16 +112,16 @@ contract Subleq is MachineInterface {
       if (ic - 0x8000000000000000 > iSize)
         { return(endStep(_mmAddress, _mmIndex, 8)); }
       // read input at ic
-      uint64 loaded = mm.read(_mmIndex, ic);
-      mm.write(_mmIndex, uint64(memAddrB) * 8, loaded);
+      uint64 loaded = uint64(mm.read(_mmIndex, ic));
+      mm.write(_mmIndex, uint64(memAddrB) * 8, bytes8(loaded));
       // increment ic
-      mm.write(_mmIndex, icPosition, uint64(ic + 8));
+      mm.write(_mmIndex, icPosition, bytes8(ic + 8));
       // increment pc by three words
-      mm.write(_mmIndex, pcPosition, uint64(pc + 24));
+      mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
       return(endStep(_mmAddress, _mmIndex, 0));
     }
     // if first operator is non-negative, load the memory address
-    uint64 valueA = mm.read(_mmIndex, uint64(memAddrA) * 8);
+    uint64 valueA = uint64(mm.read(_mmIndex, uint64(memAddrA) * 8));
     // if first operator is non-negative, but second operator is -1,
     // write to output
     if (memAddrB == -1) {
@@ -129,32 +129,32 @@ contract Subleq is MachineInterface {
       if (oc - 0xc000000000000000 > oSize)
         { return(endStep(_mmAddress, _mmIndex, 9)); }
       // write contents addressed by first operator into output
-      mm.write(_mmIndex, oc, valueA);
+      mm.write(_mmIndex, oc, bytes8(valueA));
       // increment oc
-      mm.write(_mmIndex, ocPosition, uint64(oc+ 8));
+      mm.write(_mmIndex, ocPosition, bytes8(oc+ 8));
       // increment pc by three words
-      mm.write(_mmIndex, pcPosition, uint64(pc + 24));
+      mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
       // cancelling this rule of halting on negative write
       // if (int64(valueA) < 0) { memoryManager.write(hsPosition, 1); }
       return(endStep(_mmAddress, _mmIndex, 0));
     }
     // if valueB is non-negative, make the subleq operation
-    uint64 valueB = mm.read(_mmIndex, uint64(memAddrB) * 8);
+    uint64 valueB = uint64(mm.read(_mmIndex, uint64(memAddrB) * 8));
     uint64 subtraction = uint64(int64(valueB) - int64(valueA));
     // write subtraction to memory addressed by second operator
-    mm.write(_mmIndex, uint64(memAddrB) * 8, subtraction);
+    mm.write(_mmIndex, uint64(memAddrB) * 8, bytes8(subtraction));
     if (int64(subtraction) <= 0) {
       if (uint64(memAddrC) > rSize)
         { return(endStep(_mmAddress, _mmIndex, 7)); }
       if (memAddrC < 0) {
         // halt machine
-        mm.write(_mmIndex, hsPosition, 1);
+        mm.write(_mmIndex, hsPosition, bytes8(uint64(1)));
         return(endStep(_mmAddress, _mmIndex, 0));
       }
-      mm.write(_mmIndex, pcPosition, uint64(memAddrC * 8));
+      mm.write(_mmIndex, pcPosition, bytes8(memAddrC * 8));
       return(endStep(_mmAddress, _mmIndex, 0));
     }
-    mm.write(_mmIndex, pcPosition, uint64(pc + 24));
+    mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
     return(endStep(_mmAddress, _mmIndex, 0));
   }
 
