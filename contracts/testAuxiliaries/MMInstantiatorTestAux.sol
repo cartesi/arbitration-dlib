@@ -16,7 +16,7 @@ import "../MMInstantiator.sol";
         ReadWrite memory dummyReadWrite;
         dummyReadWrite.wasRead = listOfWasRead[i];
         dummyReadWrite.position = listOfPositions[i];
-        dummyReadWrite.value = listOfValues[i];
+        dummyReadWrite.value = bytes8(listOfValues[i]);
 
         instance[index].history.push(dummyReadWrite);
       }

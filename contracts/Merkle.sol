@@ -2,7 +2,7 @@
 pragma solidity 0.5;
 
 library Merkle {
-  function getRoot(uint64 _position, uint64 _value,
+  function getRoot(uint64 _position, bytes8 _value,
                    bytes32[] memory proof)
     internal pure returns (bytes32)
   {
