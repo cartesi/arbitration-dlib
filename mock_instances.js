@@ -14,8 +14,8 @@ const sendRPC = function(web3, param){
   });
 }
 
-const z = "0xed93a94cd4ec8a56db5c0e7f0d5026adfe3f79a3a3057c38039da60f0c622e83";
-const TOTAL_NUMBER = 8;
+const initial_hash = "0xed93a94cd4ec8a56db5c0e7f0d5026adfe3f79a3a3057c38039da60f0c622e83";
+const TOTAL_NUMBER = 1;
 const MAIN_ACCOUNT = "0x2ad38f50f38abc5cbcf175e1962293eecc7936de";
 const SECOND_ACCOUNT = "0x8b5432ca3423f3c310eba126c1d15809c61aa0a9";
 
@@ -42,6 +42,7 @@ async function main() {
     await myContract.methods.currentIndex().call()
   );
   for (var i = current_index; i < current_index + TOTAL_NUMBER; i++) {
+    console.log("Creating instance: " + i);
     if (i & 1) {
       claimer = MAIN_ACCOUNT;
       challenger = SECOND_ACCOUNT;
@@ -59,15 +60,24 @@ async function main() {
     } else {
       round_duration = 100000;
     }
+    console.log("Instance " + i + " has:");
+    console.log("  challenger: " + challenger);
+    console.log("  claimer: " + claimer);
+    console.log("  round_duration: " + round_duration);
+    console.log("  machine_address: " + machine_address);
+    console.log("  initial_hash: " + initial_hash);
+    console.log("  final_time: " + final_time);
+
     await myContract.methods.instantiate(
       challenger,
       claimer,
       round_duration,
       machine_address,
-      z,
+      initial_hash,
       final_time,
     ).send({from: process.env.CARTESI_MAIN_CONCERN_USER,
-            gas: "3000000"});
+            gas: "3000000"})
+      .then((receipt) => { console.log(receipt); });
   }
   let new_index = await myContract.methods.currentIndex().call()
   response = await sendRPC(web3, { jsonrpc: "2.0",

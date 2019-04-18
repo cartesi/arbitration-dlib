@@ -44,17 +44,33 @@ byobu set -g pane-border-format " #{pane_title} "
 
 
 export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace
-byobu send-keys -t 0 "export RUST_LOG=$RUST_LOG" ENTER
-byobu send-keys -t 1 "export RUST_LOG=$RUST_LOG" ENTER
+# byobu send-keys -t 0 "export RUST_LOG=$RUST_LOG" ENTER
+# byobu send-keys -t 1 "export RUST_LOG=$RUST_LOG" ENTER
 byobu send-keys -t 2 "export RUST_LOG=$RUST_LOG" ENTER
 byobu send-keys -t 3 "export RUST_LOG=$RUST_LOG" ENTER
 
 byobu send-keys -t 5 "# Wait to start hashers... "
-byobu send-keys -t 0 "cargo run --manifest-path \
-    ~/infrastructure/hasher/Cargo.toml --bin hasher 50051 false" ENTER
-byobu send-keys -t 1 "cargo run --manifest-path \
-    ~/infrastructure/hasher/Cargo.toml --bin hasher 50052 true" ENTER
+#byobu send-keys -t 0 "cargo run --manifest-path \
+#    ~/infrastructure/hasher/Cargo.toml --bin hasher 50051 false" ENTER
+#byobu send-keys -t 1 "cargo run --manifest-path \
+#    ~/infrastructure/hasher/Cargo.toml --bin hasher 50052 true" ENTER
+byobu send-keys -t 0 "cd ~/core-demo" ENTER
+byobu send-keys -t 0 "./execute_core_manager_ephemeral_container.sh" ENTER
+byobu send-keys -t 1 "cd ~/core-demo" ENTER
+byobu send-keys -t 1 "./execute_defective_core_manager_ephemeral_container.sh" ENTER
 byobu send-keys -t 5 "hashers finished." ENTER
+
+sleep 10
+
+byobu send-keys -t 5 "cd ~/core-demo" ENTER
+byobu send-keys -t 5 "workon vir" ENTER
+byobu send-keys -t 5 "python initialize_machine.py -c" ENTER
+byobu send-keys -t 6 "cd ~/core-demo" ENTER
+byobu send-keys -t 6 "workon vir" ENTER
+byobu send-keys -t 6 "python initialize_machine.py -c -p 50052" ENTER
+
+sleep 10
+
 
 TEMP_OUT=`mktemp`
 # Change to stderr
@@ -71,7 +87,7 @@ byobu send-keys -t 3 "export CARTESI_CONFIG_PATH=$CARTESI_CONFIG_PATH_1" ENTER
 echo "Configuration file:" $CARTESI_CONFIG_PATH
 echo -n "Starting Ganache..."
 byobu send-keys -t 5 "# Wait to start Ganache... "
-byobu send-keys -t 4 "~/contracts/node_modules/.bin/ganache-cli -s secret | tee $TEMP_OUT" ENTER
+byobu send-keys -t 4 "~/contracts/node_modules/.bin/ganache-cli -s secret -l 9007199254740991 --allowUnlimitedContractSize -e 200000000 | tee $TEMP_OUT" ENTER
 until grep -q "Gas Limit" "$TEMP_OUT"
 do
   sleep 1s
@@ -81,7 +97,7 @@ byobu send-keys -t 5 "Ganache ready." ENTER
 
 function get_address {
     ./node_modules/.bin/truffle migrate \
-        | grep "ComputeInstantiator:" \
+        | tee /dev/tty | grep "ComputeInstantiator:" \
         | sed -e 's/^[[:space:]]*//' \
         | cut -d ' ' -f 2
 }
