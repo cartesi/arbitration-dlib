@@ -1,5 +1,6 @@
 #!/usr/bin/node
 
+const os = require('os');
 const Web3 = require('web3');
 const fs = require('fs');
 var web3 = new Web3('http://127.0.0.1:8545');
@@ -21,7 +22,7 @@ const SECOND_ACCOUNT = "0x8b5432ca3423f3c310eba126c1d15809c61aa0a9";
 
 var truffle_dump =
     fs.readFileSync(
-      "/home/augusto/contracts/build/contracts/ComputeInstantiator.json"
+      os.homedir() + "/contracts/build/contracts/ComputeInstantiator.json"
     ).toString('utf8');
 
 abi = JSON.parse(truffle_dump).abi;

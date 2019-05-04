@@ -58,7 +58,7 @@ module.exports = function(deployer, network, accounts) {
     await deployer.deploy(MMInstantiatorTestAux);
     await deployer.deploy(TestHash);
     if (typeof process.env.CARTESI_CONFIG_PATH !== "undefined"){
-      fs.writeFile(process.env.CARTESI_CONFIG_PATH, yaml.dump({
+      fs.writeFileSync(process.env.CARTESI_CONFIG_PATH, yaml.dump({
         url: "http://127.0.0.1:8545",
         testing: true,
         max_delay: 500,
@@ -81,7 +81,7 @@ module.exports = function(deployer, network, accounts) {
           },
         ],
       }));
-      fs.writeFile(process.env.CARTESI_CONFIG_PATH + "_1", yaml.dump({
+      fs.writeFileSync(process.env.CARTESI_CONFIG_PATH + "_1", yaml.dump({
         url: "http://127.0.0.1:8545",
         testing: true,
         max_delay: 500,
@@ -104,7 +104,7 @@ module.exports = function(deployer, network, accounts) {
           },
         ],
       }));
-      fs.writeFile(process.env.CARTESI_CONFIG_PATH + "_machine",
+      fs.writeFileSync(process.env.CARTESI_CONFIG_PATH + "_machine",
                    HasherContract.address);
     }
   });
