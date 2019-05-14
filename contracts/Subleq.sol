@@ -9,6 +9,8 @@ contract Subleq is MachineInterface {
   event StepGiven(uint8 exitCode);
   event Debug(bytes32 message, uint64 word);
 
+  address mmAddress;
+
   // use storage because of solidity's problem with locals ("Stack too deep")
   uint64 pcPosition;
   uint64 icPosition;
@@ -31,11 +33,13 @@ contract Subleq is MachineInterface {
   uint64 inputMaxSize;
   uint64 outputMaxSize;
 
-  constructor() public {}
+  constructor(address _mmAddress) public {
+    mmAddress = _mmAddress;
+  }
 
-  function endStep(address _mmAddress, uint256 _mmIndex, uint8 _exitCode)
+  function endStep(uint256 _mmIndex, uint8 _exitCode)
     internal returns (uint8) {
-    MMInterface mm = MMInterface(_mmAddress);
+    MMInterface mm = MMInterface(mmAddress);
     mm.finishReplayPhase(_mmIndex);
     emit StepGiven(_exitCode);
     return _exitCode;
@@ -43,7 +47,7 @@ contract Subleq is MachineInterface {
 
   /// @notice Performs one step of the subleq machine on memory
   /// @return false indicates a halted machine or invalid instruction
-  function step(address _mmAddress, uint256 _mmIndex)
+  function step(uint256 _mmIndex)
     public returns (uint8)
   {
     // Architecture
@@ -66,7 +70,7 @@ contract Subleq is MachineInterface {
     // 11 -
     // 12 -
     // 13 -
-    MMInterface mm = MMInterface(_mmAddress);
+    MMInterface mm = MMInterface(mmAddress);
     pcPosition = 0x4000000000000000;
     icPosition = 0x4000000000000008;
     ocPosition = 0x4000000000000010;
@@ -94,15 +98,15 @@ contract Subleq is MachineInterface {
 
     // if first or second operator are < -1, throw
     if (hs != 0x0000000000000000)
-      { return(endStep(_mmAddress, _mmIndex, 1)); }
-    if (memAddrA < -1) { return(endStep(_mmAddress, _mmIndex, 2)); }
-    if (memAddrB < -1) { return(endStep(_mmAddress, _mmIndex, 3)); }
+      { return(endStep(_mmIndex, 1)); }
+    if (memAddrA < -1) { return(endStep(_mmIndex, 2)); }
+    if (memAddrB < -1) { return(endStep(_mmIndex, 3)); }
     if (memAddrA == -1 && memAddrB == -1)
-      { return(endStep(_mmAddress, _mmIndex, 4));  }
+      { return(endStep(_mmIndex, 4));  }
     if (memAddrA >= 0 && uint64(memAddrA) > rSize)
-      { return(endStep(_mmAddress, _mmIndex, 5)); }
+      { return(endStep(_mmIndex, 5)); }
     if (memAddrB >= 0 && uint64(memAddrB) > rSize)
-      { return(endStep(_mmAddress, _mmIndex, 6)); }
+      { return(endStep(_mmIndex, 6)); }
     // if first operator is -1, read from input
 
     //emit Debug("memAddrA", uint64(memAddrA));
@@ -110,7 +114,7 @@ contract Subleq is MachineInterface {
     if (memAddrA == -1) {
       // test if input is out of range
       if (ic - 0x8000000000000000 > iSize)
-        { return(endStep(_mmAddress, _mmIndex, 8)); }
+        { return(endStep(_mmIndex, 8)); }
       // read input at ic
       uint64 loaded = uint64(mm.read(_mmIndex, ic));
       mm.write(_mmIndex, uint64(memAddrB) * 8, bytes8(loaded));
@@ -118,7 +122,7 @@ contract Subleq is MachineInterface {
       mm.write(_mmIndex, icPosition, bytes8(ic + 8));
       // increment pc by three words
       mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
-      return(endStep(_mmAddress, _mmIndex, 0));
+      return(endStep(_mmIndex, 0));
     }
     // if first operator is non-negative, load the memory address
     uint64 valueA = uint64(mm.read(_mmIndex, uint64(memAddrA) * 8));
@@ -127,7 +131,7 @@ contract Subleq is MachineInterface {
     if (memAddrB == -1) {
       // test if output is out of range
       if (oc - 0xc000000000000000 > oSize)
-        { return(endStep(_mmAddress, _mmIndex, 9)); }
+        { return(endStep(_mmIndex, 9)); }
       // write contents addressed by first operator into output
       mm.write(_mmIndex, oc, bytes8(valueA));
       // increment oc
@@ -136,7 +140,7 @@ contract Subleq is MachineInterface {
       mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
       // cancelling this rule of halting on negative write
       // if (int64(valueA) < 0) { memoryManager.write(hsPosition, 1); }
-      return(endStep(_mmAddress, _mmIndex, 0));
+      return(endStep(_mmIndex, 0));
     }
     // if valueB is non-negative, make the subleq operation
     uint64 valueB = uint64(mm.read(_mmIndex, uint64(memAddrB) * 8));
@@ -145,17 +149,17 @@ contract Subleq is MachineInterface {
     mm.write(_mmIndex, uint64(memAddrB) * 8, bytes8(subtraction));
     if (int64(subtraction) <= 0) {
       if (uint64(memAddrC) > rSize)
-        { return(endStep(_mmAddress, _mmIndex, 7)); }
+        { return(endStep(_mmIndex, 7)); }
       if (memAddrC < 0) {
         // halt machine
         mm.write(_mmIndex, hsPosition, bytes8(uint64(1)));
-        return(endStep(_mmAddress, _mmIndex, 0));
+        return(endStep(_mmIndex, 0));
       }
       mm.write(_mmIndex, pcPosition, bytes8(memAddrC * 8));
-      return(endStep(_mmAddress, _mmIndex, 0));
+      return(endStep(_mmIndex, 0));
     }
     mm.write(_mmIndex, pcPosition, bytes8(pc + 24));
-    return(endStep(_mmAddress, _mmIndex, 0));
+    return(endStep(_mmIndex, 0));
   }
 
 

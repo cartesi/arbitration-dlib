@@ -142,9 +142,11 @@ contract VGInstantiator is Decorated, VGInterface
       = partition.timeHash(partitionIndex, divergenceTime);
     instance[_index].hashAfterDivergence
       = partition.timeHash(partitionIndex, divergenceTime + 1);
+    address memoryInteractorAddress
+      = instance[_index].machine.getMemoryInteractor();
     instance[_index].mmInstance =
       mm.instantiate(instance[_index].challenger,
-                     address(instance[_index].machine),
+                     memoryInteractorAddress,
                      instance[_index].hashBeforeDivergence);
     // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!
     delete instance[_index].partitionInstance;
@@ -164,7 +166,7 @@ contract VGInstantiator is Decorated, VGInterface
     require(instance[_index].currentState == state.WaitMemoryProveValues);
     uint256 mmIndex = instance[_index].mmInstance;
     require(mm.stateIsWaitingReplay(mmIndex));
-    instance[_index].machine.step(address(mm), mmIndex);
+    instance[_index].machine.step(mmIndex);
     require(mm.stateIsFinishedReplay(mmIndex));
     require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence);
     challengerWins(_index);
