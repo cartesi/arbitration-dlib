@@ -11,12 +11,12 @@ import "../MMInstantiator.sol";
 
     function setHistoryAtIndex(uint index, bool[] memory listOfWasRead,
                                uint64[] memory listOfPositions,
-                               uint64[] memory listOfValues) public {
+                               bytes8[] memory listOfValues) public {
       for(uint i = 0; i < listOfWasRead.length; i++) {
         ReadWrite memory dummyReadWrite;
         dummyReadWrite.wasRead = listOfWasRead[i];
         dummyReadWrite.position = listOfPositions[i];
-        dummyReadWrite.value = bytes8(listOfValues[i]);
+        dummyReadWrite.value = listOfValues[i];
 
         instance[index].history.push(dummyReadWrite);
       }

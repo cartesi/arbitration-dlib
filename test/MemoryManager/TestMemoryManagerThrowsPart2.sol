@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../../contracts/MMInstantiator.sol";
@@ -25,12 +25,12 @@ contract TestMemoryManagerThrowsPart2 is MMInstantiatorTestAux {
     listOfWasRead[listOfWasRead.length - 1] = true;
     listOfWasNotRead[listOfWasNotRead.length - 1] = false;
     listOfPositions[listOfWasRead.length - 1] = 7;
-    listOfValues[listOfWasRead.length - 1] = bytes8(3);
+    listOfValues[listOfWasRead.length - 1] = bytes8(uint64(3));
     
     MMInstantiatorTestAux mmInstance = MMInstantiatorTestAux(DeployedAddresses.MMInstantiatorTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(mmInstance));
-    uint newIndex =  mmInstance.instantiate(0x321, address(aliceThrowProxy), "initalHash");
-    uint secondIndex =  mmInstance.instantiate(0x321, address(aliceThrowProxy), "initalHash");
+    uint newIndex =  mmInstance.instantiate(address(0x321), address(aliceThrowProxy), "initalHash");
+    uint secondIndex =  mmInstance.instantiate(address(0x321), address(aliceThrowProxy), "initalHash");
 
     //set history pointer to first position
     mmInstance.setHistoryPointerAtIndex(newIndex, 0);
@@ -76,8 +76,8 @@ contract TestMemoryManagerThrowsPart2 is MMInstantiatorTestAux {
 
 
     //create new instance, for separate history
-    newIndex =  mmInstance.instantiate(0x321, address(aliceThrowProxy), "initalHash");
-    secondIndex =  mmInstance.instantiate(0x321, address(aliceThrowProxy), "initalHash");
+    newIndex =  mmInstance.instantiate(address(0x321), address(aliceThrowProxy), "initalHash");
+    secondIndex =  mmInstance.instantiate(address(0x321), address(aliceThrowProxy), "initalHash");
 
     //set correct state
     mmInstance.setState(newIndex, state.WaitingReplay);
@@ -126,12 +126,13 @@ contract TestMemoryManagerThrowsPart2 is MMInstantiatorTestAux {
     
     //aligned position
     position = 16;
-    MMInstantiatorTestAux(address(aliceThrowProxy)).write(secondIndex, position, 7);
+    MMInstantiatorTestAux(address(aliceThrowProxy)).write(secondIndex, position, bytes8(uint64(7)));
 
     r = aliceThrowProxy.execute.gas(2000000)();
     Assert.equal(r, false, "Transaction should fail, pointInHistory.position != position");
 
   }
+
 }
 
 // Proxy contract for testing throws
@@ -142,10 +143,12 @@ contract ThrowProxy {
     target = _target;
   }
   //prime the data using the fallback function.
-  function() public {
+  function() external {
     data = msg.data;
   }
   function execute() public returns (bool) {
-    return target.call(data);
+    bool r;
+    (r, ) = target.call(data);
+    return r;
   }
 }

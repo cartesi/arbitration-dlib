@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -31,9 +31,9 @@ contract TestPartitionGetters is PartitionInstantiator{
   function testTimeHash() public {
     uint newIndex = instantiate(msg.sender,mockAddress,bytes32(initialHashSeed),bytes32(finalHashSeed), 5000, 3, 55);
     uint key = 3;
-    instance[newIndex].timeHash[key] = 0x121;
+    instance[newIndex].timeHash[key] = bytes32(uint256(0x121));
 
-    Assert.equal(timeHash(newIndex, key), 0x121, "time hash should match");
+    Assert.equal(timeHash(newIndex, key), bytes32(uint256(0x121)), "time hash should match");
   }
 
   function testQueryArray() public {

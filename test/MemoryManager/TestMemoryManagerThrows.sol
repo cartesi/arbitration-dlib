@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../../contracts/MMInstantiator.sol";
@@ -16,7 +16,7 @@ contract TestMemoryManagerThrows is MMInstantiatorTestAux {
       bytesArray[i] = "ab";
 
     }
-    uint newIndex =  mmInstance.instantiate(address(aliceThrowProxy), 0x321,"initalHash");
+    uint newIndex =  mmInstance.instantiate(address(aliceThrowProxy), address(0x321),"initalHash");
 
     //set wrong state
     mmInstance.setState(newIndex, state.WaitingReplay);
@@ -49,7 +49,7 @@ contract TestMemoryManagerThrows is MMInstantiatorTestAux {
   function testFinishProofPhase() public {
     MMInstantiatorTestAux mmInstance = MMInstantiatorTestAux(DeployedAddresses.MMInstantiatorTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(mmInstance));
-   uint newIndex =  mmInstance.instantiate(address(aliceThrowProxy), 0x321,"initalHash");
+   uint newIndex =  mmInstance.instantiate(address(aliceThrowProxy), address(0x321),"initalHash");
 
     //set wrong state
     mmInstance.setState(newIndex, state.WaitingReplay);
@@ -61,10 +61,10 @@ contract TestMemoryManagerThrows is MMInstantiatorTestAux {
 
   }
 
-  function testFinishReplay() {
+  function testFinishReplay() public {
      MMInstantiatorTestAux mmInstance = MMInstantiatorTestAux(DeployedAddresses.MMInstantiatorTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(mmInstance));
-   uint newIndex =  mmInstance.instantiate( 0x321,address(aliceThrowProxy),"initalHash");
+   uint newIndex =  mmInstance.instantiate( address(0x321),address(aliceThrowProxy),"initalHash");
 
     //set wrong state
     mmInstance.setState(newIndex, state.WaitingProofs);
@@ -98,6 +98,7 @@ contract TestMemoryManagerThrows is MMInstantiatorTestAux {
     Assert.equal(r, false, "Transaction should fail, historyPointer != history.length");
     
   }
+
 }
 
 // Proxy contract for testing throws
@@ -108,10 +109,12 @@ contract ThrowProxy {
     target = _target;
   }
   //prime the data using the fallback function.
-  function() public {
+  function() external {
     data = msg.data;
   }
   function execute() public returns (bool) {
-    return target.call(data);
+    bool r;
+    (r, ) = target.call(data);
+    return r;
   }
 }
