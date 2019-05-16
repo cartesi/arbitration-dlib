@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -19,7 +19,7 @@ contract TestMakeQuery is PartitionInstantiator{
     uint finalHashSeed = 4;
 
     for(uint i = 1; i < 5; i++) {
-      newIndex = instantiate(msg.sender,mockAddress, bytes32( + initialHashSeed), bytes32(i + finalHashSeed), 5000 * i, i * 3, i * 55);
+      newIndex = instantiate(msg.sender,mockAddress, bytes32(i + initialHashSeed), bytes32(i + finalHashSeed), 5000 * i, i * 3, i * 55);
       queryPiece = instance[newIndex].querySize - 2;
       leftPoint  = instance[newIndex].queryArray[queryPiece];
       rightPoint = instance[newIndex].queryArray[queryPiece + 1];

@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -16,7 +16,7 @@ contract TestPartitionInstantiatorThrows is PartitionInstantiator{
   function testReplyThrows() public { 
     PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
-    uint newIndex = partition.instantiate(0x2123,address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
+    uint newIndex = partition.instantiate(address(0x2123),address(aliceThrowProxy),"initialHash","finalHash", 50000, 15, 55);   
       
     for(uint i = 0; i < 15; i++){
       replyArray[i] = "0123";
@@ -62,7 +62,7 @@ contract TestPartitionInstantiatorThrows is PartitionInstantiator{
     uint queryPiece = 5;
     PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
-    uint newIndex = partition.instantiate(address(aliceThrowProxy),0x123,"initialHash","finalHash", 50000, 15, 55);   
+    uint newIndex = partition.instantiate(address(aliceThrowProxy),address(0x123),"initialHash","finalHash", 50000, 15, 55);   
    partition.setState(newIndex, state.WaitingQuery);
  
     //Make query with incorrect queryPiece
@@ -93,7 +93,7 @@ contract TestPartitionInstantiatorThrows is PartitionInstantiator{
     uint divergenceTime = 12;
     PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
-  uint newIndex = partition.instantiate(address(aliceThrowProxy),0x123,"initialHash","finalHash", 50000, 15, 55);   
+  uint newIndex = partition.instantiate(address(aliceThrowProxy),address(0x123),"initialHash","finalHash", 50000, 15, 55);   
     
     partition.setTimeSubmittedAtIndex(newIndex, divergenceTime + 1); 
 
@@ -124,7 +124,7 @@ contract TestPartitionInstantiatorThrows is PartitionInstantiator{
     PartitionTestAux partition = PartitionTestAux(DeployedAddresses.PartitionTestAux());
     ThrowProxy aliceThrowProxy = new ThrowProxy(address(partition));
     
-    uint newIndex = partition.instantiate(0x2123,0x193,"initialHash","finalHash", 50000, 15, 55);   
+    uint newIndex = partition.instantiate(address(0x2123),address(0x193),"initialHash","finalHash", 50000, 15, 55);   
      partition.setState(newIndex, state.WaitingHashes);
  
     for(uint i = 0; i < 15; i++){
@@ -156,11 +156,13 @@ contract ThrowProxy {
   }
 
   //prime the data using the fallback function.
-  function() public{
+  function() external{
     data = msg.data;
   }
 
   function execute() public returns (bool) {
-    return target.call(data);
+    bool r;
+    (r, ) = target.call(data);
+    return r;
   }
 }
