@@ -81,7 +81,7 @@ contract('Subleq', function(accounts) {
     }
 
     // launch subleq from accounts[2]
-    let subleq = await Subleq.new({ from: accounts[2], gas: 3000000 });
+    let subleq = await Subleq.new(mmAddress, { from: accounts[2], gas: 3000000 });
     let running = 0;
 
     while (running === 0) {
@@ -112,7 +112,7 @@ contract('Subleq', function(accounts) {
       // console.log(accounts[2]);
       //
       response = await subleq.step(
-        mmAddress, 0,
+        0,
         { from: accounts[2], gas: 1500000 })
       expect(getEvent(response, 'StepGiven')).not.to.be.undefined;
       running = getEvent(response, 'StepGiven').exitCode.toNumber();

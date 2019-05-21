@@ -61,16 +61,26 @@ contract('MMInstantiator', function(accounts) {
       .to.be.true;
 
     // cannot submit un-aligned address
-    proof = myMM.generateProof(0);
+    proof = myMM.generateProof(0)["siblings"];
+    let extract_proof = [];
+    for(let i in proof)
+    {
+      extract_proof.push(proof[i]["hash"]);
+    }
     expect(await getError(
-      mmInstantiator.proveRead(index, 4, '0x0000000000000000', proof,
+      mmInstantiator.proveRead(index, 4, '0x0000000000000000', extract_proof,
                                { from: accounts[0], gas: 2000000 }))
           ).to.have.string('VM Exception');
 
     // other users cannot submit
-    proof = myMM.generateProof(888);
+    proof = myMM.generateProof(888)["siblings"];
+    extract_proof = [];
+    for(let i in proof)
+    {
+      extract_proof.push(proof[i]["hash"]);
+    }
     expect(await getError(
-      mmInstantiator.proveRead(index, 888, '0x0000000000000000', proof,
+      mmInstantiator.proveRead(index, 888, '0x0000000000000000', extract_proof,
                                { from: accounts[4], gas: 2000000 }))
           ).to.have.string('VM Exception');
 
@@ -78,11 +88,16 @@ contract('MMInstantiator', function(accounts) {
     for (let j = 0; j < updates.length; j++) {
       u = updates[j];
       // generate proof of value
-      proof = myMM.generateProof(u.position);
+      proof = myMM.generateProof(u.position)["siblings"];
+      extract_proof = [];
+      for(let i in proof)
+      {
+        extract_proof.push(proof[i]["hash"]);
+      }
       if (u.wasRead) {
         // submit read
         response = await mmInstantiator
-          .proveRead(index, u.position, myMM.getWord(u.position), proof,
+          .proveRead(index, u.position, myMM.getWord(u.position), extract_proof,
                      { from: accounts[0], gas: 2000000 });
         event = getEvent(response, 'ValueProved');
         expect(event._wasRead).to.be.true;
@@ -94,14 +109,14 @@ contract('MMInstantiator', function(accounts) {
         // submit write with wrong proof
         expect(await getError(
           mmInstantiator.proveWrite(index, u.position, myMM.getWord(u.position),
-            twoComplement32(u.value),["falseProof"],
+            twoComplement32(u.value),['0x0123456789012345678901234567890123456789012345678901234567890123'],
             { from: accounts[0], gas: 2000000 })
         )).to.have.string('VM Exception');
 
 
         response = await mmInstantiator
           .proveWrite(index, u.position, myMM.getWord(u.position),
-                      twoComplement32(u.value), proof,
+                      twoComplement32(u.value), extract_proof,
                       { from: accounts[0], gas: 2000000 });
         event = getEvent(response, 'ValueProved');
         expect(event._wasRead).to.be.false;
