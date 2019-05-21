@@ -1,4 +1,4 @@
-pragma solidity 0.5;
+pragma solidity ^0.5.0;
 import "../MMInstantiator.sol";
   contract MMInstantiatorTestAux is MMInstantiator {
     constructor() public {}

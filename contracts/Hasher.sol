@@ -1,5 +1,5 @@
 /// @title Subleq machine contract
-pragma solidity 0.5;
+pragma solidity ^0.5.0;
 
 import "./MachineInterface.sol";
 import "./MMInterface.sol";
