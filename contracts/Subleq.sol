@@ -162,9 +162,13 @@ contract Subleq is MachineInterface {
     return(endStep(_mmIndex, 0));
   }
 
-
   function getAddress() public view returns (address)
   {
     return address(this);
+  }
+  
+  function getMemoryInteractor() public view returns (address)
+  {
+    return(address(this));
   }
 }

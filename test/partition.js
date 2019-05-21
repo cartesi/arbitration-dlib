@@ -70,8 +70,13 @@ contract('PartitionInstantiator', function(accounts) {
     ];
     cannotAct = async function(address) {
       for (let i = 0; i < randomFunctions.length; i++) {
-        let args = randomFunctions[i].args;
+        let args = [];
+        for(let j in randomFunctions[i].args)
+        {
+          args.push(randomFunctions[i].args[j]);
+        }
         args.push({ from: address, gas: 1500000 });
+        
         expect(await getError(
           partitionInstantiator[randomFunctions[i].name].apply(null, args))
         ).to.have.string('VM Exception');
@@ -128,7 +133,7 @@ contract('PartitionInstantiator', function(accounts) {
     
     it('Posted hashes.length should equal to querysize', async function() {
       expect(await getError(partitionInstantiator
-        .replyQuery(index,queryArray , ['incorrect'],
+        .replyQuery(index,queryArray , ['0x0123456789012345678901234567890123456789012345678901234567890123'],
           { from: accounts[1], gas: 1500000 })
       )).to.have.string('VM Exception');
     });
