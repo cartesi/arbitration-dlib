@@ -1,5 +1,5 @@
 /// @title An instantiator of memory managers
-pragma solidity 0.5;
+pragma solidity ^0.5.0;
 
 import "./Decorated.sol";
 import "./MMInterface.sol";

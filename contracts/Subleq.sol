@@ -1,5 +1,5 @@
 /// @title Subleq machine contract
-pragma solidity 0.5;
+pragma solidity ^0.5.0;
 
 import "./MachineInterface.sol";
 import "./MMInterface.sol";
@@ -162,9 +162,13 @@ contract Subleq is MachineInterface {
     return(endStep(_mmIndex, 0));
   }
 
-
   function getAddress() public view returns (address)
   {
     return address(this);
+  }
+  
+  function getMemoryInteractor() public view returns (address)
+  {
+    return(address(this));
   }
 }

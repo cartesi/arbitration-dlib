@@ -1,5 +1,5 @@
 /// @title Partition contract
-pragma solidity 0.5;
+pragma solidity ^0.5.0;
 
 import "./MMInterface.sol";
 
