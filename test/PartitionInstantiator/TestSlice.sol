@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.5.0;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -36,7 +36,7 @@ contract TestSlice is PartitionInstantiator{
  
     slice(secondIndex,leftPoint, rightPoint);
 
-    for(i = 0; i < instance[secondIndex].querySize - 1; i++){
+    for(uint i = 0; i < instance[secondIndex].querySize - 1; i++){
       if(leftPoint + i < rightPoint){
         Assert.equal(instance[secondIndex].queryArray[i], leftPoint + i,"Queryarray[i] must be = leftPoint +i");
       }else{
@@ -48,7 +48,7 @@ contract TestSlice is PartitionInstantiator{
  
     slice(secondIndex,leftPoint, rightPoint);
 
-    for(i = 0; i < instance[secondIndex].querySize - 1; i++){
+    for(uint i = 0; i < instance[secondIndex].querySize - 1; i++){
       if(leftPoint + i < rightPoint){
         Assert.equal(instance[secondIndex].queryArray[i], leftPoint + i,"Queryarray[i] must be = leftPoint +i");
       }else{
@@ -62,7 +62,7 @@ contract TestSlice is PartitionInstantiator{
     slice(thirdIndex,leftPoint, rightPoint);
 
     uint divisionLength = (rightPoint - leftPoint) / (instance[1].querySize - 1);
-    for (i = 0; i < instance[thirdIndex].querySize - 1; i++) {
+    for (uint i = 0; i < instance[thirdIndex].querySize - 1; i++) {
       Assert.equal(instance[thirdIndex].queryArray[i], leftPoint + i * divisionLength, "slice else path");
     }
     leftPoint = 150;
@@ -71,7 +71,7 @@ contract TestSlice is PartitionInstantiator{
     slice(thirdIndex,leftPoint, rightPoint);
 
     divisionLength = (rightPoint - leftPoint) / (instance[thirdIndex].querySize - 1);
-    for (i = 0; i < instance[thirdIndex].querySize - 1; i++) {
+    for (uint i = 0; i < instance[thirdIndex].querySize - 1; i++) {
       Assert.equal(instance[thirdIndex].queryArray[i], leftPoint + i * divisionLength, "slice else path");
     }
   }

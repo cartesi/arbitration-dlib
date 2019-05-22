@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.5.0;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -17,7 +17,7 @@ contract TestInstantiator is PartitionInstantiator{
   function testInstantiate() public {
     address mockAddress1 = 0x0014060Ff383C9B21C6840A3b14AAb06741E5c49;
     address mockAddress2 = 0x00513219f383C9B21cFfffA3B14C1B06741E5C32;
-    uint nextIndex = 0; 
+    nextIndex = 0; 
     uint newIndex = 19;
 
     //more than 9 instances contract run out of gas

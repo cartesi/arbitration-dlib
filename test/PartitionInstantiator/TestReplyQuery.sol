@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.5.0;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -23,7 +23,7 @@ contract TestReplyQuery is PartitionInstantiator{
     for(uint i = 0; i < instance[newIndex].querySize; i++){
       mockReplyArray[i] = "0123";
     }
-    for(i = 0; i < instance[newIndex].querySize; i++){
+    for(uint i = 0; i < instance[newIndex].querySize; i++){
       mockPostedTimes[i] = instance[newIndex].queryArray[i];
     }
 
@@ -32,7 +32,7 @@ contract TestReplyQuery is PartitionInstantiator{
 
     Assert.equal(uint(instance[newIndex].currentState),uint(state.WaitingQuery), "State should be waiting query");
 
-    for(i = 0; i < instance[newIndex].querySize; i++){
+    for(uint i = 0; i < instance[newIndex].querySize; i++){
       Assert.isTrue(instance[newIndex].timeSubmitted[mockPostedTimes[i]], "postedTimes must be true");
       Assert.equal(instance[newIndex].timeHash[mockPostedTimes[i]], mockReplyArray[i], "posted times and postedHashes should match");
     }
@@ -40,10 +40,10 @@ contract TestReplyQuery is PartitionInstantiator{
     newIndex = instantiate(mockAddress1, msg.sender, "initiaHash", "finalHash", 3000000, 19, 150);   
     slice(newIndex, 1, instance[newIndex].querySize); 
 
-    for(i = 0; i < instance[newIndex].querySize; i++){
+    for(uint i = 0; i < instance[newIndex].querySize; i++){
       mockReplyArray[i] = bytes32(i);
     }
-    for(i = 0; i < instance[newIndex].querySize; i++){
+    for(uint i = 0; i < instance[newIndex].querySize; i++){
       mockPostedTimes[i] = instance[newIndex].queryArray[i];
     }
     instance[newIndex].currentState = state.WaitingHashes;
@@ -51,7 +51,7 @@ contract TestReplyQuery is PartitionInstantiator{
 
     Assert.equal(uint(instance[newIndex].currentState),uint(state.WaitingQuery), "State should be waiting query");
 
-    for(i = 0; i < instance[newIndex].querySize; i++){
+    for(uint i = 0; i < instance[newIndex].querySize; i++){
       Assert.isTrue(instance[newIndex].timeSubmitted[mockPostedTimes[i]], "postedTimes must be true");
       Assert.equal(instance[newIndex].timeHash[mockPostedTimes[i]], mockReplyArray[i], "posted times and postedHashes should match");
     }

@@ -34,10 +34,15 @@ describe('Testing memory manager', function() {
     let zeros = myMM.merkel();
     let small = BigNumber('120')
     let large = BigNumber('18446744073709551608');
-    let proof = myMM.generateProof('11111111111111111000');
+    let proof = myMM.generateProof('11111111111111111000')["siblings"];
+    let extract_proof = [];
+    for(let i in proof)
+    {
+      extract_proof.push(proof[i]["hash"]);
+    }
 
-    expect(myMM.verifyProof('11111111111111111000', 0, proof)).to.be.true;
-    expect(myMM.verifyProof('11111111111111111000', 1, proof)).to.be.false;
+    expect(myMM.verifyProof('11111111111111111000', 0, extract_proof)).to.be.true;
+    expect(myMM.verifyProof('11111111111111111000', 1, extract_proof)).to.be.false;
 
     values = { '0': 1,
                '8': 1,
@@ -45,8 +50,13 @@ describe('Testing memory manager', function() {
              };
     for (key in values) {
       myMM.setWord(key, values[key]);
-      proof = myMM.generateProof(key);
-      expect(myMM.verifyProof(key, values[key], proof)).to.be.true;
+      proof = myMM.generateProof(key)["siblings"];
+      extract_proof = [];
+      for(let i in proof)
+      {
+        extract_proof.push(proof[i]["hash"]);
+      }
+      expect(myMM.verifyProof(key, values[key], extract_proof)).to.be.true;
     }
 
     values = { '0': 1,
@@ -55,8 +65,13 @@ describe('Testing memory manager', function() {
              };
     for (key in values) {
       myMM.setWord(key, values[key]);
-      proof = myMM.generateProof(key);
-      expect(myMM.verifyProof(key, values[key], proof)).to.be.true;
+      proof = myMM.generateProof(key)["siblings"];
+      extract_proof = [];
+      for(let i in proof)
+      {
+        extract_proof.push(proof[i]["hash"]);
+      }
+      expect(myMM.verifyProof(key, values[key], extract_proof)).to.be.true;
     }
   });
 });
