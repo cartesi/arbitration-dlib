@@ -1,0 +1,3 @@
+install pytest
+run prepare_python_test.sh
+run run_tests.sh
