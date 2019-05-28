@@ -9,6 +9,14 @@ contract PartitionTestAux is PartitionInstantiator {
     instance[partitionIndex].currentState = toState;
   }
 
+  function setTimeOfLastMoveAtIndex(uint partitionIndex, uint timeOfLastMove) public {
+    instance[partitionIndex].timeOfLastMove = timeOfLastMove;
+  }
+
+  function setRoundDurationAtIndex(uint partitionIndex, uint roundDuration) public {
+    instance[partitionIndex].roundDuration = roundDuration;
+  }
+
   function setDivergenceTimeAtIndex(uint partitionIndex, uint divergenceTime) public {
     instance[partitionIndex].divergenceTime = divergenceTime;
   }
