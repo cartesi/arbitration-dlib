@@ -135,7 +135,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingHashes,
-            "State is not WaitingHashes");
+            "CurrentState is not WaitingHashes, cannot replayQuery");
     require(postedTimes.length == instance[_index].querySize,
             "postedTimes.length != querySize");
     require(postedHashes.length == instance[_index].querySize, "postedHashes.length != querySize");
@@ -168,7 +168,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingQuery,
-            "State is not WaitingQuery");
+            "CurrentState is not WaitingQuery, cannot makeQuery");
     require(queryPiece < instance[_index].querySize - 1,
             "queryPiece is bigger than querySize - 1");
     // make sure the challenger knows the previous query
@@ -222,9 +222,9 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     require(_divergenceTime < instance[_index].finalTime,
             "divergence time has to be less than finalTime");
     require(instance[_index].timeSubmitted[_divergenceTime],
-            "_divergenceTime has to have been submitted");
+            "divergenceTime has to have been submitted");
     require(instance[_index].timeSubmitted[_divergenceTime + 1],
-            "_divergenceTime + 1 has to have been submitted");
+            "divergenceTime + 1 has to have been submitted");
 
     instance[_index].divergenceTime = _divergenceTime;
     instance[_index].currentState = state.DivergenceFound;

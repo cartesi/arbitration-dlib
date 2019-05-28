@@ -9,6 +9,10 @@ contract PartitionTestAux is PartitionInstantiator {
     instance[partitionIndex].currentState = toState;
   }
 
+  function setFinalTimeAtIndex(uint partitionIndex, uint finalTime) public {
+    instance[partitionIndex].finalTime = finalTime;
+  }
+
   function setTimeOfLastMoveAtIndex(uint partitionIndex, uint timeOfLastMove) public {
     instance[partitionIndex].timeOfLastMove = timeOfLastMove;
   }
