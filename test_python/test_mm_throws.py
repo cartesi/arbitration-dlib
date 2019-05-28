@@ -14,8 +14,8 @@ def test_proveread_and_provewrite():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction(set wrong state on purpose)
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
@@ -58,8 +58,8 @@ def test_finish_proof_phase():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction(set wrong state on purpose)
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
@@ -87,8 +87,8 @@ def test_finish_replay():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction(set wrong state on purpose)
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingProofs.value).transact({'from': provider})
@@ -147,8 +147,8 @@ def test_read_and_write():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    index = mm_filter.get_all_entries()[0]['args']['_index']
     
     # call instantiate function via transaction
     # didn't use call() because it doesn't really send transaction to the blockchain
@@ -156,8 +156,8 @@ def test_read_and_write():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    second_index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    second_index = mm_filter.get_all_entries()[0]['args']['_index']
         
     list_of_was_read = []
     list_of_was_not_read = []
@@ -261,8 +261,8 @@ def test_read_and_write():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    index = mm_filter.get_all_entries()[0]['args']['_index']
     
     # call instantiate function via transaction
     # didn't use call() because it doesn't really send transaction to the blockchain
@@ -270,8 +270,8 @@ def test_read_and_write():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    second_index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    second_index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})

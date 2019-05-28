@@ -1,5 +1,3 @@
-import json
-import ast
 from web3 import Web3
 from test_main import BaseTest, MMState
 
@@ -16,8 +14,8 @@ def test_getters():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    index = mm_filter.get_all_entries()[0]['args']['_index']
 
     error_msg = "Provider address should match"
     ret_provider = base_test.mm_testaux.functions.provider(index).call({'from': provider})
@@ -53,8 +51,8 @@ def test_state_getters():
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter
-    mmfilter = base_test.mm_testaux.eventFilter('MemoryCreated', {'fromBlock': 'latest','toBlock': 'latest'})
-    index = mmfilter.get_all_entries()[0]['args']['_index']
+    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
+    index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
