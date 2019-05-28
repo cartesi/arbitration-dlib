@@ -7,7 +7,6 @@ def test_instantiator():
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     address_3 = Web3.toChecksumAddress(base_test.w3.eth.accounts[2])
 
-        
     # call instantiate function via transaction
     # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, bytes([5]), bytes([225]), 50000, 3, 55).transact({'from': address_1})
