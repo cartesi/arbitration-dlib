@@ -135,7 +135,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingHashes,
-            "CurrentState is not WaitingHashes, cannot replayQuery");
+            "CurrentState is not WaitingHashes, cannot replyQuery");
     require(postedTimes.length == instance[_index].querySize,
             "postedTimes.length != querySize");
     require(postedHashes.length == instance[_index].querySize, "postedHashes.length != querySize");
