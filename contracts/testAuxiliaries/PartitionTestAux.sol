@@ -68,4 +68,12 @@ contract PartitionTestAux is PartitionInstantiator {
   function getRoundDurationAtIndex(uint256 partitionIndex) public view returns (uint) {
     return instance[partitionIndex].roundDuration;
   }
+
+  function getTimeHashAtIndex(uint partitionIndex, uint timeIndex) public view returns (bytes32) {
+    return instance[partitionIndex].timeHash[timeIndex];
+  }
+
+  function doSlice(uint256 _index, uint leftPoint, uint rightPoint) public {
+    slice(_index, leftPoint, rightPoint);
+  }
 }

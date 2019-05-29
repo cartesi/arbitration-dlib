@@ -37,7 +37,7 @@ def test_reply_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingHashes, cannot replayQuery", error_msg
+        assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingHashes, cannot replyQuery", error_msg
     else:
         raise Exception(error_msg)
         
