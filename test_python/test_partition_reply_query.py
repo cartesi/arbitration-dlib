@@ -1,4 +1,3 @@
-import time
 from web3 import Web3
 from test_main import BaseTest, PartitionState
 
