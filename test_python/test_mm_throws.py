@@ -1,25 +1,36 @@
 import json
 import ast
+import pytest
+import requests
 from web3 import Web3
 from test_main import BaseTest, MMState
+
+@pytest.fixture(autouse=True)
+def run_between_tests():
+    base_test = BaseTest()
+    # Code that will run before your test, for example:
+    headers = {'content-type': 'application/json'}
+    payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
+    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
+    snapshot_id = response['result']
+    # A test function will be run at this point
+    yield
+    # Code that will run after your test, for example:
+    payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
+    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
 def test_proveread_and_provewrite():
     base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
     index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction(set wrong state on purpose)
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     # prepare params for the proveRead function
@@ -52,18 +63,13 @@ def test_finish_proof_phase():
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
     index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction(set wrong state on purpose)
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     error_msg = "FinishProofPhase Transaction should fail, state should be WaitingProofs"
@@ -81,18 +87,13 @@ def test_finish_replay():
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
     index = mm_filter.get_all_entries()[0]['args']['_index']
 
     # call setState function via transaction(set wrong state on purpose)
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingProofs.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     error_msg = "FinishReplayPhase Transaction should fail, state should be WaitingReplay"
@@ -113,17 +114,13 @@ def test_finish_replay():
         list_of_positions.append(i * 8)
         list_of_values.append(bytes([i]))
 
-    # call setState function via transaction
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # set history pointer to 0
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(index, 0).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # create ReadWrites and add it to the history
     tx_hash = base_test.mm_testaux.functions.setHistoryAtIndex(index, list_of_was_read, list_of_positions, list_of_values).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     
     error_msg = "FinishReplayPhase Transaction should fail, historyPointer != history.length"
@@ -141,21 +138,13 @@ def test_read_and_write():
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
     index = mm_filter.get_all_entries()[0]['args']['_index']
     
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
     second_index = mm_filter.get_all_entries()[0]['args']['_index']
         
@@ -177,20 +166,16 @@ def test_read_and_write():
 
     # set history pointer to 0
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(index, 0).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # set history pointer to 0
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(second_index, 0).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     # create ReadWrites and add it to the history
     tx_hash = base_test.mm_testaux.functions.setHistoryAtIndex(index, list_of_was_read, list_of_positions, list_of_values).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # create ReadWrites and add it to the history
     tx_hash = base_test.mm_testaux.functions.setHistoryAtIndex(second_index, list_of_was_not_read, list_of_positions, list_of_values).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     position = 0
@@ -215,22 +200,16 @@ def test_read_and_write():
     else:
         raise Exception(error_msg)
 
-    # call setState function via transaction
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # call setState function via transaction
     tx_hash = base_test.mm_testaux.functions.setState(second_index, MMState.WaitingReplay.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     # set history pointer to 16
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(index, 16).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # set history pointer to 16
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(second_index, 16).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     position = 7
@@ -255,40 +234,26 @@ def test_read_and_write():
     else:
         raise Exception(error_msg)
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
     index = mm_filter.get_all_entries()[0]['args']['_index']
     
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
     second_index = mm_filter.get_all_entries()[0]['args']['_index']
 
-    # call setState function via transaction
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # call setState function via transaction
     tx_hash = base_test.mm_testaux.functions.setState(second_index, MMState.WaitingReplay.value).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     # set history pointer to 1
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(index, 1).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # set history pointer to 1
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(second_index, 1).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     
     # add incorrect values to was read list
@@ -297,11 +262,9 @@ def test_read_and_write():
     
     # create ReadWrites and add it to the history
     tx_hash = base_test.mm_testaux.functions.setHistoryAtIndex(index, list_of_was_read, list_of_positions, list_of_values).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # create ReadWrites and add it to the history
     tx_hash = base_test.mm_testaux.functions.setHistoryAtIndex(second_index, list_of_was_not_read, list_of_positions, list_of_values).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     position = 8
@@ -328,11 +291,9 @@ def test_read_and_write():
         
     # set history pointer to 2
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(index, 2).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # set history pointer to 2
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(second_index, 2).transact({'from': provider})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     position = 24
@@ -368,3 +329,19 @@ def test_read_and_write():
         assert error_dict['message'] == "VM Exception while processing transaction: revert PointInHistory's value does not match", error_msg
     else:
         raise Exception(error_msg)
+
+def test_instantiator():
+    base_test = BaseTest()
+    provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
+    client = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
+
+    error_msg = "Provider and client need to differ"
+    try:
+        tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+        tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
+    except ValueError as e:
+        error_dict = ast.literal_eval(str(e))
+        assert error_dict['message'] == "VM Exception while processing transaction: revert Provider and client need to differ", error_msg
+    else:
+        raise Exception(error_msg)
+    

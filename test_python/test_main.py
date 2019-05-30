@@ -38,7 +38,8 @@ class BaseTest:
         get_solc_version()
 
         #Connecting to node
-        self.w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
+        self.endpoint = "http://127.0.0.1:8545"
+        self.w3 = Web3(Web3.HTTPProvider(self.endpoint))
 
         if (self.w3.isConnected()):
             print("Connected to node\n")

@@ -1,7 +1,23 @@
 import json
 import ast
+import pytest
+import requests
 from web3 import Web3
 from test_main import BaseTest, PartitionState
+
+@pytest.fixture(autouse=True)
+def run_between_tests():
+    base_test = BaseTest()
+    # Code that will run before your test, for example:
+    headers = {'content-type': 'application/json'}
+    payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
+    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
+    snapshot_id = response['result']
+    # A test function will be run at this point
+    yield
+    # Code that will run after your test, for example:
+    payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
+    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
 def test_reply_query_throws():
     base_test = BaseTest()
@@ -10,12 +26,8 @@ def test_reply_query_throws():
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
     index = partition_filter.get_all_entries()[0]['args']['_index']
 
@@ -26,9 +38,7 @@ def test_reply_query_throws():
         query_array = base_test.partition_testaux.functions.getQueryArrayAtIndex(index, i).call({'from': challenger})
         posted_times.append(query_array)
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.setState(index, PartitionState.WaitingQuery.value).transact({'from': claimer})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
         
     error_msg = "ReplyQuery Transaction should fail, state is not WaitingHashes"
@@ -41,9 +51,7 @@ def test_reply_query_throws():
     else:
         raise Exception(error_msg)
         
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.setState(index, PartitionState.WaitingHashes.value).transact({'from': claimer})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     wrong_posted_times = [1, 2, 3,]
@@ -89,18 +97,12 @@ def test_make_query_throws():
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
     index = partition_filter.get_all_entries()[0]['args']['_index']
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.setState(index, PartitionState.WaitingQuery.value).transact({'from': claimer})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
         
     error_msg = "MakeQuery Transaction should fail, queryPiece is bigger than instance.querySize -1"
@@ -146,18 +148,12 @@ def test_present_divergence_throws():
     final_hash_seed = bytes("finalHash", 'utf-8')
     divergence_time = 12
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
     index = partition_filter.get_all_entries()[0]['args']['_index']
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.setFinalTimeAtIndex(index, 15).transact({'from': claimer})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
         
     error_msg = "PresentDivergence Transaction should fail, divergence time has to be less than finalTime"
@@ -170,9 +166,7 @@ def test_present_divergence_throws():
     else:
         raise Exception(error_msg)
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.setTimeSubmittedAtIndex(index, divergence_time + 1).transact({'from': claimer})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
         
     error_msg = "PresentDivergence Transaction should fail, divergenceTime has to have been submitted"
@@ -204,12 +198,8 @@ def test_modifier():
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
     index = partition_filter.get_all_entries()[0]['args']['_index']
     wrong_index = index + 1
@@ -241,3 +231,60 @@ def test_modifier():
     else:
         raise Exception(error_msg)
         
+def test_instantiator():
+    base_test = BaseTest()
+    challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
+    claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
+    initial_hash_seed = bytes("initialHash", 'utf-8')
+    final_hash_seed = bytes("finalHash", 'utf-8')
+
+    error_msg = "Challenger and claimer have the same address"
+    try:
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
+        tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
+    except ValueError as e:
+        error_dict = ast.literal_eval(str(e))
+        assert error_dict['message'] == "VM Exception while processing transaction: revert Challenger and claimer have the same address", error_msg
+    else:
+        raise Exception(error_msg)
+    
+    claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
+    error_msg = "Final Time has to be bigger than zero"
+    try:
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 0, 15, 55).transact({'from': challenger})
+        tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
+    except ValueError as e:
+        error_dict = ast.literal_eval(str(e))
+        assert error_dict['message'] == "VM Exception while processing transaction: revert Final Time has to be bigger than zero", error_msg
+    else:
+        raise Exception(error_msg)
+
+    error_msg = "Query Size must be bigger than 2"
+    try:
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 2, 55).transact({'from': challenger})
+        tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
+    except ValueError as e:
+        error_dict = ast.literal_eval(str(e))
+        assert error_dict['message'] == "VM Exception while processing transaction: revert Query Size must be bigger than 2", error_msg
+    else:
+        raise Exception(error_msg)
+
+    error_msg = "Query Size must be less than max"
+    try:
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 100, 55).transact({'from': challenger})
+        tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
+    except ValueError as e:
+        error_dict = ast.literal_eval(str(e))
+        assert error_dict['message'] == "VM Exception while processing transaction: revert Query Size must be less than max", error_msg
+    else:
+        raise Exception(error_msg)
+
+    error_msg = "Round Duration has to be greater than 50 seconds"
+    try:
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 50).transact({'from': challenger})
+        tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
+    except ValueError as e:
+        error_dict = ast.literal_eval(str(e))
+        assert error_dict['message'] == "VM Exception while processing transaction: revert Round Duration has to be greater than 50 seconds", error_msg
+    else:
+        raise Exception(error_msg)

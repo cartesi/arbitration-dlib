@@ -1,5 +1,22 @@
+import pytest
+import requests
+import json
 from web3 import Web3
 from test_main import BaseTest, PartitionState
+
+@pytest.fixture(autouse=True)
+def run_between_tests():
+    base_test = BaseTest()
+    # Code that will run before your test, for example:
+    headers = {'content-type': 'application/json'}
+    payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
+    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
+    snapshot_id = response['result']
+    # A test function will be run at this point
+    yield
+    # Code that will run after your test, for example:
+    payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
+    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
 def test_partition_slice():
     base_test = BaseTest()
@@ -8,39 +25,25 @@ def test_partition_slice():
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
     index_1 = partition_filter.get_all_entries()[0]['args']['_index']
 
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
     index_2 = partition_filter.get_all_entries()[0]['args']['_index']
     
-    # call instantiate function via transaction
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    # get the returned index via the event filter
     partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
     index_3 = partition_filter.get_all_entries()[0]['args']['_index']
 
     left_point = 2
     right_point = 5
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.doSlice(index_1, left_point, right_point).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     query_size = base_test.partition_testaux.functions.getQuerySize(index_1).call({'from': address_1})
@@ -58,9 +61,7 @@ def test_partition_slice():
     left_point = 50
     right_point = 55
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.doSlice(index_2, left_point, right_point).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     query_size = base_test.partition_testaux.functions.getQuerySize(index_2).call({'from': address_1})
@@ -78,9 +79,7 @@ def test_partition_slice():
     left_point = 0
     right_point = 1
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.doSlice(index_2, left_point, right_point).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     query_size = base_test.partition_testaux.functions.getQuerySize(index_2).call({'from': address_1})
@@ -99,9 +98,7 @@ def test_partition_slice():
     left_point = 1
     right_point = 600
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.doSlice(index_3, left_point, right_point).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     query_size = base_test.partition_testaux.functions.getQuerySize(index_3).call({'from': address_1})
@@ -116,9 +113,7 @@ def test_partition_slice():
     left_point = 150
     right_point = 600
 
-    # didn't use call() because it doesn't really send transaction to the blockchain
     tx_hash = base_test.partition_testaux.functions.doSlice(index_3, left_point, right_point).transact({'from': address_1})
-    # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     division_length = (int)((right_point - left_point) / (query_size - 1))
