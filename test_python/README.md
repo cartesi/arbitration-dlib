@@ -1,11 +1,11 @@
 # Quick Start #
 
-install python 3.7 and pip
-run pip install pytest
-run pip install json-rpc
-run pip install web3
-run prepare_python_test.sh
-run run_all_tests.sh
+install python 3.7 and pip  
+run pip install pytest  
+run pip install json-rpc  
+run pip install web3  
+run prepare_python_test.sh  
+run run_all_tests.sh  
 
 # Test Example #
 
