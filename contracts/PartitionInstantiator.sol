@@ -67,8 +67,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
   {
     require(_challenger != _claimer, "Challenger and claimer have the same address");
     require(_finalTime > 0, "Final Time has to be bigger than zero");
-    require(_querySize > 2, "_querySize has to be bigger than two");
-    require(_querySize < MAX_QUERY_SIZE, "_querySize has to be less than max");
+    require(_querySize > 2, "Query Size must be bigger than 2");
+    require(_querySize < MAX_QUERY_SIZE, "Query Size must be less than max");
     require(_roundDuration > 50, "Round Duration has to be greater than 50 seconds");
     instance[currentIndex].challenger = _challenger;
     instance[currentIndex].claimer = _claimer;
@@ -135,7 +135,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingHashes,
-            "State is not WaitingHashes");
+            "CurrentState is not WaitingHashes, cannot replyQuery");
     require(postedTimes.length == instance[_index].querySize,
             "postedTimes.length != querySize");
     require(postedHashes.length == instance[_index].querySize, "postedHashes.length != querySize");
@@ -168,7 +168,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingQuery,
-            "State is not WaitingQuery");
+            "CurrentState is not WaitingQuery, cannot makeQuery");
     require(queryPiece < instance[_index].querySize - 1,
             "queryPiece is bigger than querySize - 1");
     // make sure the challenger knows the previous query
@@ -222,9 +222,9 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     require(_divergenceTime < instance[_index].finalTime,
             "divergence time has to be less than finalTime");
     require(instance[_index].timeSubmitted[_divergenceTime],
-            "_divergenceTime has to have been submitted");
+            "divergenceTime has to have been submitted");
     require(instance[_index].timeSubmitted[_divergenceTime + 1],
-            "_divergenceTime + 1 has to have been submitted");
+            "divergenceTime + 1 has to have been submitted");
 
     instance[_index].divergenceTime = _divergenceTime;
     instance[_index].currentState = state.DivergenceFound;
