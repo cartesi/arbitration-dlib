@@ -93,7 +93,7 @@ contract MMInstantiator is MMInterface, Decorated {
     increasesNonce(_index)
   {
     require(instance[_index].currentState == state.WaitingProofs,
-            "Current state is not WaitingProofs, cannot proveRead"
+            "CurrentState is not WaitingProofs, cannot proveRead"
             );
     require(Merkle.getRoot(_position, _value, proof)
             == instance[_index].newHash,
@@ -156,7 +156,8 @@ contract MMInstantiator is MMInterface, Decorated {
     require(instance[_index].currentState == state.WaitingReplay,
             "CurrentState is not WaitingReply, cannot read"
             );
-    require((_position & 7) == 0);
+    require((_position & 7) == 0,
+            "Position is not aligned");
     uint pointer = instance[_index].historyPointer;
     ReadWrite storage  pointInHistory = instance[_index].history[pointer];
     require(pointInHistory.wasRead,
