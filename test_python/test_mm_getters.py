@@ -5,8 +5,8 @@ from web3 import Web3
 from test_main import BaseTest, MMState
 
 @pytest.fixture(autouse=True)
-def run_between_tests():
-    base_test = BaseTest()
+def run_between_tests(port):
+    base_test = BaseTest(port)
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -18,8 +18,8 @@ def run_between_tests():
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_getters():
-    base_test = BaseTest()
+def test_getters(port):
+    base_test = BaseTest(port)
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash = bytes("initialHash", 'utf-8')
@@ -27,8 +27,8 @@ def test_getters():
 
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, initial_hash).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
-    index = mm_filter.get_all_entries()[0]['args']['_index']
+    mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
+    index = mm_logs[0]['args']['_index']
 
     error_msg = "Provider address should match"
     ret_provider = base_test.mm_testaux.functions.provider(index).call({'from': provider})
@@ -50,8 +50,8 @@ def test_getters():
     ret_new_hash = base_test.mm_testaux.functions.newHash(index).call({'from': provider})
     assert ret_new_hash[0:7] == new_hash, error_msg
     
-def test_state_getters():
-    base_test = BaseTest()
+def test_state_getters(port):
+    base_test = BaseTest(port)
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash = bytes("initialHash", 'utf-8')
@@ -59,8 +59,8 @@ def test_state_getters():
 
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, initial_hash).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    mm_filter = base_test.mm_testaux.events.MemoryCreated.createFilter(fromBlock='latest')
-    index = mm_filter.get_all_entries()[0]['args']['_index']
+    mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
+    index = mm_logs[0]['args']['_index']
 
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
