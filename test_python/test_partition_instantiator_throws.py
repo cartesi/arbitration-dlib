@@ -6,8 +6,8 @@ from web3 import Web3
 from test_main import BaseTest, PartitionState
 
 @pytest.fixture(autouse=True)
-def run_between_tests():
-    base_test = BaseTest()
+def run_between_tests(port):
+    base_test = BaseTest(port)
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -19,8 +19,8 @@ def run_between_tests():
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_reply_query_throws():
-    base_test = BaseTest()
+def test_reply_query_throws(port):
+    base_test = BaseTest(port)
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -28,8 +28,8 @@ def test_reply_query_throws():
 
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    index = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    index = partition_logs[0]['args']['_index']
 
     reply_array = []
     posted_times = []
@@ -47,7 +47,8 @@ def test_reply_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingHashes, cannot replyQuery", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingHashes, cannot replyQuery", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
         
@@ -62,7 +63,8 @@ def test_reply_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert postedTimes.length != querySize", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert postedTimes.length != querySize", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -74,7 +76,8 @@ def test_reply_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert postedHashes.length != querySize", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert postedHashes.length != querySize", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -86,12 +89,13 @@ def test_reply_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert postedTimes[i] != queryArray[i]", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert postedTimes[i] != queryArray[i]", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
-def test_make_query_throws():
-    base_test = BaseTest()
+def test_make_query_throws(port):
+    base_test = BaseTest(port)
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -99,8 +103,8 @@ def test_make_query_throws():
 
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    index = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    index = partition_logs[0]['args']['_index']
 
     tx_hash = base_test.partition_testaux.functions.setState(index, PartitionState.WaitingQuery.value).transact({'from': claimer})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
@@ -111,7 +115,8 @@ def test_make_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert queryPiece is bigger than querySize - 1", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert queryPiece is bigger than querySize - 1", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -124,7 +129,8 @@ def test_make_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert leftPoint != queryArray[queryPiece]", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert leftPoint != queryArray[queryPiece]", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
         
@@ -136,12 +142,13 @@ def test_make_query_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert rightPoint != queryArray[queryPiece]", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert rightPoint != queryArray[queryPiece]", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
-def test_present_divergence_throws():
-    base_test = BaseTest()
+def test_present_divergence_throws(port):
+    base_test = BaseTest(port)
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -150,8 +157,8 @@ def test_present_divergence_throws():
 
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    index = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    index = partition_logs[0]['args']['_index']
 
     tx_hash = base_test.partition_testaux.functions.setFinalTimeAtIndex(index, 15).transact({'from': claimer})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
@@ -162,7 +169,8 @@ def test_present_divergence_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert divergence time has to be less than finalTime", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert divergence time has to be less than finalTime", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -175,7 +183,8 @@ def test_present_divergence_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert divergenceTime has to have been submitted", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert divergenceTime has to have been submitted", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
         
@@ -187,12 +196,13 @@ def test_present_divergence_throws():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert divergenceTime + 1 has to have been submitted", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert divergenceTime + 1 has to have been submitted", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
-def test_modifier():
-    base_test = BaseTest()
+def test_modifier(port):
+    base_test = BaseTest(port)
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -200,8 +210,8 @@ def test_modifier():
 
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    index = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    index = partition_logs[0]['args']['_index']
     wrong_index = index + 1
 
     reply_array = []
@@ -217,7 +227,8 @@ def test_modifier():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert Index not instantiated", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert Index not instantiated", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
         
@@ -227,12 +238,13 @@ def test_modifier():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert Cannot be called by user", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert Cannot be called by user", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
         
-def test_instantiator():
-    base_test = BaseTest()
+def test_instantiator(port):
+    base_test = BaseTest(port)
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -244,7 +256,8 @@ def test_instantiator():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert Challenger and claimer have the same address", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert Challenger and claimer have the same address", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
     
@@ -255,7 +268,8 @@ def test_instantiator():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert Final Time has to be bigger than zero", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert Final Time has to be bigger than zero", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -265,7 +279,8 @@ def test_instantiator():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert Query Size must be bigger than 2", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert Query Size must be bigger than 2", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -275,7 +290,8 @@ def test_instantiator():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert Query Size must be less than max", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert Query Size must be less than max", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -285,6 +301,7 @@ def test_instantiator():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert Round Duration has to be greater than 50 seconds", error_msg
+        # assert error_dict['message'] == "VM Exception while processing transaction: revert Round Duration has to be greater than 50 seconds", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)

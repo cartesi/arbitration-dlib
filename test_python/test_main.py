@@ -34,11 +34,12 @@ class VGState(Enum):
 
 class BaseTest:
 
-    def __init__(self):
+    def __init__(self, port):
         get_solc_version()
 
         #Connecting to node
-        self.endpoint = "http://127.0.0.1:8545"
+        self.port = port
+        self.endpoint = "http://127.0.0.1:" + port
         self.w3 = Web3(Web3.HTTPProvider(self.endpoint))
 
         if (self.w3.isConnected()):
@@ -47,7 +48,6 @@ class BaseTest:
             print("Couldn't connect to node, exiting")
             sys.exit(1)
 
-        #step_compiled = compile_files([directory + 'Step.sol'])
         #loading deployed contract address and json file path
         with open('../contracts.json') as json_file:
             self.contracts = json.load(json_file)

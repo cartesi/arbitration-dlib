@@ -5,8 +5,8 @@ from web3 import Web3
 from test_main import BaseTest, PartitionState
 
 @pytest.fixture(autouse=True)
-def run_between_tests():
-    base_test = BaseTest()
+def run_between_tests(port):
+    base_test = BaseTest(port)
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -18,8 +18,8 @@ def run_between_tests():
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_partition_slice():
-    base_test = BaseTest()
+def test_partition_slice(port):
+    base_test = BaseTest(port)
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -27,18 +27,18 @@ def test_partition_slice():
 
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    index_1 = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    index_1 = partition_logs[0]['args']['_index']
 
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    index_2 = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    index_2 = partition_logs[0]['args']['_index']
     
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    index_3 = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    index_3 = partition_logs[0]['args']['_index']
 
     left_point = 2
     right_point = 5

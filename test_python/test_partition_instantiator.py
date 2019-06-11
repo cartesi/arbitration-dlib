@@ -5,8 +5,8 @@ from web3 import Web3
 from test_main import BaseTest
 
 @pytest.fixture(autouse=True)
-def run_between_tests():
-    base_test = BaseTest()
+def run_between_tests(port):
+    base_test = BaseTest(port)
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -18,16 +18,16 @@ def run_between_tests():
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_instantiator():
-    base_test = BaseTest()
+def test_instantiator(port):
+    base_test = BaseTest(port)
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     address_3 = Web3.toChecksumAddress(base_test.w3.eth.accounts[2])
 
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, bytes([5]), bytes([225]), 50000, 3, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-    next_index = partition_filter.get_all_entries()[0]['args']['_index']
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+    next_index = partition_logs[0]['args']['_index']
     next_index += 1
 
     # start from 3 to prevent revert when finalTime is not larger than zero
@@ -40,8 +40,8 @@ def test_instantiator():
             # call instantiate function via transaction
             tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, initial_hash_seed, final_hash_seed, 50000 * i, i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-            partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-            index = partition_filter.get_all_entries()[0]['args']['_index']
+            partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+            index = partition_logs[0]['args']['_index']
 
             error_msg = "Challenger address should be address_1"
             ret_challenger = base_test.partition_testaux.functions.getChallengerAtIndex(index).call({'from': address_1})
@@ -57,8 +57,8 @@ def test_instantiator():
         else:
             tx_hash = base_test.partition_testaux.functions.instantiate(address_3, address_2, initial_hash_seed, final_hash_seed, 50000 * i, i + 7, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-            partition_filter = base_test.partition_testaux.events.PartitionCreated.createFilter(fromBlock='latest')
-            index = partition_filter.get_all_entries()[0]['args']['_index']
+            partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+            index = partition_logs[0]['args']['_index']
 
             error_msg = "Challenger address should be address_3"
             ret_challenger = base_test.partition_testaux.functions.getChallengerAtIndex(index).call({'from': address_1})
