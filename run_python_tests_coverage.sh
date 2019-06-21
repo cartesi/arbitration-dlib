@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ./test_python
+cd ./test
 # activate virtualenv if file found
 file_active=./bin/activate
 if [ -f $file_active ]; then

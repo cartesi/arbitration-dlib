@@ -43,24 +43,24 @@ contract SimpleMemoryInstantiator is MMInterface {
 
   function finishReplayPhase(uint256) public {}
 
-  function stateIsWaitingProofs(uint256) public view returns(bool)
+  function stateIsWaitingProofs(uint256) public view returns (bool)
   { require(false);
     return(true);
   }
 
-  function stateIsWaitingReplay(uint256) public view returns(bool)
+  function stateIsWaitingReplay(uint256) public view returns (bool)
   {
     require(false);
     return(true);
   }
 
-  function stateIsFinishedReplay(uint256) public view returns(bool)
+  function stateIsFinishedReplay(uint256) public view returns (bool)
   {
     require(false);
     return(true);
   }
 
-  function isConcerned(uint256, address) public view returns(bool)
+  function isConcerned(uint256, address) public view returns (bool)
   {
     return(true);
   }
@@ -72,7 +72,7 @@ contract SimpleMemoryInstantiator is MMInterface {
   }
 
   function getSubInstances(uint256)
-    public view returns(address[] memory _addresses,
+    public view returns (address[] memory _addresses,
                         uint256[] memory _indices)
   {
     address[] memory a = new address[](0);

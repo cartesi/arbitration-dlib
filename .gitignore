@@ -1,7 +1,7 @@
 contracts.json
 coverage*
 node_modules
-test_python/*/
+test/*/
 .vscode
 .node*
 *.bin

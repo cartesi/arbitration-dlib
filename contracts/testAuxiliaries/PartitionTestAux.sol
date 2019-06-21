@@ -2,78 +2,78 @@ pragma solidity ^0.5.0;
 
 import "../PartitionInstantiator.sol";
 
+
 contract PartitionTestAux is PartitionInstantiator {
-  constructor() public {}
 
-  function setState(uint partitionIndex, state toState) public{
-    instance[partitionIndex].currentState = toState;
-  }
+    function setState(uint partitionIndex, state toState) public {
+        instance[partitionIndex].currentState = toState;
+    }
 
-  function setFinalTimeAtIndex(uint partitionIndex, uint finalTime) public {
-    instance[partitionIndex].finalTime = finalTime;
-  }
+    function setFinalTimeAtIndex(uint partitionIndex, uint finalTime) public {
+        instance[partitionIndex].finalTime = finalTime;
+    }
 
-  function setTimeOfLastMoveAtIndex(uint partitionIndex, uint timeOfLastMove) public {
-    instance[partitionIndex].timeOfLastMove = timeOfLastMove;
-  }
+    function setTimeOfLastMoveAtIndex(uint partitionIndex, uint timeOfLastMove) public {
+        instance[partitionIndex].timeOfLastMove = timeOfLastMove;
+    }
 
-  function setRoundDurationAtIndex(uint partitionIndex, uint roundDuration) public {
-    instance[partitionIndex].roundDuration = roundDuration;
-  }
+    function setRoundDurationAtIndex(uint partitionIndex, uint roundDuration) public {
+        instance[partitionIndex].roundDuration = roundDuration;
+    }
 
-  function setDivergenceTimeAtIndex(uint partitionIndex, uint divergenceTime) public {
-    instance[partitionIndex].divergenceTime = divergenceTime;
-  }
+    function setDivergenceTimeAtIndex(uint partitionIndex, uint divergenceTime) public {
+        instance[partitionIndex].divergenceTime = divergenceTime;
+    }
 
-  function setTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex) public {
-    instance[partitionIndex].timeSubmitted[timeIndex] = true;
-  }
+    function setTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex) public {
+        instance[partitionIndex].timeSubmitted[timeIndex] = true;
+    }
 
-  function setTimeHashAtIndex(uint partitionIndex, uint timeIndex, bytes32 timeHash) public {
-    instance[partitionIndex].timeHash[timeIndex] = timeHash;
-  }
+    function setTimeHashAtIndex(uint partitionIndex, uint timeIndex, bytes32 timeHash) public {
+        instance[partitionIndex].timeHash[timeIndex] = timeHash;
+    }
 
-  function setQueryArrayAtIndex(uint partitionIndex, uint queryIndex, uint query) public {
-    instance[partitionIndex].queryArray[queryIndex] = query;
-  }
+    function setQueryArrayAtIndex(uint partitionIndex, uint queryIndex, uint query) public {
+        instance[partitionIndex].queryArray[queryIndex] = query;
+    }
 
-  function getQueryArrayAtIndex(uint partitionIndex, uint queryIndex) public view  returns (uint) {
-    return instance[partitionIndex].queryArray[queryIndex];
-  }
+    function getQueryArrayAtIndex(uint partitionIndex, uint queryIndex) public view    returns (uint) {
+        return instance[partitionIndex].queryArray[queryIndex];
+    }
 
-  function getTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex) public view returns (bool) {
-    return instance[partitionIndex].timeSubmitted[timeIndex];
-  }
-  
-  function getChallengerAtIndex(uint256 partitionIndex) public view returns (address) {
-    return instance[partitionIndex].challenger;
-  }
+    function getTimeSubmittedAtIndex(uint partitionIndex, uint timeIndex) public view returns (bool) {
+        return instance[partitionIndex].timeSubmitted[timeIndex];
+    }
 
-  function getClaimerAtIndex(uint256 partitionIndex) public view returns (address) {
-    return instance[partitionIndex].claimer;
-  }
+    function getChallengerAtIndex(uint256 partitionIndex) public view returns (address) {
+        return instance[partitionIndex].challenger;
+    }
 
-  function getFinalTimeAtIndex(uint256 partitionIndex) public view returns (uint) {
-    return instance[partitionIndex].finalTime;
-  }
+    function getClaimerAtIndex(uint256 partitionIndex) public view returns (address) {
+        return instance[partitionIndex].claimer;
+    }
 
-  function getQuerySize(uint256 partitionIndex) public view returns (uint) {
-    return instance[partitionIndex].querySize;
-  }
+    function getFinalTimeAtIndex(uint256 partitionIndex) public view returns (uint) {
+        return instance[partitionIndex].finalTime;
+    }
 
-  function getTimeOfLastMoveAtIndex(uint256 partitionIndex) public view returns (uint) {
-    return instance[partitionIndex].timeOfLastMove;
-  }
+    function getQuerySize(uint256 partitionIndex) public view returns (uint) {
+        return instance[partitionIndex].querySize;
+    }
 
-  function getRoundDurationAtIndex(uint256 partitionIndex) public view returns (uint) {
-    return instance[partitionIndex].roundDuration;
-  }
+    function getTimeOfLastMoveAtIndex(uint256 partitionIndex) public view returns (uint) {
+        return instance[partitionIndex].timeOfLastMove;
+    }
 
-  function getTimeHashAtIndex(uint partitionIndex, uint timeIndex) public view returns (bytes32) {
-    return instance[partitionIndex].timeHash[timeIndex];
-  }
+    function getRoundDurationAtIndex(uint256 partitionIndex) public view returns (uint) {
+        return instance[partitionIndex].roundDuration;
+    }
 
-  function doSlice(uint256 _index, uint leftPoint, uint rightPoint) public {
-    slice(_index, leftPoint, rightPoint);
-  }
+    function getTimeHashAtIndex(uint partitionIndex, uint timeIndex) public view returns (bytes32) {
+        return instance[partitionIndex].timeHash[timeIndex];
+    }
+
+    function doSlice(uint256 _index, uint leftPoint, uint rightPoint) public {
+        slice(_index, leftPoint, rightPoint);
+    }
 }
