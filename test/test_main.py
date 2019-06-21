@@ -2,7 +2,6 @@ import os
 import json
 from enum import Enum
 from web3 import Web3
-from solcx import install_solc
 from solcx import get_solc_version, set_solc_version, compile_files
 
 class MMState(Enum):
