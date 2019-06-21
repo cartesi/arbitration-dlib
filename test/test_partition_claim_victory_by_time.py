@@ -98,7 +98,7 @@ def test_partition_claimer_timeout(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
@@ -151,7 +151,7 @@ def test_partition_challenger_timeout(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
     else:
         raise Exception(error_msg)
 
