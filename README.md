@@ -13,32 +13,32 @@ If the result is accepted we reach a Consensus state. If not, the dispute is res
 
 The possible states of an instance of this contract are:
 
-+---+
-|   |
-+---+
-  |
-  | instantiate
-  v
-+--------------+ claimVictoryByTime +-----------------------+
-| WaitingClaim |------------------->| ClaimerMisseddeadline |
-+--------------+                    +-----------------------+
-  |
-  | submitClaim
-  v
-+---------------------+  confirm    +-----------------+
-| WaitingConfirmation |------------>| ConsensusResult |
-+---------------------+ or deadline +-----------------+
-  |
-  | challenge
-  v
-+------------------+ winByVG        +---------------+
-| WaitingChallenge |--------------->| ChallengerWon |
-+------------------+                +---------------+
-  |
-  |
-  |                  winByVG        +------------+
-  +-------------------------------->| ClaimerWon |
-                                    +------------+
+    // +---+
+    // |   |
+    // +---+
+    //   |
+    //   | instantiate
+    //   v
+    // +--------------+ claimVictoryByTime +-----------------------+
+    // | WaitingClaim |------------------->| ClaimerMisseddeadline |
+    // +--------------+                    +-----------------------+
+    //   |
+    //   | submitClaim
+    //   v
+    // +---------------------+  confirm    +-----------------+
+    // | WaitingConfirmation |------------>| ConsensusResult |
+    // +---------------------+ or deadline +-----------------+
+    //   |
+    //   | challenge
+    //   v
+    // +------------------+ winByVG        +---------------+
+    // | WaitingChallenge |--------------->| ChallengerWon |
+    // +------------------+                +---------------+
+    //   |
+    //   |
+    //   |                  winByVG        +------------+
+    //   +-------------------------------->| ClaimerWon |
+    //                                     +------------+
 
 
 ## VG Instantiator
