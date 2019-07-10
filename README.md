@@ -53,28 +53,29 @@ After the Memory Manager is filled with the necessary data, VG contract settles 
 
 These are the possible states and transitions of the contract.
 
-              +---+
-              |   |
-              +---+
-                |
-                | instantiate
-                v
-              +----------------+  winByPartitionTimeout
-  +-----------| WaitPartition  |------------------------+
-  |           +----------------+                        |
-  |                         |                           |
-  | winByPartitionTimeout   | startMachineRunChallenge  |
-  |                         v                           |
-  |           +-----------------------+                 |
-  | +---------| WaitMemoryProveValues |---------------+ |
-  | |         +-----------------------+               | |
-  | |                                                 | |
-  | |claimVictoryByDeadline   settleVerificationGame  | |
-  v v                                                 v v
-+--------------------+               +-----------------------+
-| FinishedClaimerWon |               | FinishedChallengerWon |
-+--------------------+               +-----------------------+
-
+    //
+    //               +---+
+    //               |   |
+    //               +---+
+    //                 |
+    //                 | instantiate
+    //                 v
+    //               +----------------+  winByPartitionTimeout
+    //   +-----------| WaitPartition  |------------------------+
+    //   |           +----------------+                        |
+    //   |                         |                           |
+    //   | winByPartitionTimeout   | startMachineRunChallenge  |
+    //   |                         v                           |
+    //   |           +-----------------------+                 |
+    //   | +---------| WaitMemoryProveValues |---------------+ |
+    //   | |         +-----------------------+               | |
+    //   | |                                                 | |
+    //   | |claimVictoryByDeadline   settleVerificationGame  | |
+    //   v v                                                 v v
+    // +--------------------+               +-----------------------+
+    // | FinishedClaimerWon |               | FinishedChallengerWon |
+    // +--------------------+               +-----------------------+
+    //
 
 ## Partition Instantiator
 
@@ -82,28 +83,29 @@ The Partition contract is responsible for the interactions between Alice and Bob
 
 The possible states of an instance of this contract are:
 
-  +---+
-  |   |
-  +---+
-    |
-    | instantiate
-    v
-  +---------------+  claimVictoryByTimeout  +---------------+
-  | WaitingHashes |------------------------>| ChallengerWon |
-  +---------------+                         +---------------+
-    |  ^
-  y |  | makeQuery
-    v  |
-  +--------------+   claimVictoryByTimeout  +------------+
-  | WaitingQuery |------------------------->| ClaimerWon |
-  +--------------+                          +------------+
-    |
-    | presentDivergence
-    v
-  +-----------------+
-  | DivergenceFound |
-  +-----------------+
-
+    //
+    //          +---+
+    //          |   |
+    //          +---+
+    //            |
+    //            | instantiate
+    //            v
+    //          +---------------+  claimVictoryByTimeout  +---------------+
+    //          | WaitingHashes |------------------------>| ChallengerWon |
+    //          +---------------+                         +---------------+
+    //            |  ^
+    // replyQuery |  | makeQuery
+    //            v  |
+    //          +--------------+   claimVictoryByTimeout  +------------+
+    //          | WaitingQuery |------------------------->| ClaimerWon |
+    //          +--------------+                          +------------+
+    //            |
+    //            | presentDivergence
+    //            v
+    //          +-----------------+
+    //          | DivergenceFound |
+    //          +-----------------+
+    //
 
 ## MemoryManager Instantiator
 
@@ -118,6 +120,32 @@ The MemoryManager contract offers the RISC-V Solidity emulator a very simple int
 * finishReplayPhase - signals that the Step has completed.
 
 It also makes sure that all accesses performed by the Step function match the ones provided by the Claimer and are consistent with the Merkle proofs provided by him. If that is not the case, the Claimer loses the dispute.
+
+The possible states of an instance of this contract are:
+
+    //
+    // +---+
+    // |   |
+    // +---+
+    //   |
+    //   | instantiate
+    //   v
+    // +---------------+    | proveRead
+    // | WaitingProofs |----| proveWrite
+    // +---------------+
+    //   |
+    //   | finishProofPhase
+    //   v
+    // +----------------+    |read
+    // | WaitingReplay  |----|write
+    // +----------------+
+    //   |
+    //   | finishReplayPhase
+    //   v
+    // +----------------+
+    // | FinishedReplay |
+    // +----------------+
+    //
 
 ## Getting Started
 
