@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene, generators, transpose_result)]
-
 pub mod compute;
 pub mod mm;
 pub mod partition;
