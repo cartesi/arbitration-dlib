@@ -24,4 +24,3 @@ emulator_interface = { git = "ssh://git@github.com/cartesi/cartesi-grpc", branch
 
 hex = "0.3.2"
 time = "0.1"
-
