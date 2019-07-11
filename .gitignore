@@ -7,4 +7,5 @@ test/*/
 *.bin
 *.abi
 /out
+compute/target
 build
