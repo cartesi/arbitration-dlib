@@ -1,0 +1,26 @@
+[package]
+description = "Cartesi Verification Game"
+homepage = "https://cartesi.io"
+name = "compute"
+version = "0.1.0"
+authors = ["Cartesi Team"]
+
+[dependencies]
+log = "0.4"
+env_logger = "0.6.0"
+error = { git = "ssh://git@github.com/cartesi/infrastructure", branch = "9-split-dispatch-computer-repos"}
+transaction = { git = "ssh://git@github.com/cartesi/infrastructure", branch = "9-split-dispatch-computer-repos"}
+configuration = { git = "ssh://git@github.com/cartesi/infrastructure"}
+utils = { git = "ssh://git@github.com/cartesi/infrastructure", branch = "9-split-dispatch-computer-repos"}
+ethereum-types = "0.4"
+ethabi = "6.1.0"
+serde_json = "1.0"
+serde = "1.0.0"
+serde_derive = "1.0.0"
+state = { git = "ssh://git@github.com/cartesi/infrastructure", branch = "9-split-dispatch-computer-repos"}
+dispatcher = { git = "ssh://git@github.com/cartesi/infrastructure", branch = "9-split-dispatch-computer-repos"}
+emulator = { git = "ssh://git@github.com/cartesi/infrastructure", branch = "9-split-dispatch-computer-repos"}
+emulator_interface = { git = "ssh://git@github.com/cartesi/infrastructure", branch = "9-split-dispatch-computer-repos"}
+hex = "0.3.2"
+time = "0.1"
+
