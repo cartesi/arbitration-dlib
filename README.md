@@ -1,8 +1,8 @@
-# On-chain Dispute
+# Arbitration D-Lib
 
-On-chain Dispute is the part of Arbitration DLib that lives inside the Blockchain. It is a compilation of contracts that work together to resolve any disputes might occur during the execution of a Cartesi Dapp.
+Arbritration DLib is the combination of the on-chain protocol and off-chain protocol that work together to resolve any disputes that might occur during the execution of a Cartesi Dapp. The behavior of the off-chain and on-chain code are very similar. The on-chain code is written in Solidity and the off-chain in Rust.
 
-Most contracts in this repository follows the Instantiator design pattern.
+Most of the Solidity contracts in this repository follow the Instantiator design pattern.
 
 ## Compute Instantiator
 
@@ -147,7 +147,7 @@ The possible states of an instance of this contract are:
     // +----------------+
     //
 
-## Getting Started
+## Getting Started - on-chain code
 
 ### Install
 
@@ -170,6 +170,23 @@ Migrate contracts and prepare testing files
 
 Run tests
     ./run_python_tests.sh
+
+
+## Getting Started - off-chain code
+
+### Install
+
+Install rust
+    curl https://sh.rustup.rs -sSf | sh
+
+Add cargo to your path in `.bashrc`
+    export PATH=$PATH:/home/user/.cargo/bin
+
+Move to compute dir:
+    cd compute
+
+Build project:
+    cargo build
 
 ## TODO
 
