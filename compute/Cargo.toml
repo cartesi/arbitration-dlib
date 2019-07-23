@@ -20,7 +20,4 @@ serde_derive = "1.0.0"
 state = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
 dispatcher = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
 emulator = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
-emulator_interface = { git = "ssh://git@github.com/cartesi/grpc-interfaces", branch = "master"}
 
-hex = "0.3.2"
-time = "0.1"
