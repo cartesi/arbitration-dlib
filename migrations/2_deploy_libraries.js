@@ -57,15 +57,8 @@ module.exports = function(deployer, network, accounts) {
     await deployer.deploy(PartitionTestAux);
     await deployer.deploy(MMInstantiatorTestAux);
     await deployer.deploy(TestHash);
-    if (typeof process.env.CARTESI_CONFIG_PATH !== "undefined"){
-      fs.writeFileSync(process.env.CARTESI_CONFIG_PATH, yaml.dump({
-        url: "http://127.0.0.1:8545",
-        testing: true,
-        max_delay: 500,
-        warn_delay: 30,
-        emulator_port: 50051,
-        query_port: 3001,
-        confirmations: 0,
+    if (typeof process.env.CARTESI_CONFIG_FILE_PATH !== "undefined"){
+      fs.writeFileSync(process.env.CARTESI_CONFIG_FILE_PATH, yaml.dump({
         concerns: [
           { contract_address: PartitionContract.address,
             user_address: accounts[0],
@@ -79,64 +72,14 @@ module.exports = function(deployer, network, accounts) {
             user_address: accounts[0],
             abi: VGPath,
           },
-        ],
+          { contract_address: ComputeContract.address,
+            user_address: accounts[0],
+            abi: ComputePath,
+          }
+        ]
       }));
-      fs.writeFileSync(process.env.CARTESI_CONFIG_PATH + "_1", yaml.dump({
-        url: "http://127.0.0.1:8545",
-        testing: true,
-        max_delay: 500,
-        warn_delay: 30,
-        emulator_port: 50052,
-        query_port: 3002,
-        confirmations: 0,
-        concerns: [
-          { contract_address: PartitionContract.address,
-            user_address: accounts[1],
-            abi: PartitionPath,
-          },
-          { contract_address: MMContract.address,
-            user_address: accounts[1],
-            abi: MMPath,
-          },
-          { contract_address: VGContract.address,
-            user_address: accounts[1],
-            abi: VGPath,
-          },
-        ],
-      }));
-      fs.writeFileSync(process.env.CARTESI_CONFIG_PATH + "_machine",
-                   HasherContract.address);
-      fs.writeFileSync(process.env.CARTESI_CONFIG_PATH + "_memory",
-                   MMContract.address);
+      fs.writeFileSync(process.env.MM_ADD_FILE_PATH,
+        MMContract.address);
     }
   });
 };
-
-
-
-// module.exports = function(deployer) {
-//   deployer.deploy(Token);
-// //  deployer.deploy(Strings);
-//   deployer.deploy(SimpleMemoryInstantiator);
-//   deployer.deploy(Subleq);
-//   deployer.deploy(PartitionInstantiator).then(function(){
-//     return deployer.deploy(MMInstantiator).then(function() {
-//       return deployer.deploy(
-//         VGInstantiator,
-//         PartitionInstantiator.address,
-//         MMInstantiator.address).then(function() {
-//           console.log("vg " + VGInstantiator.address);
-//           return deployer.deploy(
-//             ComputeInstantiator,
-//             VGInstantiator.address).then(function() {
-//               console.log("compute " + ComputeInstantiator.address);
-//             });
-//         });
-//     })
-//   })
-
-//   deployer.deploy(PartitionTestAux);
-//   deployer.deploy(MMInstantiatorTestAux);
-// //  deployer.deploy(BitsManipulation);
-//   deployer.deploy(TestHash);
-// };
