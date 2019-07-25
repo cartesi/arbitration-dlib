@@ -8,18 +8,18 @@ authors = ["Cartesi Team"]
 [dependencies]
 log = "0.4"
 env_logger = "0.6.0"
-error = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
-transaction = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
-configuration = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
-utils = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
+error = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "refactoring-dispatcher-for-open-source"}
+transaction = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "refactoring-dispatcher-for-open-source"}
+configuration = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "refactoring-dispatcher-for-open-source"}
+utils = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "refactoring-dispatcher-for-open-source"}
 ethereum-types = "0.4"
 ethabi = "6.1.0"
 serde_json = "1.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
-state = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
-dispatcher = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
-emulator = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "master"}
+state = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "refactoring-dispatcher-for-open-source"}
+dispatcher = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "refactoring-dispatcher-for-open-source"}
+emulator = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "refactoring-dispatcher-for-open-source"}
 emulator_interface = { git = "ssh://git@github.com/cartesi/grpc-interfaces", branch = "master"}
 
 hex = "0.3.2"
