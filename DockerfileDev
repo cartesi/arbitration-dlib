@@ -1,0 +1,65 @@
+# syntax=docker/dockerfile:1.0.0-experimental
+FROM ubuntu:18.04
+
+MAINTAINER Carlo Fragni <carlo@cartesi.io>
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV BASE /opt/cartesi
+
+# Install basic development tools
+# ----------------------------------------------------
+RUN \
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+        openssh-client \
+        unzip build-essential autoconf automake libtool git \
+        make curl g++ gcc libssl-dev pkg-config ca-certificates cmake && \
+    mkdir -p $BASE
+
+RUN mkdir -m 700 /root/.ssh
+
+# This is necessary to prevent the "git clone" operation from failing
+# with an "unknown host key" error.
+RUN touch -m 600 /root/.ssh/known_hosts; \
+  ssh-keyscan github.com > /root/.ssh/known_hosts
+
+# Install protobuf
+# ----------------------------------------------------
+WORKDIR $BASE
+RUN \
+    git clone --recurse-submodules --depth 1 https://github.com/protocolbuffers/protobuf.git
+
+WORKDIR $BASE/protobuf
+RUN \
+    NPROC=$(nproc) && \
+    ./autogen.sh && \
+    ./configure && \
+    make -j$NPROC && \
+    make -j$NPROC check && \
+    make -j$NPROC install && \
+    ldconfig
+
+WORKDIR $BASE
+COPY ./compute/ $BASE/
+RUN \
+    rm -rf $BASE/protobuf
+
+# Installing rust stable
+# ----------------------------------------------------
+RUN \
+    curl -f -L https://static.rust-lang.org/rustup.sh -O && \
+    sh rustup.sh -y
+
+# Loading cargo bin in path
+ENV PATH="/root/.cargo/bin:$PATH"
+
+# Compile dispatcher
+WORKDIR $BASE
+RUN --mount=type=ssh cargo build
+
+###Cleaning up
+#RUN \
+#    rm -rf /var/lib/apt/lists/*
+
+USER root
