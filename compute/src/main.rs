@@ -1,10 +1,10 @@
 // error-chain recursion
 #![recursion_limit = "1024"]
+#![warn(unused_extern_crates)]
 
 extern crate compute;
 extern crate dispatcher;
 extern crate env_logger;
-extern crate error;
 extern crate utils;
 
 use compute::Compute;

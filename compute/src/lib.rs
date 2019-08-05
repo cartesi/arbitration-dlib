@@ -1,3 +1,4 @@
+#![warn(unused_extern_crates)]
 pub mod compute;
 pub mod mm;
 pub mod partition;
@@ -5,8 +6,6 @@ pub mod vg;
 
 extern crate configuration;
 extern crate emulator;
-extern crate emulator_interface;
-extern crate env_logger;
 extern crate error;
 
 #[macro_use]
@@ -16,11 +15,6 @@ extern crate log;
 extern crate dispatcher;
 extern crate ethabi;
 extern crate ethereum_types;
-extern crate hex;
-extern crate serde;
-extern crate serde_json;
-extern crate state;
-extern crate time;
 extern crate transaction;
 
 use ethereum_types::{Address, U256};
