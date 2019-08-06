@@ -199,7 +199,7 @@ Review if events are appropriate for light client
 
 ## Contributing
 
-Thank you for your interest in Cartesi! Head over to our [Contributing Guidelines](https://github.com/cartesi/arbitration-dlib/blob/Add-Contributing-Guidelines/CONTRIBUTING.md) for instructions on how to sign our Contributors Agreement and get started with Cartesi!
+Thank you for your interest in Cartesi! Head over to our [Contributing Guidelines](https://github.com/cartesi/arbitration-dlib/blob/master/CONTRIBUTING.md) for instructions on how to sign our Contributors Agreement and get started with Cartesi!
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
