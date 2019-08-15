@@ -46,6 +46,7 @@ def run_between_tests(port):
 
 def test_partition_present_divergence(port):
     base_test = BaseTest(port)
+    fake_address = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
@@ -73,7 +74,7 @@ def test_partition_present_divergence(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
         error_msg = "State should be DivergenceFound"
-        ret = base_test.partition_testaux.functions.getState(index).call({'from': address_1})
+        ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
         assert ret[5][0:15].decode('utf-8') == "DivergenceFound", error_msg
     
     

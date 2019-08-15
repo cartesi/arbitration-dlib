@@ -229,7 +229,7 @@ contract VGInstantiator is Decorated, VGInterface {
 
     // state getters
 
-    function getState(uint256 _index) public view
+    function getState(uint256 _index, address) public view
         onlyInstantiated(_index)
         returns ( address _challenger,
                 address _claimer,

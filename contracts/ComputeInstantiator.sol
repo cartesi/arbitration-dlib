@@ -242,7 +242,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         return (a, i);
     }
 
-    function getState(uint256 _index) public view returns
+    function getState(uint256 _index, address) public view returns
         ( address _challenger,
         address _claimer,
         uint256 _roundDuration,

@@ -231,7 +231,7 @@ contract MMInstantiator is MMInterface, Decorated {
         return ((instance[_index].provider == _user) || (instance[_index].client == _user));
     }
 
-    function getState(uint256 _index) public view
+    function getState(uint256 _index, address) public view
         onlyInstantiated(_index)
         returns (address _provider,
                 address _client,

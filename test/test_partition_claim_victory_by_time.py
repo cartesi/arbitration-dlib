@@ -47,6 +47,7 @@ def run_between_tests(port):
 
 def test_partition_claim_victory_by_time(port):
     base_test = BaseTest(port)
+    fake_address = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     address_3 = Web3.toChecksumAddress(base_test.w3.eth.accounts[2])
@@ -90,11 +91,11 @@ def test_partition_claim_victory_by_time(port):
 
         if (i%2) == 0:
             error_msg = "State should be ChallengerWon"
-            ret = base_test.partition_testaux.functions.getState(index).call({'from': address_1})
+            ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
             assert ret[5][0:13].decode('utf-8') == "ChallengerWon", error_msg
         else:
             error_msg = "State should be ClaimerWon"
-            ret = base_test.partition_testaux.functions.getState(index).call({'from': address_1})
+            ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
             assert ret[5][0:10].decode('utf-8') == "ClaimerWon", error_msg
 
 def test_partition_claimer_timeout(port):

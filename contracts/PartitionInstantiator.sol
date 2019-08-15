@@ -234,7 +234,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
 
     // Getters methods
 
-    function getState(uint256 _index) public view
+    function getState(uint256 _index, address) public view
         //onlyInstantiated(_index)
         returns (address _challenger,
                 address _claimer,
