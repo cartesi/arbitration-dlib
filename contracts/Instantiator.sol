@@ -64,7 +64,7 @@ contract Instantiator {
 
     function isConcerned(uint256 _index, address _user) public view returns (bool);
 
-    function getSubInstances(uint256 _index) public view returns (address[] memory _addresses, uint256[] memory _indices);
+    function getSubInstances(uint256 _index, address) public view returns (address[] memory _addresses, uint256[] memory _indices);
 
     function deactivate(uint256 _index) internal {
         active[_index] = false;

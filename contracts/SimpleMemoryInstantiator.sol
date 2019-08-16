@@ -97,7 +97,7 @@ contract SimpleMemoryInstantiator is MMInterface {
     return(bytes32(0));
   }
 
-  function getSubInstances(uint256)
+  function getSubInstances(uint256, address)
     public view returns (address[] memory _addresses,
                         uint256[] memory _indices)
   {

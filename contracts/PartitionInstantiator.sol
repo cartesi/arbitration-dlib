@@ -343,7 +343,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
     }
 
-    function getSubInstances(uint256)
+    function getSubInstances(uint256, address)
         public view returns (address[] memory, uint256[] memory)
     {
         address[] memory a = new address[](0);

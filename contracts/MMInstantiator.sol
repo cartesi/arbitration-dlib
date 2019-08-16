@@ -252,7 +252,7 @@ contract MMInstantiator is MMInterface, Decorated {
         );
     }
 
-    function getSubInstances(uint256)
+    function getSubInstances(uint256, address)
         public view returns (address[] memory, uint256[] memory)
     {
         address[] memory a = new address[](0);

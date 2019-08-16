@@ -224,7 +224,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
     }
 
-    function getSubInstances(uint256 _index)
+    function getSubInstances(uint256 _index, address)
         public view returns (address[] memory _addresses,
                             uint256[] memory _indices)
     {
