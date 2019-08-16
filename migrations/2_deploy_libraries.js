@@ -9,7 +9,6 @@ var rel = "../build/contracts";
 
 var MMPath = path.join(__dirname, rel, "/MMInstantiator.json");
 var SimpleMemoryPath = path.join(__dirname, rel, "/SimpleMemoryInstantiator.json");
-//var SubleqPath = path.join(__dirname, rel, "/Subleq.json");
 var HasherPath = path.join(__dirname, rel, "/Hasher.json");
 var PartitionPath = path.join(__dirname, rel, "/PartitionInstantiator.json");
 var VGPath = path.join(__dirname, rel, "/VGInstantiator.json");
@@ -18,7 +17,6 @@ var TestHashPath = path.join(__dirname, rel, "/TestHash.json");
 
 var MMInstantiator = artifacts.require("./MMInstantiator.sol");
 var SimpleMemoryInstantiator = artifacts.require("./SimpleMemoryInstantiator.sol");
-//var Subleq = artifacts.require("./Subleq.sol");
 var Hasher = artifacts.require("./Hasher.sol");
 var PartitionInstantiator = artifacts.require("./PartitionInstantiator.sol");
 var VGInstantiator = artifacts.require("./VGInstantiator.sol");
@@ -36,10 +34,7 @@ var PartitionTestAux =
 
 module.exports = function(deployer, network, accounts) {
   deployer.then(async () => {
-    // await deployer.deploy(Token);
     await deployer.deploy(SimpleMemoryInstantiator);
-//    await deployer.deploy(Subleq);
-//    let SubleqContract = await Subleq.deployed();
     await deployer.deploy(PartitionInstantiator);
     let PartitionContract = await PartitionInstantiator.deployed();
     await deployer.deploy(MMInstantiator)
