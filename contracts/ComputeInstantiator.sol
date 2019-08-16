@@ -44,6 +44,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     struct ComputeCtx {
         address challenger;
         address claimer;
+        address user;
         uint256 roundDuration; // time interval to interact with this contract
         uint256 timeOfLastMove; // last time someone made a move with deadline
         address machine; // machine which will run the challenge
@@ -107,6 +108,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     function instantiate(
         address _challenger,
         address _claimer,
+        address _user,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
@@ -116,6 +118,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         ComputeCtx storage currentInstance = instance[currentIndex];
         currentInstance.challenger = _challenger;
         currentInstance.claimer = _claimer;
+        currentInstance.user = _user;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.machine = _machineAddress;
         currentInstance.initialHash = _initialHash;
@@ -167,6 +170,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         instance[_index].vgInstance = vg.instantiate(
             instance[_index].challenger,
             instance[_index].claimer,
+            instance[_index].user,
             instance[_index].roundDuration,
             instance[_index].machine,
             instance[_index].initialHash,

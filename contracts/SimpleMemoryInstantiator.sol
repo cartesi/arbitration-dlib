@@ -38,7 +38,7 @@ contract SimpleMemoryInstantiator is MMInterface {
 
   mapping(uint256 => SimpleMemoryCtx) private instance;
 
-  function instantiate(address, address, bytes32) public returns (uint256)
+  function instantiate(address, address, address, bytes32) public returns (uint256)
   {
     active[currentIndex] = true;
     return(currentIndex++);

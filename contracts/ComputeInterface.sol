@@ -45,6 +45,7 @@ contract ComputeInterface is Instantiator {
     function instantiate(
         address _challenger,
         address _claimer,
+        address _user,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,

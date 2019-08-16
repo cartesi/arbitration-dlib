@@ -46,11 +46,12 @@ def run_between_tests(port):
 
 def test_instantiator(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     address_3 = Web3.toChecksumAddress(base_test.w3.eth.accounts[2])
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, bytes([5]), bytes([225]), 50000, 3, 55).transact({'from': address_1})
+    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, fake_user, bytes([5]), bytes([225]), 50000, 3, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     next_index = partition_logs[0]['args']['_index']
@@ -64,7 +65,7 @@ def test_instantiator(port):
 
         if(i%2) == 0:
             # call instantiate function via transaction
-            tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, initial_hash_seed, final_hash_seed, 50000 * i, i, 55 * i).transact({'from': address_1})
+            tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, fake_user, initial_hash_seed, final_hash_seed, 50000 * i, i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
             partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
             index = partition_logs[0]['args']['_index']
@@ -81,7 +82,7 @@ def test_instantiator(port):
             ret_query_size = base_test.partition_testaux.functions.getQuerySize(index).call({'from': address_1})
             assert ret_query_size == i, error_msg
         else:
-            tx_hash = base_test.partition_testaux.functions.instantiate(address_3, address_2, initial_hash_seed, final_hash_seed, 50000 * i, i + 7, 55 * i).transact({'from': address_1})
+            tx_hash = base_test.partition_testaux.functions.instantiate(address_3, address_2, fake_user, initial_hash_seed, final_hash_seed, 50000 * i, i + 7, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
             partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
             index = partition_logs[0]['args']['_index']

@@ -47,7 +47,7 @@ def run_between_tests(port):
 
 def test_partition_claim_victory_by_time(port):
     base_test = BaseTest(port)
-    fake_address = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     address_3 = Web3.toChecksumAddress(base_test.w3.eth.accounts[2])
@@ -59,7 +59,7 @@ def test_partition_claim_victory_by_time(port):
         final_hash_seed = bytes([4 + i])
 
         if(i%2) == 0:
-            tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, initial_hash_seed, final_hash_seed, 5000 * i, 3 * i, 55 * i).transact({'from': address_1})
+            tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, fake_user, initial_hash_seed, final_hash_seed, 5000 * i, 3 * i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
             partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
             index = partition_logs[0]['args']['_index']
@@ -67,7 +67,7 @@ def test_partition_claim_victory_by_time(port):
             tx_hash = base_test.partition_testaux.functions.setState(index, PartitionState.WaitingHashes.value).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
         else:
-            tx_hash = base_test.partition_testaux.functions.instantiate(address_2, address_1, initial_hash_seed, final_hash_seed, 5000 * i, 3 * i, 55 * i).transact({'from': address_1})
+            tx_hash = base_test.partition_testaux.functions.instantiate(address_2, address_1, fake_user, initial_hash_seed, final_hash_seed, 5000 * i, 3 * i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
             partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
             index = partition_logs[0]['args']['_index']
@@ -91,15 +91,16 @@ def test_partition_claim_victory_by_time(port):
 
         if (i%2) == 0:
             error_msg = "State should be ChallengerWon"
-            ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
+            ret = base_test.partition_testaux.functions.getState(index, fake_user).call({'from': address_1})
             assert ret[5][0:13].decode('utf-8') == "ChallengerWon", error_msg
         else:
             error_msg = "State should be ClaimerWon"
-            ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
+            ret = base_test.partition_testaux.functions.getState(index, fake_user).call({'from': address_1})
             assert ret[5][0:10].decode('utf-8') == "ClaimerWon", error_msg
 
 def test_partition_claimer_timeout(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
@@ -107,7 +108,7 @@ def test_partition_claimer_timeout(port):
     initial_hash_seed = bytes([3])
     final_hash_seed = bytes([4])
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 50000, 3, 3600).transact({'from': challenger})
+    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 50000, 3, 3600).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -142,6 +143,7 @@ def test_partition_claimer_timeout(port):
     
 def test_partition_challenger_timeout(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     query_size = 3
@@ -150,7 +152,7 @@ def test_partition_challenger_timeout(port):
     initial_hash_seed = bytes([3])
     final_hash_seed = bytes([4])
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 50000, query_size, 3600).transact({'from': challenger})
+    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 50000, query_size, 3600).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']

@@ -47,10 +47,11 @@ def run_between_tests(port):
 
 def test_proveread_and_provewrite(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
@@ -88,10 +89,11 @@ def test_proveread_and_provewrite(port):
 
 def test_finish_proof_phase(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
@@ -113,10 +115,11 @@ def test_finish_proof_phase(port):
         
 def test_finish_replay(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
@@ -166,15 +169,16 @@ def test_finish_replay(port):
 
 def test_read_and_write(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
     
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     second_index = mm_logs[0]['args']['_index']
@@ -269,12 +273,12 @@ def test_read_and_write(port):
     else:
         raise Exception(error_msg)
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
     
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     second_index = mm_logs[0]['args']['_index']
@@ -372,12 +376,13 @@ def test_read_and_write(port):
 
 def test_instantiator(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
 
     error_msg = "Provider and client need to differ"
     try:
-        tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
+        tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, bytes("initialHash", 'utf-8')).transact({'from': provider})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))

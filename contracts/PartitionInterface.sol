@@ -44,6 +44,7 @@ contract PartitionInterface is Instantiator {
     function instantiate(
         address _challenger,
         address _claimer,
+        address _user,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint _finalTime,

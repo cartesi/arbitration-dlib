@@ -46,13 +46,13 @@ def run_between_tests(port):
 
 def test_partition_reply_query(port):
     base_test = BaseTest(port)
-    fake_address = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 3000000, 19, 150).transact({'from': address_1})
+    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, fake_user, initial_hash_seed, final_hash_seed, 3000000, 19, 150).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -74,7 +74,7 @@ def test_partition_reply_query(port):
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     error_msg = "CurrentState should be WaitingQuery"
-    ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
+    ret = base_test.partition_testaux.functions.getState(index, fake_user).call({'from': address_1})
     assert ret[5][0:12].decode('utf-8') == "WaitingQuery", error_msg
 
     for i in range(0, query_size):
@@ -89,7 +89,7 @@ def test_partition_reply_query(port):
         hash_length = len(mock_reply_array[i])
         assert ret_hash[0:hash_length] == mock_reply_array[i], error_msg
         
-    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 3000000, 19, 150).transact({'from': address_1})
+    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, fake_user, initial_hash_seed, final_hash_seed, 3000000, 19, 150).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -111,7 +111,7 @@ def test_partition_reply_query(port):
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     error_msg = "CurrentState should be WaitingQuery"
-    ret = base_test.partition_testaux.functions.getState(index,fake_address).call({'from': address_1})
+    ret = base_test.partition_testaux.functions.getState(index,fake_user).call({'from': address_1})
     assert ret[5][0:12].decode('utf-8') == "WaitingQuery", error_msg
 
     for i in range(0, query_size):

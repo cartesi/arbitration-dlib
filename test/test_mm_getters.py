@@ -46,12 +46,13 @@ def run_between_tests(port):
 
 def test_getters(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash = bytes("initialHash", 'utf-8')
     new_hash = bytes("newHash", 'utf-8')
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, initial_hash).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, initial_hash).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
@@ -78,12 +79,13 @@ def test_getters(port):
     
 def test_state_getters(port):
     base_test = BaseTest(port)
+    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash = bytes("initialHash", 'utf-8')
     new_hash = bytes("newHash", 'utf-8')
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, initial_hash).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, initial_hash).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']

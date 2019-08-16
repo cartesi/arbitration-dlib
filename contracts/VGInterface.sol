@@ -45,6 +45,7 @@ contract VGInterface is Instantiator {
     function instantiate(
         address _challenger,
         address _claimer,
+        address _user,
         uint _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
