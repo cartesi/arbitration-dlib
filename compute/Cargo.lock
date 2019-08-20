@@ -341,7 +341,7 @@ dependencies = [
 [[package]]
 name = "configuration"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#9368178dd313ce034e8934be4718a554c501ce49"
+source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#df401cd8a46dd1f38a53f57fbbc0af94914c8084"
 dependencies = [
  "db-key 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -540,7 +540,7 @@ dependencies = [
 [[package]]
 name = "dispatcher"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#9368178dd313ce034e8934be4718a554c501ce49"
+source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#df401cd8a46dd1f38a53f57fbbc0af94914c8084"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1)",
  "crossbeam-utils 0.6.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -588,7 +588,7 @@ dependencies = [
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#9368178dd313ce034e8934be4718a554c501ce49"
+source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#df401cd8a46dd1f38a53f57fbbc0af94914c8084"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1)",
  "emulator_interface 0.1.0 (git+ssh://git@github.com/cartesi/grpc-interfaces?tag=v0.1.0-rc.1)",
@@ -599,7 +599,7 @@ dependencies = [
  "grpc 0.6.1 (git+https://github.com/stepancheg/grpc-rust.git?branch=v0.6)",
  "httpbis 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc-rust-grpc 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -616,7 +616,7 @@ dependencies = [
  "grpc 0.6.1 (git+https://github.com/stepancheg/grpc-rust.git?branch=v0.6)",
  "httpbis 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc-rust-grpc 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -644,7 +644,7 @@ dependencies = [
 [[package]]
 name = "error"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#9368178dd313ce034e8934be4718a554c501ce49"
+source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#df401cd8a46dd1f38a53f57fbbc0af94914c8084"
 dependencies = [
  "envy 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1086,7 +1086,7 @@ dependencies = [
  "futures-cpupool 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "httpbis 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tls-api 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "tls-api-stub 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-core 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1099,8 +1099,8 @@ name = "grpc-compiler"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "protobuf-codegen 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf-codegen 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1939,7 +1939,7 @@ dependencies = [
 
 [[package]]
 name = "protobuf"
-version = "2.8.0"
+version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bytes 0.4.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1947,10 +1947,10 @@ dependencies = [
 
 [[package]]
 name = "protobuf-codegen"
-version = "2.8.0"
+version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1963,13 +1963,13 @@ dependencies = [
 
 [[package]]
 name = "protoc-rust"
-version = "2.8.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "protobuf-codegen 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf-codegen 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "tempfile 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1978,9 +1978,9 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "grpc-compiler 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "protoc 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "protoc-rust 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "protoc-rust 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -2486,7 +2486,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "state"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#9368178dd313ce034e8934be4718a554c501ce49"
+source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#df401cd8a46dd1f38a53f57fbbc0af94914c8084"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1)",
  "db-key 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2924,7 +2924,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "transaction"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#9368178dd313ce034e8934be4718a554c501ce49"
+source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#df401cd8a46dd1f38a53f57fbbc0af94914c8084"
 dependencies = [
  "common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1)",
@@ -3095,7 +3095,7 @@ source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672
 [[package]]
 name = "utils"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#9368178dd313ce034e8934be4718a554c501ce49"
+source = "git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1#df401cd8a46dd1f38a53f57fbbc0af94914c8084"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi/dispatcher?tag=v0.1.0-rc.1)",
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3493,10 +3493,10 @@ dependencies = [
 "checksum primal-sieve 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)" = "da2d6ed369bb4b0273aeeb43f07c105c0117717cbae827b20719438eb2eb798c"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
 "checksum proc-macro2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "4c5c2380ae88876faae57698be9e9775e3544decad214599c3a6266cca6ac802"
-"checksum protobuf 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8aefcec9f142b524d98fc81d07827743be89dd6586a1ba6ab21fa66a500b3fa5"
-"checksum protobuf-codegen 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "31539be8028d6b9e8e1b3b7c74e2fa3555302e27b2cc20dbaee6ffba648f75e2"
+"checksum protobuf 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5f00e4a3cb64ecfeac2c0a73c74c68ae3439d7a6bead3870be56ad5dd2620a6f"
+"checksum protobuf-codegen 2.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d2c6e555166cdb646306f599da020e01548e9f4d6ec2fd39802c6db2347cbd3e"
 "checksum protoc 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d60e39b07eb4039379829c55c11eba3fd8bd72b265b9ece8cc623b106908c08d"
-"checksum protoc-rust 2.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2d48a8543845706a2cf6336b9540d4a27efba0f666189690c1a8f50ae182ee1b"
+"checksum protoc-rust 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "451bac6bc50c1f0a5f5298a369a1d7b3c243a6ae15cbb299a6b0ad9a88b35e96"
 "checksum protoc-rust-grpc 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "89b0b611e3a7fda302581288521d0b1f4662b4fdf285c5ef5f8deb38f99f96ff"
 "checksum pwasm-utils 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "efb0dcbddbb600f47a7098d33762a00552c671992171637f5bb310b37fe1f0e4"
 "checksum quick-error 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9274b940887ce9addde99c4eee6b5c44cc494b182b97e73dc8ffdcb3397fd3f0"
