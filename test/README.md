@@ -19,7 +19,6 @@ run run_python_tests.sh
 
 def test_getters():
     # use BaseTest to get all contracts' address and abi
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
@@ -28,7 +27,7 @@ def test_getters():
 
     # call instantiate function via transaction
     # didn't use call() because it doesn't really send transaction to the blockchain
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, fake_user, initial_hash).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, initial_hash).transact({'from': provider})
     # wait for the transaction to be mined
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     # get the returned index via the event filter

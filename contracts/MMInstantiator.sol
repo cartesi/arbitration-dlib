@@ -48,7 +48,6 @@ contract MMInstantiator is MMInterface, Decorated {
     struct MMCtx {
         address provider;
         address client;
-        address user;
         bytes32 initialHash;
         bytes32 newHash; // hash after some write operations have been proved
         ReadWrite[] history;
@@ -90,16 +89,11 @@ contract MMInstantiator is MMInterface, Decorated {
     event FinishedProofs(uint256 _index);
     event FinishedReplay(uint256 _index);
 
-    function instantiate(
-        address _provider,
-        address _client,
-        address _user,
-        bytes32 _initialHash) public returns (uint256) {
+    function instantiate(address _provider, address _client, bytes32 _initialHash) public returns (uint256) {
         require(_provider != _client, "Provider and client need to differ");
         MMCtx storage currentInstance = instance[currentIndex];
         currentInstance.provider = _provider;
         currentInstance.client = _client;
-        currentInstance.user = _user;
         currentInstance.initialHash = _initialHash;
         currentInstance.newHash = _initialHash;
         currentInstance.historyPointer = 0;

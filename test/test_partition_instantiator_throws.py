@@ -47,13 +47,12 @@ def run_between_tests(port):
 
 def test_reply_query_throws(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
+    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -123,13 +122,12 @@ def test_reply_query_throws(port):
 
 def test_make_query_throws(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
+    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -177,14 +175,13 @@ def test_make_query_throws(port):
 
 def test_present_divergence_throws(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
     divergence_time = 12
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
+    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -232,13 +229,12 @@ def test_present_divergence_throws(port):
 
 def test_modifier(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
+    tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -275,7 +271,6 @@ def test_modifier(port):
         
 def test_instantiator(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -283,7 +278,7 @@ def test_instantiator(port):
 
     error_msg = "Challenger and claimer have the same address"
     try:
-        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 55).transact({'from': challenger})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
@@ -295,7 +290,7 @@ def test_instantiator(port):
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     error_msg = "Final Time has to be bigger than zero"
     try:
-        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 0, 15, 55).transact({'from': challenger})
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 0, 15, 55).transact({'from': challenger})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
@@ -306,7 +301,7 @@ def test_instantiator(port):
 
     error_msg = "Query Size must be bigger than 2"
     try:
-        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 2, 55).transact({'from': challenger})
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 2, 55).transact({'from': challenger})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
@@ -317,7 +312,7 @@ def test_instantiator(port):
 
     error_msg = "Query Size must be less than max"
     try:
-        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 100, 55).transact({'from': challenger})
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 100, 55).transact({'from': challenger})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
@@ -328,7 +323,7 @@ def test_instantiator(port):
 
     error_msg = "Round Duration has to be greater than 50 seconds"
     try:
-        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, fake_user, initial_hash_seed, final_hash_seed, 5000, 15, 50).transact({'from': challenger})
+        tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 5000, 15, 50).transact({'from': challenger})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))

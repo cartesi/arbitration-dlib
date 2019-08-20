@@ -44,7 +44,6 @@ contract VGInstantiator is Decorated, VGInterface {
     struct VGCtx {
         address challenger; // the two parties involved in each instance
         address claimer;
-        address user;
         uint roundDuration; // time interval to interact with this contract
         MachineInterface machine; // the machine which will run the challenge
         bytes32 initialHash; // hash of machine memory that both aggree uppon
@@ -110,7 +109,6 @@ contract VGInstantiator is Decorated, VGInterface {
     function instantiate(
         address _challenger,
         address _claimer,
-        address _user,
         uint _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
@@ -120,7 +118,6 @@ contract VGInstantiator is Decorated, VGInterface {
         require(_finalTime > 0, "Final time must be greater than zero");
         instance[currentIndex].challenger = _challenger;
         instance[currentIndex].claimer = _claimer;
-        instance[currentIndex].user = _user;
         instance[currentIndex].roundDuration = _roundDuration;
         instance[currentIndex].machine = MachineInterface(_machineAddress);
         instance[currentIndex].initialHash = _initialHash;
@@ -130,7 +127,6 @@ contract VGInstantiator is Decorated, VGInterface {
         instance[currentIndex].partitionInstance = partition.instantiate(
             _challenger,
             _claimer,
-            _user,
             _initialHash,
             _claimerFinalHash,
             _finalTime,
@@ -194,7 +190,6 @@ contract VGInstantiator is Decorated, VGInterface {
         instance[_index].mmInstance = mm.instantiate(
             instance[_index].challenger,
             memoryInteractorAddress,
-            instance[_index].user,
             instance[_index].hashBeforeDivergence
         );
         // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!

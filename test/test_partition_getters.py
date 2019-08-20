@@ -47,7 +47,6 @@ def run_between_tests(port):
 
 def test_divergence_time(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash
@@ -55,7 +54,7 @@ def test_divergence_time(port):
     final_hash_seed = bytes([4])
     new_divergence_time = 5
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, fake_user, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
+    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -70,7 +69,6 @@ def test_divergence_time(port):
     
 def test_time_submitted(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash
@@ -78,7 +76,7 @@ def test_time_submitted(port):
     final_hash_seed = bytes([4])
     key = 3
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, fake_user, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
+    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -93,7 +91,6 @@ def test_time_submitted(port):
     
 def test_time_hash(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash
@@ -102,7 +99,7 @@ def test_time_hash(port):
     new_time_hash = bytes([0x01, 0x21])
     key = 3
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, fake_user, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
+    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']
@@ -117,7 +114,6 @@ def test_time_hash(port):
     
 def test_query_array(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash
@@ -126,7 +122,7 @@ def test_query_array(port):
     query_size = 15
     query_array = np.random.randint(9999999, size=query_size).tolist()
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, fake_user, initial_hash_seed, final_hash_seed, 5000, query_size, 55).transact({'from': provider})
+    tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, query_size, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index = partition_logs[0]['args']['_index']

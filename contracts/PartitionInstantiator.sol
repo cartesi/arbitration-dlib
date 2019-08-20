@@ -39,7 +39,6 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     struct PartitionCtx {
         address challenger;
         address claimer;
-        address user;
         uint finalTime; // hashes provided between 0 and finalTime (inclusive)
         mapping(uint => bool) timeSubmitted; // marks a time as submitted
         mapping(uint => bytes32) timeHash; // hashes are signed by claimer
@@ -93,7 +92,6 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     function instantiate(
         address _challenger,
         address _claimer,
-        address _user,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint _finalTime,
@@ -107,7 +105,6 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         require(_roundDuration > 50, "Round Duration has to be greater than 50 seconds");
         instance[currentIndex].challenger = _challenger;
         instance[currentIndex].claimer = _claimer;
-        instance[currentIndex].user = _user;
         instance[currentIndex].finalTime = _finalTime;
         instance[currentIndex].timeSubmitted[0] = true;
         instance[currentIndex].timeSubmitted[_finalTime] = true;

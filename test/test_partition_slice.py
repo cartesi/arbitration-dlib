@@ -46,23 +46,22 @@ def run_between_tests(port):
 
 def test_partition_slice(port):
     base_test = BaseTest(port)
-    fake_user = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
     final_hash_seed = bytes("finalHash", 'utf-8')
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, fake_user, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
+    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index_1 = partition_logs[0]['args']['_index']
 
-    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, fake_user, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
+    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index_2 = partition_logs[0]['args']['_index']
     
-    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, fake_user, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
+    tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
     index_3 = partition_logs[0]['args']['_index']
