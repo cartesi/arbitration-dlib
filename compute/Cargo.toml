@@ -8,22 +8,18 @@ authors = ["Cartesi Team"]
 [dependencies]
 log = "0.4"
 env_logger = "0.6.0"
-error = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
-transaction = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
-configuration = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
-utils = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+error = { git = "ssh://git@github.com/cartesi-corp/dispatcher", branch = "develop"}
+transaction = { git = "ssh://git@github.com/cartesi-corp/dispatcher", branch = "develop"}
+configuration = { git = "ssh://git@github.com/cartesi-corp/dispatcher", branch = "develop"}
+utils = { git = "ssh://git@github.com/cartesi-corp/dispatcher", branch = "develop"}
 ethereum-types = "0.4"
 ethabi = "6.1.0"
 serde_json = "1.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
-state = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "add-extra-address-parameters"}
-dispatcher = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "add-extra-address-parameters"}
-emulator = { git = "ssh://git@github.com/cartesi/dispatcher", branch = "add-extra-address-parameters"}
-emulator_interface = { git = "ssh://git@github.com/cartesi/grpc-interfaces", branch = "master"}
-
-state = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
-dispatcher = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
-emulator = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+emulator_interface = { git = "ssh://git@github.com/cartesi-corp/grpc-interfaces", tag = "v0.1.0-rc.1"}
+state = { git = "ssh://git@github.com/cartesi-corp/dispatcher", branch = "develop"}
+dispatcher = { git = "ssh://git@github.com/cartesi-corp/dispatcher", branch = "develop"}
+emulator = { git = "ssh://git@github.com/cartesi-corp/dispatcher", branch = "develop"}
 
 
