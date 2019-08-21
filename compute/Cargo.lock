@@ -205,7 +205,7 @@ dependencies = [
 [[package]]
 name = "blooms-db"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethbloom 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -313,17 +313,17 @@ dependencies = [
 [[package]]
 name = "common-types"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethjson 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethkey 0.3.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethjson 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethkey 0.3.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "keccak-hash 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-bytes 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rlp_derive 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "unexpected 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "rlp_derive 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "unexpected 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
 ]
 
 [[package]]
@@ -333,7 +333,7 @@ dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "dispatcher 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "emulator 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
- "emulator_interface 0.1.0 (git+ssh://git@github.com/cartesi-corp/grpc-interfaces?tag=v0.1.0-rc.1)",
+ "emulator_interface 0.1.0 (git+ssh://git@github.com/cartesi/grpc-interfaces?tag=v0.1.0-rc.1)",
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "error 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "ethabi 6.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -350,7 +350,7 @@ dependencies = [
 [[package]]
 name = "configuration"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#0f2f9385c84d9aa6b8cd7918e33b49e1a17c933c"
+source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#4bc32ff5a1cd34f9471c83d7e5483bc238153ebc"
 dependencies = [
  "db-key 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -370,7 +370,7 @@ dependencies = [
 
 [[package]]
 name = "constant_time_eq"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -513,7 +513,7 @@ name = "crypto-mac"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "constant_time_eq 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "constant_time_eq 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "generic-array 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -550,7 +550,7 @@ dependencies = [
 [[package]]
 name = "dispatcher"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#0f2f9385c84d9aa6b8cd7918e33b49e1a17c933c"
+source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#4bc32ff5a1cd34f9471c83d7e5483bc238153ebc"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "crossbeam-utils 0.6.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -598,10 +598,10 @@ dependencies = [
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#0f2f9385c84d9aa6b8cd7918e33b49e1a17c933c"
+source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#4bc32ff5a1cd34f9471c83d7e5483bc238153ebc"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
- "emulator_interface 0.1.0 (git+ssh://git@github.com/cartesi-corp/grpc-interfaces?tag=v0.1.0-rc.1)",
+ "emulator_interface 0.1.0 (git+ssh://git@github.com/cartesi/grpc-interfaces?tag=v0.1.0-rc.1)",
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "error 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -617,7 +617,7 @@ dependencies = [
 [[package]]
 name = "emulator_interface"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/grpc-interfaces?tag=v0.1.0-rc.1#86a20fcc1ab1e2d202db71da3b23fb1f2031d655"
+source = "git+ssh://git@github.com/cartesi/grpc-interfaces?tag=v0.1.0-rc.1#91a1d8970e6013a09caec13b2934453b0e9bdd9a"
 dependencies = [
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -654,12 +654,12 @@ dependencies = [
 [[package]]
 name = "error"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#0f2f9385c84d9aa6b8cd7918e33b49e1a17c933c"
+source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#4bc32ff5a1cd34f9471c83d7e5483bc238153ebc"
 dependencies = [
  "envy 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethabi 6.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethkey 0.3.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethkey 0.3.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "grpc 0.6.1 (git+https://github.com/stepancheg/grpc-rust.git?branch=v0.6)",
  "hyper 0.12.33 (registry+https://github.com/rust-lang/crates.io-index)",
  "leveldb 0.8.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "ethash"
 version = "1.12.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "crunchy 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "either 1.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -752,42 +752,42 @@ dependencies = [
 [[package]]
 name = "ethcore"
 version = "1.12.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ansi_term 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "bn 0.4.4 (git+https://github.com/paritytech/bn)",
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "common-types 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "crossbeam 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethabi 6.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethabi-contract 6.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethabi-derive 6.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethash 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethcore-blockchain 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethcore-bloom-journal 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethcore-call-contract 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethcore-db 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethcore-io 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethcore-miner 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethash 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethcore-blockchain 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethcore-bloom-journal 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethcore-call-contract 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethcore-db 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethcore-io 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethcore-miner 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethjson 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethkey 0.3.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "evm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethjson 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethkey 0.3.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "evm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "hash-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.5.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "journaldb 0.2.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "journaldb 0.2.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "keccak-hash 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "keccak-hasher 0.1.1 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "keccak-hasher 0.1.1 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "kvdb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "kvdb-memorydb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "len-caching-lock 0.1.1 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "len-caching-lock 0.1.1 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "lru-cache 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "macros 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "memory-cache 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "macros 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "memory-cache 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "memory-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)",
  "num_cpus 1.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -795,34 +795,34 @@ dependencies = [
  "parity-crypto 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-snappy 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "patricia-trie-ethereum 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "patricia-trie-ethereum 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "rand 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "rayon 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rlp_derive 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "rlp_derive 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "rustc-hex 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
- "stats 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "time-utils 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "stats 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "time-utils 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "trace-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "trie-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "triehash-ethereum 0.2.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "unexpected 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "using_queue 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "vm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "wasm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "triehash-ethereum 0.2.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "unexpected 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "using_queue 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "vm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "wasm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
 ]
 
 [[package]]
 name = "ethcore-blockchain"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ansi_term 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "blooms-db 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "common-types 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethcore-db 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "blooms-db 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethcore-db 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.5.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -832,14 +832,14 @@ dependencies = [
  "parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rayon 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rlp_compress 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "rlp_derive 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "rlp_compress 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "rlp_derive 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
 ]
 
 [[package]]
 name = "ethcore-bloom-journal"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "siphasher 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -847,9 +847,9 @@ dependencies = [
 [[package]]
 name = "ethcore-call-contract"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
- "common-types 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-bytes 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -857,21 +857,21 @@ dependencies = [
 [[package]]
 name = "ethcore-db"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
- "common-types 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "kvdb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rlp_derive 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "rlp_derive 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
 ]
 
 [[package]]
 name = "ethcore-io"
 version = "1.12.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "crossbeam-deque 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -888,22 +888,22 @@ dependencies = [
 [[package]]
 name = "ethcore-miner"
 version = "1.12.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ansi_term 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "common-types 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "error-chain 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethabi 6.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethabi-contract 6.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethabi-derive 6.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethcore-call-contract 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethcore-call-contract 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.28 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "keccak-hash 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "linked-hash-map 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-runtime 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "parity-runtime 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "trace-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -934,7 +934,7 @@ dependencies = [
 [[package]]
 name = "ethjson"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-hex 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -946,7 +946,7 @@ dependencies = [
 [[package]]
 name = "ethkey"
 version = "0.3.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "edit-distance 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -954,7 +954,7 @@ dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "memzero 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "memzero 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "parity-crypto 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-wordlist 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "quick-error 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -968,7 +968,7 @@ dependencies = [
 [[package]]
 name = "evm"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "bit-set 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -976,11 +976,11 @@ dependencies = [
  "keccak-hash 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "memory-cache 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "memory-cache 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "num-bigint 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-bytes 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "vm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "vm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
 ]
 
 [[package]]
@@ -991,7 +991,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "fastmap"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "plain_hasher 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1123,7 +1123,7 @@ dependencies = [
  "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.28 (registry+https://github.com/rust-lang/crates.io-index)",
  "http 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "indexmap 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "indexmap 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "slab 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "string 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1296,7 +1296,7 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.0.2"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -1337,13 +1337,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "journaldb"
 version = "0.2.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "fastmap 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "fastmap 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "hash-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "keccak-hasher 0.1.1 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "keccak-hasher 0.1.1 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "kvdb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "memory-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1376,7 +1376,7 @@ dependencies = [
 [[package]]
 name = "keccak-hasher"
 version = "0.1.1"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hash-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1424,7 +1424,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "len-caching-lock"
 version = "0.1.1"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1493,7 +1493,7 @@ dependencies = [
 [[package]]
 name = "macros"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 
 [[package]]
 name = "matches"
@@ -1530,7 +1530,7 @@ dependencies = [
 [[package]]
 name = "memory-cache"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lru-cache 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1553,7 +1553,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "memzero"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 
 [[package]]
 name = "mime"
@@ -1802,7 +1802,7 @@ dependencies = [
 [[package]]
 name = "parity-runtime"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "futures 0.1.28 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1888,12 +1888,12 @@ dependencies = [
 [[package]]
 name = "patricia-trie-ethereum"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "elastic-array 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hash-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "keccak-hasher 0.1.1 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "keccak-hasher 0.1.1 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "parity-bytes 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "trie-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2340,7 +2340,7 @@ dependencies = [
 [[package]]
 name = "rlp_compress"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "elastic-array 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2350,7 +2350,7 @@ dependencies = [
 [[package]]
 name = "rlp_derive"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2559,7 +2559,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "state"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#0f2f9385c84d9aa6b8cd7918e33b49e1a17c933c"
+source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#4bc32ff5a1cd34f9471c83d7e5483bc238153ebc"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "db-key 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2579,7 +2579,7 @@ dependencies = [
 [[package]]
 name = "stats"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -2704,7 +2704,7 @@ dependencies = [
 [[package]]
 name = "time-utils"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 
 [[package]]
 name = "timer"
@@ -2997,18 +2997,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "transaction"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#0f2f9385c84d9aa6b8cd7918e33b49e1a17c933c"
+source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#4bc32ff5a1cd34f9471c83d7e5483bc238153ebc"
 dependencies = [
- "common-types 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "envy 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "error 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "ethabi 6.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethcore 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethcore 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethjson 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
- "ethkey 0.3.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethjson 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
+ "ethkey 0.3.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "keccak-hash 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3054,10 +3054,10 @@ dependencies = [
 [[package]]
 name = "triehash-ethereum"
 version = "0.2.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "keccak-hasher 0.1.1 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "keccak-hasher 0.1.1 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "triehash 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -3095,7 +3095,7 @@ dependencies = [
 [[package]]
 name = "unexpected"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 
 [[package]]
 name = "unicase"
@@ -3168,7 +3168,7 @@ dependencies = [
 [[package]]
 name = "using_queue"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 
 [[package]]
 name = "utf8-ranges"
@@ -3178,7 +3178,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "utils"
 version = "0.1.0"
-source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#0f2f9385c84d9aa6b8cd7918e33b49e1a17c933c"
+source = "git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop#4bc32ff5a1cd34f9471c83d7e5483bc238153ebc"
 dependencies = [
  "configuration 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)",
  "env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3206,15 +3206,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vm"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "ethjson 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "ethjson 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "keccak-hash 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-bytes 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "patricia-trie-ethereum 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "patricia-trie-ethereum 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "trie-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -3242,7 +3242,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "wasm"
 version = "0.1.0"
-source = "git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
+source = "git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed#672dc8751b92c258c7a69a89e9e23870bacdce58"
 dependencies = [
  "byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3250,7 +3250,7 @@ dependencies = [
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-wasm 0.31.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-utils 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "vm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)",
+ "vm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)",
  "wasmi 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -3404,7 +3404,7 @@ dependencies = [
 "checksum block-cipher-trait 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1c924d49bd09e7c06003acda26cd9742e796e34282ec6c1189404dee0c1f4774"
 "checksum block-modes 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "31aa8410095e39fdb732909fb5730a48d5bd7c2e3cd76bd1b07b3dbea130c529"
 "checksum block-padding 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "6d4dc3af3ee2e12f3e5d224e5e1e3d73668abbeb69e566d361f7d5563a4fdf09"
-"checksum blooms-db 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum blooms-db 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum bn 0.4.4 (git+https://github.com/paritytech/bn)" = "<none>"
 "checksum byte-tools 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "560c32574a12a89ecd91f5e742165893f86e3ab98d21f8ea548658eb9eef5f40"
 "checksum byte-tools 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "e3b5ca7a04898ad4bcd41c90c5285445ff5b791899bb1b0abdd2a2aa791211d7"
@@ -3417,9 +3417,9 @@ dependencies = [
 "checksum clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5067f5bb2d80ef5d68b4c87db81601f0b75bca627bc2ef76b141d7b846a3c6d9"
 "checksum cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 "checksum cmake 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)" = "3c84c596dcf125d6781f58e3f4254677ec2a6d8aa56e8501ac277100990b3229"
-"checksum common-types 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum common-types 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum configuration 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)" = "<none>"
-"checksum constant_time_eq 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "8ff012e225ce166d4422e0e78419d901719760f62ae2b7969ca6b564d1b54a9e"
+"checksum constant_time_eq 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "995a44c877f9212528ccc74b21a232f66ad69001e40ede5bcee2ac9ef2657120"
 "checksum core-foundation 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)" = "25b9e03f145fd4f2bf705e07b900cd41fc636598fe5dc452fd0db1441c3f496d"
 "checksum core-foundation-sys 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e7ca8a5221364ef15ce201e8ed2f609fc312682a8f4e0e3d4aa5879764e0fa3b"
 "checksum crossbeam 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d7408247b1b87f480890f28b670c5f8d9a8a4274833433fe74dc0dfd46d33650"
@@ -3446,7 +3446,7 @@ dependencies = [
 "checksum either 1.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "5527cfe0d098f36e3f8839852688e63c8fff1c90b2b405aef730615f9a7bcf7b"
 "checksum elastic-array 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)" = "073be79b6538296faf81c631872676600616073817dd9a440c477ad09b408983"
 "checksum emulator 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)" = "<none>"
-"checksum emulator_interface 0.1.0 (git+ssh://git@github.com/cartesi-corp/grpc-interfaces?tag=v0.1.0-rc.1)" = "<none>"
+"checksum emulator_interface 0.1.0 (git+ssh://git@github.com/cartesi/grpc-interfaces?tag=v0.1.0-rc.1)" = "<none>"
 "checksum env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "aafcde04e90a5226a6443b7aabdb016ba2f8307c847d524724bd9b346dd1a2d3"
 "checksum envy 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "20664407d5097b5a861dffb0c32af2be7215a0050415cb50232aec36d73f69df"
 "checksum error 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)" = "<none>"
@@ -3455,22 +3455,22 @@ dependencies = [
 "checksum ethabi 6.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8eb362fde43ed0b50b258bb0c72b72b3dccfd29f8de9506295eaf9251c49ca31"
 "checksum ethabi-contract 6.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "795e25fd868e12a59ca235dbe1f6cc8f1eba8f67d6a39438b29535e0126e0c27"
 "checksum ethabi-derive 6.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "66a587250c8190be9d6ae28d67b8957ed97cb9eee2e272173a20593ab054a075"
-"checksum ethash 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethash 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum ethbloom 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a6294da962646baa738414e8e718d1a1f0360a51d92de89ccbf91870418f5360"
-"checksum ethcore 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum ethcore-blockchain 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum ethcore-bloom-journal 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum ethcore-call-contract 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum ethcore-db 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum ethcore-io 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum ethcore-miner 1.12.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethcore 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethcore-blockchain 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethcore-bloom-journal 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethcore-call-contract 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethcore-db 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethcore-io 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethcore-miner 1.12.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6e742184dc63a01c8ea0637369f8faa27c40f537949908a237f95c05e68d2c96"
 "checksum ethereum-types-serialize 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1873d77b32bc1891a79dad925f2acbc318ee942b38b9110f9dbc5fbeffcea350"
-"checksum ethjson 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum ethkey 0.3.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum evm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethjson 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum ethkey 0.3.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum evm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum fake-simd 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
-"checksum fastmap 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum fastmap 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum fixed-hash 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "7afe6ce860afb14422711595a7b26ada9ed7de2f43c0b2ab79d09ee196287273"
 "checksum fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)" = "2fad85553e09a6f881f739c29f0b00b0f01357c743266d478b68951ce23285f3"
 "checksum foreign-types 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
@@ -3501,21 +3501,21 @@ dependencies = [
 "checksum hyper 0.12.33 (registry+https://github.com/rust-lang/crates.io-index)" = "7cb44cbce9d8ee4fb36e4c0ad7b794ac44ebaad924b9c8291a63215bb44c2c8f"
 "checksum hyper-tls 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3a800d6aa50af4b5850b2b0f659625ce9504df908e9733b635720483be26174f"
 "checksum idna 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "38f09e0f0b1fb55fdee1f17470ad800da77af5186a1a76c026b679358b7e844e"
-"checksum indexmap 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7e81a7c05f79578dbc15793d8b619db9ba32b4577003ef3af1a91c416798c58d"
+"checksum indexmap 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a4d6d89e0948bf10c08b9ecc8ac5b83f07f857ebe2c0cbe38de15b4e4f510356"
 "checksum iovec 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "dbe6e417e7d0975db6512b90796e8ce223145ac4e33c377e4a42882a0e88bb08"
 "checksum ipaddress 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c9e999e655a4d0ab9b8d21026760e5154d8adee48c9149c67f918f540f6a05f5"
 "checksum itertools 0.5.10 (registry+https://github.com/rust-lang/crates.io-index)" = "4833d6978da405305126af4ac88569b5d71ff758581ce5a987dbfa3755f694fc"
 "checksum itoa 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "501266b7edd0174f8530248f87f99c88fbe60ca4ef3dd486835b8d8d53136f7f"
-"checksum journaldb 0.2.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum journaldb 0.2.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum jsonrpc-core 8.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ddf83704f4e79979a424d1082dd2c1e52683058056c9280efa19ac5f6bc9033c"
 "checksum keccak-hash 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "253bbe643c32c816bf58fa5a88248fafedeebb139705ad17a62add3517854a86"
-"checksum keccak-hasher 0.1.1 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum keccak-hasher 0.1.1 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 "checksum kvdb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "72ae89206cea31c32014b39d5a454b96135894221610dbfd19cf4d2d044fa546"
 "checksum kvdb-memorydb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "45bcdf5eb083602cff61a6f8438dce2a7900d714e893fc48781c39fb119d37aa"
 "checksum language-tags 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a91d884b6667cd606bb5a69aa0c99ba811a115fc68915e7056ec08a46e93199a"
 "checksum lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "bc5729f27f159ddd61f4df6228e827e86643d4d3e7c32183cb30a1c08f604a14"
-"checksum len-caching-lock 0.1.1 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum len-caching-lock 0.1.1 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum leveldb 0.8.4 (registry+https://github.com/rust-lang/crates.io-index)" = "8438a36a31c982ac399c4477d7e3c62cc7a6bf91bb6f42837b7e1033359fcbad"
 "checksum leveldb-sys 2.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "16b1448ba67005a956e411ed59e16c8a47f77aab64d13b6e7225382cdeabd2df"
 "checksum libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)" = "34fcd2c08d2f832f376f4173a231990fa5aef4e99fb569867318a227ef4c06ba"
@@ -3524,16 +3524,16 @@ dependencies = [
 "checksum log 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)" = "e19e8d5c34a3e0e2223db8e060f9e8264aeeb5c5fc64a4ee9965c062211c024b"
 "checksum log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)" = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
 "checksum lru-cache 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "31e24f1ad8321ca0e8a1e0ac13f23cb668e6f5466c2c57319f6a5cf1cc8e3b1c"
-"checksum macros 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum macros 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum matches 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
 "checksum memchr 2.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "88579771288728879b57485cc7d6b07d648c9f0141eb955f8ab7f9d45394468e"
 "checksum memmap 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e2ffa2c986de11a9df78620c01eeaaf27d94d3ff02bf81bfcca953102dd0c6ff"
 "checksum memoffset 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "0f9dc261e2b62d7a622bf416ea3c5245cdd5d9a7fcc428c0d06804dfce1775b3"
 "checksum memoffset 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ce6075db033bbbb7ee5a0bbd3a3186bbae616f57fb001c485c7ff77955f8177f"
-"checksum memory-cache 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum memory-cache 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum memory-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "94da53143d45f6bad3753f532e56ad57a6a26c0ca6881794583310c7cb4c885f"
 "checksum memory_units 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
-"checksum memzero 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum memzero 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum mime 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)" = "ba626b8a6de5da682e1caa06bdb42a335aee5a84db8e5046a3e8ab17ba0a3ae0"
 "checksum mio 0.6.19 (registry+https://github.com/rust-lang/crates.io-index)" = "83f51996a3ed004ef184e16818edc51fadffe8e7ca68be67f9dee67d84d0ff23"
 "checksum mio-uds 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)" = "966257a94e196b11bb43aca423754d87429960a768de9414f3691d6957abf125"
@@ -3559,7 +3559,7 @@ dependencies = [
 "checksum owning_ref 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "49a4b8ea2179e6a2e27411d3bca09ca6dd630821cf6894c6c7c8467a8ee7ef13"
 "checksum parity-bytes 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fa5168b4cf41f3835e4bc6ffb32f51bc9365dc50cb351904595b3931d917fd0c"
 "checksum parity-crypto 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cf1b9c063d87e1507cb3807493c8d21859ef23b5414b39f81c53f0ba267d64c1"
-"checksum parity-runtime 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum parity-runtime 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum parity-snappy 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e2c5f9d149b13134b8b354d93a92830efcbee6fe5b73a2e6e540fe70d4dd8a63"
 "checksum parity-snappy-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1a413d51e5e1927320c9de992998e4a279dffb8c8a7363570198bd8383e66f1b"
 "checksum parity-wasm 0.31.3 (registry+https://github.com/rust-lang/crates.io-index)" = "511379a8194230c2395d2f5fa627a5a7e108a9f976656ce723ae68fca4097bfc"
@@ -3568,7 +3568,7 @@ dependencies = [
 "checksum parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ab41b4aed082705d1056416ae4468b6ea99d52599ecf3169b00088d43113e337"
 "checksum parking_lot_core 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ad7f7e6ebdc79edff6fdcb87a55b620174f7a989e3eb31b65231f4af57f00b8c"
 "checksum parking_lot_core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "94c8c7923936b28d546dfd14d4472eaf34c99b14e1c973a32b3e6d4eb04298c9"
-"checksum patricia-trie-ethereum 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum patricia-trie-ethereum 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum pbkdf2 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0c09cddfbfc98de7f76931acf44460972edb4023eb14d0c6d4018800e552d8e0"
 "checksum percent-encoding 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "31010dd2e1ac33d5b46a5b413495239882813e0369f8ed8a5e266f173602f831"
 "checksum pkg-config 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "a7c1d2cfa5a714db3b5f24f0915e74fcdf91d09d496ba61329705dda7774d2af"
@@ -3618,8 +3618,8 @@ dependencies = [
 "checksum ring 0.14.6 (registry+https://github.com/rust-lang/crates.io-index)" = "426bc186e3e95cac1e4a4be125a4aca7e84c2d616ffc02244eef36e2a60a093c"
 "checksum ripemd160 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ad5112e0dbbb87577bfbc56c42450235e3012ce336e29c5befd7807bd626da4a"
 "checksum rlp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "16d1effe9845d54f90e7be8420ee49e5c94623140b97ee4bc6fb5bfddb745720"
-"checksum rlp_compress 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
-"checksum rlp_derive 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum rlp_compress 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum rlp_derive 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum rustc-demangle 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)" = "4c691c0e608126e00913e33f0ccf3727d5fc84573623b8d65b2df340b5201783"
 "checksum rustc-hex 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "0ceb8ce7a5e520de349e1fa172baeba4a9e8d5ef06c47471863530bc4972ee1e"
 "checksum rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "403bb3a286107a04825a5f82e1270acc1e14028d3d554d7a1e08914549575ab8"
@@ -3650,7 +3650,7 @@ dependencies = [
 "checksum spin 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cbdb51a221842709c2dd65b62ad4b78289fc3e706a02c17a26104528b6aa7837"
 "checksum stable_deref_trait 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "dba1a27d3efae4351c8051072d619e3ade2820635c3958d826bfea39d59b54c8"
 "checksum state 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)" = "<none>"
-"checksum stats 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum stats 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum stream-cipher 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "8131256a5896cabcf5eb04f4d6dacbe1aefda854b0d9896e09cb58829ec5638c"
 "checksum string 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d24114bfcceb867ca7f71a0d3fe45d45619ec47a6fbfa98cb14e14250bfa5d6d"
 "checksum strsim 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
@@ -3664,7 +3664,7 @@ dependencies = [
 "checksum textwrap 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
 "checksum thread_local 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c6b53e329000edc2b34dbe8545fd20e55a333362d0a321909685a19bd28c3f1b"
 "checksum time 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)" = "db8dcfca086c1143c9270ac42a2bbd8a7ee477b78ac8e45b19abfb0cbede4b6f"
-"checksum time-utils 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum time-utils 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum timer 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "31d42176308937165701f50638db1c31586f183f1aab416268216577aec7306b"
 "checksum tiny-keccak 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d8a021c69bb74a44ccedb824a046447e2c84a01df9e5c20779750acb38e11b2"
 "checksum tls-api 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)" = "049c03787a0595182357fbd487577947f4351b78ce20c3668f6d49f17feb13d1"
@@ -3694,13 +3694,13 @@ dependencies = [
 "checksum transaction-pool 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f8d8bd3123931aa6e49dd03bc8a2400490e14701d779458d1f1fff1f04c6f666"
 "checksum trie-db 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3c7319e28ca295f27359d944a682f7f65b419158bf1590c92cadc0000258d788"
 "checksum triehash 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "0d26efb4ddf87870fc08dc9a6580dc3061be350d7b9d0eb30aef1c8b4227aa46"
-"checksum triehash-ethereum 0.2.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum triehash-ethereum 0.2.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum try-lock 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e604eb7b43c06650e854be16a2a03155743d3752dd1c943f6829e26b7a36e382"
 "checksum typeable 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1410f6f91f21d1612654e7cc69193b0334f909dcf2c790c4826254fbb86f8887"
 "checksum typenum 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "612d636f949607bdf9b123b4a6f6d966dedf3ff669f7f045890d3a4a73948169"
 "checksum ucd-util 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "fa9b3b49edd3468c0e6565d85783f51af95212b6fa3986a5500954f00b460874"
 "checksum uint 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "754ba11732b9161b94c41798e5197e5e75388d012f760c42adb5000353e98646"
-"checksum unexpected 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum unexpected 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum unicase 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7f4765f83163b74f957c797ad9253caf97f103fb064d3999aea9568d09fc8a33"
 "checksum unicode-bidi 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "49f2bd0c6468a8230e1db229cff8029217cf623c767ea5d60bfbd42729ea54d5"
 "checksum unicode-normalization 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "141339a08b982d942be2ca06ff8b076563cbe223d1befd5450716790d44e2426"
@@ -3711,17 +3711,17 @@ dependencies = [
 "checksum unix_socket 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6aa2700417c405c38f5e6902d699345241c28c0b7ade4abaad71e35a87eb1564"
 "checksum untrusted 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "55cd1f4b4e96b46aeb8d4855db4a7a9bd96eeeb5c6a1ab54593328761642ce2f"
 "checksum url 1.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "dd4e7c0d531266369519a4aa4f399d748bd37043b00bde1e4ff1f60a120b355a"
-"checksum using_queue 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum using_queue 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum utf8-ranges 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "b4ae116fef2b7fea257ed6440d3cfcff7f190865f170cdad00bb6465bf18ecba"
 "checksum utils 0.1.0 (git+ssh://git@github.com/cartesi-corp/dispatcher?branch=develop)" = "<none>"
 "checksum vcpkg 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)" = "33dd455d0f96e90a75803cfeb7f948768c08d70a6de9a8d2362461935698bf95"
 "checksum vec_map 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "05c78687fb1a80548ae3250346c3db86a80a7cdd77bda190189f2d0a0987c81a"
 "checksum version_check 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
-"checksum vm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum vm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum void 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
 "checksum want 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b6395efa4784b027708f7451087e647ec73cc74f5d9bc2e418404248d679a230"
 "checksum wasi 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fd5442abcac6525a045cc8c795aedb60da7a2e5e89c7bf18a0d5357849bb23c7"
-"checksum wasm 0.1.0 (git+https://github.com/cartesi-corp/parity-ethereum?branch=stable-fixed)" = "<none>"
+"checksum wasm 0.1.0 (git+https://github.com/cartesi/parity-ethereum?branch=stable-fixed)" = "<none>"
 "checksum wasmi 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9b4a6d379e9332b1b1f52c5a87f2481c85c7c931d8ec411963dfb8f26b1ec1e3"
 "checksum web3 0.6.0 (git+https://github.com/tomusdrw/rust-web3?tag=v0.6.0)" = "<none>"
 "checksum websocket 0.21.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c9faed2bff8af2ea6b9f8b917d3d00b467583f6781fe3def174a9e33c879703"
