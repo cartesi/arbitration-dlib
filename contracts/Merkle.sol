@@ -44,4 +44,34 @@ library Merkle {
         }
         return (runningHash);
     }
+
+    function proveDrive(
+        uint64 _position,
+        uint64 _logOfSize,
+        bytes32 _previousRoot,
+        bytes32 _previousDrive,
+        bytes32 _newRoot,
+        bytes32 _newDrive,
+        bytes32[] memory siblings
+    ) internal pure returns (bool) {
+        require(_logOfSize >= 7, "Must be at least a word");
+        require((_logOfSize & _position) == 0, "Position is not aligned");
+        require(siblings.length == 61, "Proof length does not match");
+
+        uint64 eight = 8;
+        for (uint i = 0; i < 61; i++) {
+            if ((_position & (eight << i)) == 0) {
+                _previousDrive = keccak256(abi.encodePacked(_previousDrive, siblings[i]));
+                _newDrive = keccak256(abi.encodePacked(_newDrive, siblings[i]));
+            } else {
+                _previousDrive = keccak256(abi.encodePacked(siblings[i], _previousDrive));
+                _newDrive = keccak256(abi.encodePacked(siblings[i], _newDrive));
+            }
+        }
+
+        require(_previousDrive == _previousRoot, "Previous drive is not compatible");
+        require(_newDrive == _newRoot, "New drive doesnt match to updated root");
+
+        return true;
+    }
 }
