@@ -54,12 +54,12 @@ library Merkle {
         bytes32 _newDrive,
         bytes32[] memory siblings
     ) internal pure returns (bool) {
-        require(_logOfSize >= 7, "Must be at least a word");
+        require(_logOfSize >= 6, "Must be at least a word");
         require((_logOfSize & _position) == 0, "Position is not aligned");
-        require(siblings.length == 61, "Proof length does not match");
+        require(siblings.length == 64 - _logOfSize, "Proof length does not match"); // is this necessary? Even its not the correct size the function will revert eitherway
 
         uint64 eight = 8;
-        for (uint i = 0; i < 61; i++) {
+        for (uint i = 0; i < siblings.length; i++) {
             if ((_position & (eight << i)) == 0) {
                 _previousDrive = keccak256(abi.encodePacked(_previousDrive, siblings[i]));
                 _newDrive = keccak256(abi.encodePacked(_newDrive, siblings[i]));
