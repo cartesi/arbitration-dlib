@@ -120,6 +120,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         currentInstance.machine = _machineAddress;
         currentInstance.initialHash = _initialHash;
         currentInstance.finalTime = _finalTime;
+        currentInstance.currentState = state.WaitingClaim;
         currentInstance.timeOfLastMove = now;
 
         emit ComputeCreated(
