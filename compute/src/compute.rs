@@ -46,7 +46,7 @@ pub struct Compute();
 // obtained from a simple derive
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
-struct ComputeCtxParsed(
+pub struct ComputeCtxParsed(
     AddressField,  // challenger
     AddressField,  // claimer
     U256Field,     // roundDuration
@@ -59,16 +59,16 @@ struct ComputeCtxParsed(
 );
 
 #[derive(Debug)]
-struct ComputeCtx {
-    challenger: Address,
-    claimer: Address,
-    round_duration: U256,
-    time_of_last_move: U256,
-    machine: Address,
-    initial_hash: H256,
-    final_time: U256,
-    claimed_final_hash: H256,
-    current_state: String,
+pub struct ComputeCtx {
+    pub challenger: Address,
+    pub claimer: Address,
+    pub round_duration: U256,
+    pub time_of_last_move: U256,
+    pub machine: Address,
+    pub initial_hash: H256,
+    pub final_time: U256,
+    pub claimed_final_hash: H256,
+    pub current_state: String,
 }
 
 impl From<ComputeCtxParsed> for ComputeCtx {

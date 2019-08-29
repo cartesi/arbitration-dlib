@@ -1,13 +1,14 @@
 [package]
-description = "Cartesi Verification Game"
+description = "Cartesi Verification Game Test"
 homepage = "https://cartesi.io"
-name = "compute"
+name = "arbitration_test"
 version = "0.1.0"
 authors = ["Cartesi Team"]
 
 [dependencies]
 log = "0.4"
 env_logger = "0.6.0"
+compute = { path = "../compute" }
 error = { path = "../dispatcher/error" }
 transaction = { path = "../dispatcher/transaction" }
 configuration = { path = "../dispatcher/configuration" }
