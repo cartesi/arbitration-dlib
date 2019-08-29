@@ -8,4 +8,5 @@ test/*/
 *.abi
 /out
 compute/target
+arbitration_test/target
 build
