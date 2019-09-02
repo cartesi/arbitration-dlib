@@ -45,7 +45,7 @@ extern crate transaction;
 
 use ethereum_types::{Address, U256};
 
-pub use compute::Compute;
+pub use compute::{Compute, ComputeCtx, ComputeCtxParsed};
 pub use mm::MM;
 pub use partition::Partition;
 pub use vg::VG;

@@ -95,14 +95,25 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
     constructor(
         address _challenger,
         address _claimer,
+        uint256 _roundDuration,
         address _machineAddress,
-        address _computeInstantiatorAddress) public {
+        address _computeInstantiatorAddress,
+        bytes32 _initialHash,
+        uint256 _finalTime) public {
         require(_challenger != _claimer, "Challenger and Claimer need to differ");
         compute = ComputeInterface(_computeInstantiatorAddress);
         ArbitrationTestCtx storage currentInstance = instance[currentIndex];
         currentInstance.challenger = _challenger;
         currentInstance.claimer = _claimer;
         currentInstance.machine = _machineAddress;
+
+        currentInstance.computeInstance = compute.instantiate(
+        currentInstance.challenger,
+        currentInstance.claimer,
+        _roundDuration,
+        currentInstance.machine,
+        _initialHash,
+        _finalTime);
 
         emit ArbitrationTestCreated(
             currentIndex,

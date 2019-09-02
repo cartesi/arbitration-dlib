@@ -75,6 +75,8 @@ module.exports = function(deployer, network, accounts) {
       }));
       fs.writeFileSync(process.env.MM_ADD_FILE_PATH,
         MMContract.address);
+      fs.writeFileSync(process.env.COMPUTE_ADD_FILE_PATH,
+        ComputeContract.address);
     }
   });
 };

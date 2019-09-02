@@ -33,7 +33,7 @@ use super::transaction;
 use super::transaction::TransactionRequest;
 use super::ethereum_types::{Address, U256};
 use super::Role;
-use super::compute::compute::{Compute, ComputeCtx, ComputeCtxParsed};
+use super::compute::{Compute, ComputeCtx, ComputeCtxParsed};
 
 pub struct ArbitrationTest();
 
