@@ -101,7 +101,7 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
         bytes32 _initialHash,
         uint256 _finalTime) public {
         require(_challenger != _claimer, "Challenger and Claimer need to differ");
-        currentIndex = 1;
+        currentIndex = 0;
         compute = ComputeInterface(_computeInstantiatorAddress);
         ArbitrationTestCtx storage currentInstance = instance[currentIndex];
         currentInstance.challenger = _challenger;
@@ -123,6 +123,7 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
             _machineAddress);
 
         active[currentIndex] = true;
+        currentIndex++;
     }
 
     /// @notice Claim Finished for the arbitration test.
