@@ -79,12 +79,12 @@ impl DApp<()> for ArbitrationTest {
         let parsed: ArbitrationTestCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
                 format!(
-                    "Could not parse compute instance json_data: {}",
+                    "Could not parse arbitration instance json_data: {}",
                     &instance.json_data
                 )
             })?;
         let ctx: ArbitrationTestCtx = parsed.into();
-        trace!("Context for compute (index {}) {:?}", instance.index, ctx);
+        trace!("Context for arbitration (index {}) {:?}", instance.index, ctx);
 
         match ctx.current_state.as_ref() {
             "Finished" => {
