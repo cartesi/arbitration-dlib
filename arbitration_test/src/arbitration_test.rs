@@ -45,7 +45,7 @@ pub struct ArbitrationTest();
 struct ArbitrationTestCtxParsed(
     AddressField,  // challenger
     AddressField,  // claimer
-    AddressField,  // compute
+    AddressField,  // machine
     String32Field, // currentState
 );
 
@@ -53,7 +53,7 @@ struct ArbitrationTestCtxParsed(
 struct ArbitrationTestCtx {
     challenger: Address,
     claimer: Address,
-    compute: Address,
+    machine: Address,
     current_state: String,
 }
 
@@ -62,7 +62,7 @@ impl From<ArbitrationTestCtxParsed> for ArbitrationTestCtx {
         ArbitrationTestCtx {
             challenger: parsed.0.value,
             claimer: parsed.1.value,
-            compute: parsed.2.value,
+            machine: parsed.2.value,
             current_state: parsed.3.value,
         }
     }
@@ -110,7 +110,7 @@ impl DApp<()> for ArbitrationTest {
             instance.index,
             &instance.concern.contract_address,
         );
-        trace!("Calculating final hash of machine {}", id);
+        trace!("Checking for machine id {}", id);
         // have we sampled this machine yet?
         if let Some(_samples) = archive.get(&id) {
             // we inspect the compute contract
