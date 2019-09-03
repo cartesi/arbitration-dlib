@@ -41,9 +41,9 @@ RUN \
     ldconfig
 
 WORKDIR $BASE
-COPY ./arbitration_test/ $BASE/
-COPY ./compute/ $BASE/
-COPY ./dispatcher/ $BASE/
+COPY ./arbitration_test/ $BASE/arbitration_test
+COPY ./compute/ $BASE/compute
+COPY ./dispatcher/ $BASE/dispatcher
 RUN \
     rm -rf $BASE/protobuf
 
@@ -56,8 +56,8 @@ RUN \
 # Loading cargo bin in path
 ENV PATH="/root/.cargo/bin:$PATH"
 
-# Compile dispatcher
-WORKDIR $BASE
+# Compile arbitration test
+WORKDIR $BASE/arbitration_test
 RUN --mount=type=ssh cargo build
 
 ###Cleaning up
