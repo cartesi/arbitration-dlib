@@ -33,10 +33,9 @@ import "./ComputeInterface.sol";
 
 
 contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
-    // after instantiation, the claimer will submit the final hash
-    // then the challenger can either accept of challenge.
-    // in the latter case a verification game will be instantiated
-    // to resolve the dispute.
+    // after construction, the test is in the Idle state and can be changed to Waiting,
+    // then an compute instance will be created, and everything being take care by compute
+    // the state can be changed to Finished if compute is not active anymore
 
     ComputeInterface private compute;
 
@@ -45,6 +44,9 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
         address challenger;
         address claimer;
         address machine; // machine which will run the challenge
+        uint256 roundDuration;
+        bytes32 initialHash;
+        uint256 finalTime;
         uint256 computeInstance; // instance of verification game in case of dispute
         state currentState;
     }
@@ -57,29 +59,23 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
     // |   |
     // +---+
     //   |
-    //   | instantiate
+    //   | constructor
     //   v
-    // +--------------+ claimVictoryByTime +-----------------------+
-    // | WaitingClaim |------------------->| ClaimerMisseddeadline |
-    // +--------------+                    +-----------------------+
+    // +------+
+    // | Idle |
+    // +------+
     //   |
-    //   | submitClaim
+    //   | claimWaiting
     //   v
-    // +---------------------+  confirm    +-----------------+
-    // | WaitingConfirmation |------------>| ConsensusResult |
-    // +---------------------+ or deadline +-----------------+
+    // +---------+
+    // | Waiting |
+    // +---------+
     //   |
-    //   | challenge
+    //   | claimFinished
     //   v
-    // +------------------+ winByVG        +---------------+
-    // | WaitingChallenge |--------------->| ChallengerWon |
-    // +------------------+                +---------------+
-    //   |
-    //   |
-    //   |                  winByVG        +------------+
-    //   +-------------------------------->| ClaimerWon |
-    //                                     +------------+
-    //
+    // +----------+
+    // | Finished |
+    // +----------+
 
     event ArbitrationTestCreated(
         uint256 _index,
@@ -107,14 +103,10 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
         currentInstance.challenger = _challenger;
         currentInstance.claimer = _claimer;
         currentInstance.machine = _machineAddress;
-
-        currentInstance.computeInstance = compute.instantiate(
-        currentInstance.challenger,
-        currentInstance.claimer,
-        _roundDuration,
-        currentInstance.machine,
-        _initialHash,
-        _finalTime);
+        currentInstance.roundDuration = _roundDuration;
+        currentInstance.initialHash = _initialHash;
+        currentInstance.finalTime = _finalTime;
+        currentInstance.currentState = state.Idle;
 
         emit ArbitrationTestCreated(
             currentIndex,
@@ -126,11 +118,29 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
         currentIndex++;
     }
 
+    /// @notice Claim Waiting for the arbitration test.
+    function claimWaiting(uint256 _index) public
+        onlyInstantiated(_index)
+    {
+        require(instance[_index].currentState == state.Idle, "The state should be Idle");
+        if (msg.sender == instance[_index].claimer || msg.sender == instance[_index].challenger) {
+            instance[_index].computeInstance = compute.instantiate(
+            instance[_index].challenger,
+            instance[_index].claimer,
+            instance[_index].roundDuration,
+            instance[_index].machine,
+            instance[_index].initialHash,
+            instance[_index].finalTime);
+            return;
+        }
+        revert("The caller is neither claimer nor challenger");
+    }
+
     /// @notice Claim Finished for the arbitration test.
     function claimFinished(uint256 _index) public
         onlyInstantiated(_index)
     {
-        require(instance[_index].currentState == state.Waiting, "The state is already Finished");
+        require(instance[_index].currentState == state.Waiting, "The state should be Waiting");
         if (msg.sender == instance[_index].claimer || msg.sender == instance[_index].challenger) {
             bytes32 computeState = compute.getCurrentState(instance[_index].computeInstance);
             if (computeState == "ClaimerMissedDeadline" ||
@@ -182,6 +192,9 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
         // we have to duplicate the code for getCurrentState because of
         // "stack too deep"
         bytes32 currentState;
+        if (instance[_index].currentState == state.Idle) {
+            currentState = "Idle";
+        }
         if (instance[_index].currentState == state.Waiting) {
             currentState = "Waiting";
         }
@@ -201,6 +214,9 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
         onlyInstantiated(_index)
         returns (bytes32)
     {
+        if (instance[_index].currentState == state.Waiting) {
+            return "Idle";
+        }
         if (instance[_index].currentState == state.Waiting) {
             return "Waiting";
         }

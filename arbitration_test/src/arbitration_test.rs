@@ -24,14 +24,14 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 use super::build_machine_id;
-use super::dispatcher::{AddressField, String32Field};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction, NewSessionRequest};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::ethereum_types::{Address, U256};
+use super::ethereum_types::{Address, H256, U256};
 use super::Role;
 use super::compute::{Compute, ComputeCtx, ComputeCtxParsed};
 
@@ -46,6 +46,9 @@ struct ArbitrationTestCtxParsed(
     AddressField,  // challenger
     AddressField,  // claimer
     AddressField,  // machine
+    U256Field,     // roundDuration
+    Bytes32Field,  // initialHash
+    U256Field,     // finalTime
     String32Field, // currentState
 );
 
@@ -54,6 +57,9 @@ struct ArbitrationTestCtx {
     challenger: Address,
     claimer: Address,
     machine: Address,
+    round_duration: U256,
+    initial_hash: H256,
+    final_time: U256,
     current_state: String,
 }
 
@@ -63,13 +69,16 @@ impl From<ArbitrationTestCtxParsed> for ArbitrationTestCtx {
             challenger: parsed.0.value,
             claimer: parsed.1.value,
             machine: parsed.2.value,
-            current_state: parsed.3.value,
+            round_duration: parsed.3.value,
+            initial_hash: parsed.4.value,
+            final_time: parsed.5.value,
+            current_state: parsed.6.value,
         }
     }
 }
 
 impl DApp<()> for ArbitrationTest {
-    /// React to the arbitration test contract, active/inactive
+    /// React to the arbitration test contract, Idle/Waiting/Finished
     fn react(
         instance: &state::Instance,
         archive: &Archive,
@@ -104,6 +113,21 @@ impl DApp<()> for ArbitrationTest {
             }
         };
         trace!("Role played (index {}) is: {:?}", instance.index, role);
+        
+        match ctx.current_state.as_ref() {
+            "Idle" => {
+                // claim Waiting in arbitration test contract
+                let request = TransactionRequest {
+                    concern: instance.concern.clone(),
+                    value: U256::from(0),
+                    function: "claimWaiting".into(),
+                    data: vec![Token::Uint(instance.index)],
+                    strategy: transaction::Strategy::Simplest,
+                };
+                return Ok(Reaction::Transaction(request));
+            }
+            _ => {}
+        };
 
         // machine id
         let id = build_machine_id(

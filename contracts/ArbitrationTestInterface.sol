@@ -32,6 +32,7 @@ import "./Instantiator.sol";
 
 contract ArbitrationTestInterface is Instantiator {
     enum state {
+        Idle,
         Waiting,
         Finished
     }
