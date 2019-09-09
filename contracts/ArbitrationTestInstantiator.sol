@@ -184,6 +184,9 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
         ( address _challenger,
         address _claimer,
         address _machine,
+        uint256 _roundDuration,
+        bytes32 _initialHash,
+        uint256 _finalTime,
         bytes32 _currentState
         )
     {
@@ -206,6 +209,9 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
             i.challenger,
             i.claimer,
             i.machine,
+            i.roundDuration,
+            i.initialHash,
+            i.finalTime,
             currentState
         );
     }
