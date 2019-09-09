@@ -6,6 +6,7 @@ version = "0.1.0"
 authors = ["Cartesi Team"]
 
 [dependencies]
+protobuf = "~2"
 log = "0.4"
 env_logger = "0.6.0"
 compute = { path = "../compute" }

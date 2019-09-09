@@ -56,7 +56,7 @@ enum Role {
 // blockchain.
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-pub fn build_machine_id(_index: U256, _address: &Address) -> String {
+fn build_machine_id(_index: U256, _address: &Address) -> String {
     //return format!("{:x}:{}", address, index);
     //return "0000000000000000000000000000000000000000000000008888888888888888"
     //    .to_string();
