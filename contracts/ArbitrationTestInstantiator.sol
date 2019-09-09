@@ -124,6 +124,7 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
     {
         require(instance[_index].currentState == state.Idle, "The state should be Idle");
         if (msg.sender == instance[_index].claimer || msg.sender == instance[_index].challenger) {
+            instance[_index].currentState = state.Waiting;
             instance[_index].computeInstance = compute.instantiate(
             instance[_index].challenger,
             instance[_index].claimer,
