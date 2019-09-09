@@ -216,7 +216,8 @@ macro_rules! mtdparts_string {
 }
 
 const ONEMB: u64 = 1024*1024;
-const CONTAINER_BASE_PATH: &'static str = "/root/host/test-files/";
+const CONTAINER_BASE_PATH: &'static str = "/root/host/";
+const NATIVE_BASE_PATH: &'static str = "/root/host/test-files/";
 const OUTPUT_DRIVE_NAME: &'static str = "out_pristine.ext2";
 
 struct Ram {
@@ -281,7 +282,7 @@ fn build_machine() -> emulator_interface::cartesi_base::MachineRequest {
     for drive in TEST_DRIVES.iter() {
         let drive_path = CONTAINER_BASE_PATH.to_string() + &drive.backing.to_string();
         // TODO: error handling for files metadata
-        let metadata = fs::metadata(drive_path.clone());
+        let metadata = fs::metadata(NATIVE_BASE_PATH.to_string() + &drive.backing.to_string());
         let drive_size = metadata.unwrap().len();
         let mut drive_msg = emulator_interface::cartesi_base::Drive::new();
 
