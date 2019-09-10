@@ -216,8 +216,8 @@ macro_rules! mtdparts_string {
 }
 
 const ONEMB: u64 = 1024*1024;
-const CONTAINER_BASE_PATH: &'static str = "/root/host/";
-const NATIVE_BASE_PATH: &'static str = "/root/host/test-files/";
+const EMULATOR_BASE_PATH: &'static str = "/root/host/";
+const TEST_BASE_PATH: &'static str = "/root/host/test-files/";
 const OUTPUT_DRIVE_NAME: &'static str = "out_pristine.ext2";
 
 struct Ram {
@@ -274,15 +274,15 @@ const TEST_ROM: Rom = Rom {
 fn build_machine() -> emulator_interface::cartesi_base::MachineRequest {
     let mut ram_msg = emulator_interface::cartesi_base::RAM::new();
     ram_msg.set_length(TEST_RAM.length);
-    ram_msg.set_backing(CONTAINER_BASE_PATH.to_string() + &TEST_RAM.backing.to_string());
+    ram_msg.set_backing(EMULATOR_BASE_PATH.to_string() + &TEST_RAM.backing.to_string());
 
     let mut drive_start: u64 = 1 << 63;
     let mut drives_msg: Vec<emulator_interface::cartesi_base::Drive> = Vec::new();
 
     for drive in TEST_DRIVES.iter() {
-        let drive_path = CONTAINER_BASE_PATH.to_string() + &drive.backing.to_string();
+        let drive_path = EMULATOR_BASE_PATH.to_string() + &drive.backing.to_string();
         // TODO: error handling for files metadata
-        let metadata = fs::metadata(NATIVE_BASE_PATH.to_string() + &drive.backing.to_string());
+        let metadata = fs::metadata(TEST_BASE_PATH.to_string() + &drive.backing.to_string());
         let drive_size = metadata.unwrap().len();
         let mut drive_msg = emulator_interface::cartesi_base::Drive::new();
 
@@ -302,7 +302,7 @@ fn build_machine() -> emulator_interface::cartesi_base::MachineRequest {
 
     let mut rom_msg = emulator_interface::cartesi_base::ROM::new();
     rom_msg.set_bootargs(TEST_ROM.bootargs.to_string());
-    rom_msg.set_backing(CONTAINER_BASE_PATH.to_string() + &TEST_ROM.backing.to_string());
+    rom_msg.set_backing(EMULATOR_BASE_PATH.to_string() + &TEST_ROM.backing.to_string());
 
     let mut machine = emulator_interface::cartesi_base::MachineRequest::new();
     machine.set_rom(rom_msg);
