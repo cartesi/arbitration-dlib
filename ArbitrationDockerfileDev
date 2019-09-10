@@ -41,11 +41,6 @@ RUN \
     ldconfig
 
 WORKDIR $BASE
-COPY ./arbitration_test/ $BASE/arbitration_test
-COPY ./compute/ $BASE/compute
-COPY ./dispatcher/ $BASE/dispatcher
-RUN \
-    rm -rf $BASE/protobuf
 
 # Installing rust stable
 # ----------------------------------------------------
@@ -56,12 +51,14 @@ RUN \
 # Loading cargo bin in path
 ENV PATH="/root/.cargo/bin:$PATH"
 
+COPY ./dispatcher/ $BASE/dispatcher
+COPY ./compute/ $BASE/compute
+COPY ./arbitration_test/ $BASE/arbitration_test
+RUN \
+    rm -rf $BASE/protobuf
+
 # Compile arbitration test
 WORKDIR $BASE/arbitration_test
 RUN --mount=type=ssh cargo build
-
-###Cleaning up
-#RUN \
-#    rm -rf /var/lib/apt/lists/*
 
 USER root
