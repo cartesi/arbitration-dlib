@@ -119,17 +119,20 @@ impl DApp<()> for ArbitrationTest {
         
         match ctx.current_state.as_ref() {
             "Idle" => {
-                if role == Role::Challenger {
-                    // claim Waiting in arbitration test contract
-                    let request = TransactionRequest {
-                        concern: instance.concern.clone(),
-                        value: U256::from(0),
-                        function: "claimWaiting".into(),
-                        data: vec![Token::Uint(instance.index)],
-                        strategy: transaction::Strategy::Simplest,
-                    };
+                match role {
+                    Role::Challenger => {
+                        // claim Waiting in arbitration test contract
+                        let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "claimWaiting".into(),
+                            data: vec![Token::Uint(instance.index)],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+                        return Ok(Reaction::Transaction(request));
+                    },
+                    _ => {}
                 }
-                return Ok(Reaction::Transaction(request));
             }
             _ => {}
         };
