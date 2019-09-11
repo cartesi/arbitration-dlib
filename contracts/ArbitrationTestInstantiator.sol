@@ -121,20 +121,19 @@ contract ArbitrationTestInstantiator is ArbitrationTestInterface, Decorated {
     /// @notice Claim Waiting for the arbitration test.
     function claimWaiting(uint256 _index) public
         onlyInstantiated(_index)
+        onlyBy(instance[_index].challenger)
     {
         require(instance[_index].currentState == state.Idle, "The state should be Idle");
-        if (msg.sender == instance[_index].claimer || msg.sender == instance[_index].challenger) {
-            instance[_index].currentState = state.Waiting;
-            instance[_index].computeInstance = compute.instantiate(
+
+        instance[_index].currentState = state.Waiting;
+        instance[_index].computeInstance = compute.instantiate(
             instance[_index].challenger,
             instance[_index].claimer,
             instance[_index].roundDuration,
             instance[_index].machine,
             instance[_index].initialHash,
             instance[_index].finalTime);
-            return;
-        }
-        revert("The caller is neither claimer nor challenger");
+        return;
     }
 
     /// @notice Claim Finished for the arbitration test.
