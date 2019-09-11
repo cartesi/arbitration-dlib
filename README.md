@@ -4,6 +4,35 @@ Arbritration DLib is the combination of the on-chain protocol and off-chain prot
 
 Most of the Solidity contracts in this repository follow the Instantiator design pattern.
 
+## Arbitration Test Instantiator
+
+The Arbitration Test contract is a simplified contract that simulates the behavior of a Dapp when two participants disagree with each other. It's inital state, after being instantiated, is Idle. The Challenger requests the state changing to Waiting state and instantiates a compute instance for future computation.
+Only after the compute ends, the participants can claim the state to be Finished. A working demo and be found at https://github.com/cartesi/demo/.
+
+    // These are the possible states and transitions of the contract.
+
+    // +---+
+    // |   |
+    // +---+
+    //   |
+    //   | constructor
+    //   v
+    // +------+
+    // | Idle |
+    // +------+
+    //   |
+    //   | claimWaiting
+    //   v
+    // +---------+
+    // | Waiting |
+    // +---------+
+    //   |
+    //   | claimFinished
+    //   v
+    // +----------+
+    // | Finished |
+    // +----------+
+
 ## Compute Instantiator
 
 A Compute contract is instantiated with a computation proposal. It's inital state, after being instantiated, is WaitingClaim. There is a deadline, therefore, for the Claimer to submit a result to the proposed computation.
@@ -39,7 +68,6 @@ The possible states of an instance of this contract are:
     //   |                  winByVG        +------------+
     //   +-------------------------------->| ClaimerWon |
     //                                     +------------+
-
 
 ## VG Instantiator
 
