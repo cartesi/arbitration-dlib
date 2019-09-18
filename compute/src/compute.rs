@@ -24,17 +24,18 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::build_machine_id;
+use super::{build_machine_id, build_session_run_key,
+    process_session_run_response, process_session_run_request};
 use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
-use super::dispatcher::{Archive, DApp, Reaction, SessionRunRequest};
+use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role, VG};
+use super::{Role, VG, SessionRunRequest, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
 use vg::{VGCtx, VGCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -146,39 +147,52 @@ impl DApp<()> for Compute {
                         instance.index,
                         &instance.concern.contract_address,
                     );
-                    trace!("Calculating final hash of machine {}", id);
-                    // have we sampled this machine yet?
-                    if let Some(samples) = archive.get(&id) {
-                        // take the run samples (not the step samples)
-                        let run_samples = &samples.run;
-                        // have we sampled the final time?
-                        if let Some(hash) = run_samples.get(&ctx.final_time) {
-                            // if yes, submit the final hash
-                            let request = TransactionRequest {
-                                concern: instance.concern.clone(),
-                                value: U256::from(0),
-                                function: "submitClaim".into(),
-                                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                // improve these types by letting the
-                                // dapp submit ethereum_types and convert
-                                // them inside the transaction manager
-                                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                data: vec![
-                                    Token::Uint(instance.index),
-                                    Token::FixedBytes(hash.0.to_vec()),
-                                ],
-                                strategy: transaction::Strategy::Simplest,
-                            };
-                            return Ok(Reaction::Transaction(request));
-                        }
-                    };
-                    // final hash has not been calculated yet, request it
                     let sample_points: Vec<u64> =
                         vec![0, ctx.final_time.as_u64()];
-                    return Ok(Reaction::Request(SessionRunRequest {
-                        session_id: id,
-                        times: sample_points,
-                    }));
+                    let request = SessionRunRequest {
+                        session_id: id.clone(),
+                        times: sample_points.clone(),
+                    };
+                    let archive_key = build_session_run_key(
+                        id.clone(),
+                        sample_points[0].to_string(),
+                        sample_points[1].to_string(),
+                        2.to_string());
+
+                    trace!("Calculating final hash of machine {}", id);
+                    // have we sampled the final time?
+                    let samples_response = archive.get_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        process_session_run_request(request))?;
+
+                    let processed_response = process_session_run_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        samples_response,
+                        2)?;
+
+                    let hash = processed_response.hashes[1];
+                    
+                    // if yes, submit the final hash
+                    let request = TransactionRequest {
+                        concern: instance.concern.clone(),
+                        value: U256::from(0),
+                        function: "submitClaim".into(),
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        // improve these types by letting the
+                        // dapp submit ethereum_types and convert
+                        // them inside the transaction manager
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        data: vec![
+                            Token::Uint(instance.index),
+                            Token::FixedBytes(hash.0.to_vec()),
+                        ],
+                        strategy: transaction::Strategy::Simplest,
+                    };
+                    return Ok(Reaction::Transaction(request));
                 }
                 "WaitingChallenge" => {
                     // we inspect the verification contract
@@ -236,49 +250,62 @@ impl DApp<()> for Compute {
                         instance.index,
                         &instance.concern.contract_address,
                     );
-                    trace!("Calculating final hash of machine {}", id);
-                    // have we sampled this machine yet?
-                    if let Some(samples) = archive.get(&id) {
-                        let run_samples = &samples.run;
-                        // have we sampled the final time?
-                        if let Some(hash) = run_samples.get(&ctx.final_time) {
-                            if hash == &ctx.claimed_final_hash {
-                                info!(
-                                    "Confirming final hash {:?} for {}",
-                                    hash, id
-                                );
-                                let request = TransactionRequest {
-                                    concern: instance.concern.clone(),
-                                    value: U256::from(0),
-                                    function: "confirm".into(),
-                                    data: vec![Token::Uint(instance.index)],
-                                    strategy: transaction::Strategy::Simplest,
-                                };
-                                return Ok(Reaction::Transaction(request));
-                            } else {
-                                warn!(
-                                    "Disputing final hash {:?} != {} for {}",
-                                    hash, ctx.claimed_final_hash, id
-                                );
-                                let request = TransactionRequest {
-                                    concern: instance.concern.clone(),
-                                    value: U256::from(0),
-                                    function: "challenge".into(),
-                                    data: vec![Token::Uint(instance.index)],
-                                    strategy: transaction::Strategy::Simplest,
-                                };
-
-                                return Ok(Reaction::Transaction(request));
-                            }
-                        }
-                    };
-                    // final hash has not been calculated yet, request it
                     let sample_points: Vec<u64> =
                         vec![0, ctx.final_time.as_u64()];
-                    return Ok(Reaction::Request(SessionRunRequest {
-                        session_id: id,
-                        times: sample_points,
-                    }));
+                    let request = SessionRunRequest {
+                        session_id: id.clone(),
+                        times: sample_points.clone(),
+                    };
+                    let archive_key = build_session_run_key(
+                        id.clone(),
+                        sample_points[0].to_string(),
+                        sample_points[1].to_string(),
+                        2.to_string());
+
+                    trace!("Calculating final hash of machine {}", id);
+                    // have we sampled the final time?
+                    let samples_response = archive.get_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        process_session_run_request(request))?;
+
+                    let processed_response = process_session_run_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        samples_response,
+                        2)?;
+
+                    let hash = processed_response.hashes[1];
+                    if hash == ctx.claimed_final_hash {
+                        info!(
+                            "Confirming final hash {:?} for {}",
+                            hash, id
+                        );
+                        let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "confirm".into(),
+                            data: vec![Token::Uint(instance.index)],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+                        return Ok(Reaction::Transaction(request));
+                    } else {
+                        warn!(
+                            "Disputing final hash {:?} != {} for {}",
+                            hash, ctx.claimed_final_hash, id
+                        );
+                        let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "challenge".into(),
+                            data: vec![Token::Uint(instance.index)],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+
+                        return Ok(Reaction::Transaction(request));
+                    }
                 }
                 "WaitingClaim" => {
                     return win_by_deadline_or_idle(

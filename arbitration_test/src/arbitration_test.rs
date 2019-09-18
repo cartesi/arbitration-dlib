@@ -27,7 +27,7 @@ extern crate protobuf;
 
 use super::build_machine_id;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
-use super::dispatcher::{Archive, DApp, Reaction, NewSessionRequest};
+use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
@@ -35,6 +35,10 @@ use super::transaction;
 use super::transaction::TransactionRequest;
 use super::ethereum_types::{Address, H256, U256};
 use super::Role;
+use super::compute::{
+    cartesi_base,
+    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
+    NewSessionRequest, process_new_session_request};
 use super::compute::{Compute, ComputeCtx, ComputeCtxParsed};
 use std::fs;
 
@@ -142,54 +146,56 @@ impl DApp<()> for ArbitrationTest {
             instance.index,
             &instance.concern.contract_address,
         );
-        trace!("Checking for machine id {}", id);
-        // have we sampled this machine yet?
-        if let Some(_samples) = archive.get(&id) {
-            // we inspect the compute contract
-            let compute_instance = instance.sub_instances.get(0).ok_or(
-                Error::from(ErrorKind::InvalidContractState(format!(
-                    "There is no compute instance {}",
-                    ctx.current_state
-                ))),
-            )?;
-            let compute_parsed: ComputeCtxParsed =
-                serde_json::from_str(&compute_instance.json_data)
-                    .chain_err(|| {
-                        format!(
-                            "Could not parse compute instance json_data: {}",
-                            &compute_instance.json_data
-                        )
-                    })?;
-            let compute_ctx: ComputeCtx = compute_parsed.into();
-
-            match compute_ctx.current_state.as_ref() {
-                "ClaimerMissedDeadline" |
-                "ChallengerWon" |
-                "ClaimerWon" |
-                "ConsensusResult" => {
-                    // claim Finished in arbitration test contract
-                    let request = TransactionRequest {
-                        concern: instance.concern.clone(),
-                        value: U256::from(0),
-                        function: "claimFinished".into(),
-                        data: vec![Token::Uint(instance.index)],
-                        strategy: transaction::Strategy::Simplest,
-                    };
-                    return Ok(Reaction::Transaction(request));
-                }
-                _ => {
-                    // compute is still active,
-                    // pass control to the appropriate dapp
-                    return Compute::react(compute_instance, archive, &());
-                }
-            }
-        }
         let machine_request = build_machine();
-        let new_session_request = NewSessionRequest {
-            session_id: id,
+        let request = NewSessionRequest {
+            session_id: id.clone(),
             machine: machine_request
         };
-        return Ok(Reaction::NewSession(new_session_request));
+
+        let _samples_response = archive.get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            id.clone(),
+            EMULATOR_METHOD_NEW.to_string(),
+            process_new_session_request(request))?;
+        
+        // we inspect the compute contract
+        let compute_instance = instance.sub_instances.get(0).ok_or(
+            Error::from(ErrorKind::InvalidContractState(format!(
+                "There is no compute instance {}",
+                ctx.current_state
+            ))),
+        )?;
+        let compute_parsed: ComputeCtxParsed =
+            serde_json::from_str(&compute_instance.json_data)
+                .chain_err(|| {
+                    format!(
+                        "Could not parse compute instance json_data: {}",
+                        &compute_instance.json_data
+                    )
+                })?;
+        let compute_ctx: ComputeCtx = compute_parsed.into();
+
+        match compute_ctx.current_state.as_ref() {
+            "ClaimerMissedDeadline" |
+            "ChallengerWon" |
+            "ClaimerWon" |
+            "ConsensusResult" => {
+                // claim Finished in arbitration test contract
+                let request = TransactionRequest {
+                    concern: instance.concern.clone(),
+                    value: U256::from(0),
+                    function: "claimFinished".into(),
+                    data: vec![Token::Uint(instance.index)],
+                    strategy: transaction::Strategy::Simplest,
+                };
+                return Ok(Reaction::Transaction(request));
+            }
+            _ => {
+                // compute is still active,
+                // pass control to the appropriate dapp
+                return Compute::react(compute_instance, archive, &());
+            }
+        }
     }
 }
 
@@ -276,20 +282,20 @@ const TEST_ROM: Rom = Rom {
     backing: "rom-linux.bin"
 };
 
-fn build_machine() -> emulator_interface::cartesi_base::MachineRequest {
-    let mut ram_msg = emulator_interface::cartesi_base::RAM::new();
+fn build_machine() -> cartesi_base::MachineRequest {
+    let mut ram_msg = cartesi_base::RAM::new();
     ram_msg.set_length(TEST_RAM.length);
     ram_msg.set_backing(EMULATOR_BASE_PATH.to_string() + &TEST_RAM.backing.to_string());
 
     let mut drive_start: u64 = 1 << 63;
-    let mut drives_msg: Vec<emulator_interface::cartesi_base::Drive> = Vec::new();
+    let mut drives_msg: Vec<cartesi_base::Drive> = Vec::new();
 
     for drive in TEST_DRIVES.iter() {
         let drive_path = EMULATOR_BASE_PATH.to_string() + &drive.backing.to_string();
         // TODO: error handling for files metadata
         let metadata = fs::metadata(TEST_BASE_PATH.to_string() + &drive.backing.to_string());
         let drive_size = metadata.unwrap().len();
-        let mut drive_msg = emulator_interface::cartesi_base::Drive::new();
+        let mut drive_msg = cartesi_base::Drive::new();
 
         drive_msg.set_start(drive_start);
         drive_msg.set_length(drive_size);
@@ -305,11 +311,11 @@ fn build_machine() -> emulator_interface::cartesi_base::MachineRequest {
         }
     }
 
-    let mut rom_msg = emulator_interface::cartesi_base::ROM::new();
+    let mut rom_msg = cartesi_base::ROM::new();
     rom_msg.set_bootargs(TEST_ROM.bootargs.to_string());
     rom_msg.set_backing(EMULATOR_BASE_PATH.to_string() + &TEST_ROM.backing.to_string());
 
-    let mut machine = emulator_interface::cartesi_base::MachineRequest::new();
+    let mut machine = cartesi_base::MachineRequest::new();
     machine.set_rom(rom_msg);
     machine.set_ram(ram_msg);
     machine.set_flash(protobuf::RepeatedField::from_vec(drives_msg));

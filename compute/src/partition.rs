@@ -24,17 +24,18 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::build_machine_id;
+use super::{build_machine_id, build_session_run_key,
+    process_session_run_response, process_session_run_request};
 use super::dispatcher::{
     AddressField, BoolArray, Bytes32Array, String32Field, U256Array, U256Array5,
 };
-use super::dispatcher::{Archive, DApp, Reaction, SessionRunRequest};
+use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
-use super::Role;
+use super::{Role, SessionRunRequest, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
 use compute::win_by_deadline_or_idle;
 
 pub struct Partition();
@@ -144,90 +145,87 @@ impl DApp<()> for Partition {
                         instance.index,
                         &instance.concern.contract_address,
                     );
+                    
                     trace!("Calculating queried hashes of machine {}", id);
-                    let mut hashes = Vec::new();
-                    // have we sampled this machine yet?
-                    if let Some(samples) = archive.get(&id) {
-                        // take the run samples (not the step samples)
-                        let run_samples = &samples.run;
-                        for i in 0..ctx.query_size.as_usize() {
-                            // get the i'th time in query array
-                            let time = &ctx.query_array.get(i).ok_or(
-                                Error::from(ErrorKind::InvalidContractState(
-                                    String::from(
-                                        "could not find element in query array",
-                                    ),
-                                )),
-                            )?;
-                            // have we sampled that specific time?
-                            match run_samples.get(time) {
-                                Some(hash) => hashes.push(hash),
-                                None => {
-                                    // some hash not calculated yet, request all
-                                    let sample_points: Vec<u64> = ctx
-                                        .query_array
-                                        .clone()
-                                        .into_iter()
-                                        .map(|u| u.as_u64())
-                                        .collect();
-                                    return Ok(Reaction::Request(
-                                        SessionRunRequest {
-                                            session_id: id,
-                                            times: sample_points,
-                                        },
-                                    ));
-                                }
-                            }
-                        }
-                        // submit the required hashes
-                        let request = TransactionRequest {
-                            concern: instance.concern.clone(),
-                            value: U256::from(0),
-                            function: "replyQuery".into(),
-                            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                            // improve these types by letting the
-                            // dapp submit ethereum_types and convert
-                            // them inside the transaction manager
-                            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                            data: vec![
-                                Token::Uint(instance.index),
-                                Token::Array(
-                                    ctx.query_array
-                                        .clone()
-                                        .iter_mut()
-                                        .map(|q: &mut U256| -> _ {
-                                            Token::Uint(q.clone())
-                                        })
-                                        .collect(),
-                                ),
-                                Token::Array(
-                                    hashes
-                                        .into_iter()
-                                        .map(|h| -> _ {
-                                            Token::FixedBytes(
-                                                h.clone().to_vec(),
-                                            )
-                                        })
-                                        .collect(),
-                                ),
-                            ],
-                            strategy: transaction::Strategy::Simplest,
-                        };
-                        return Ok(Reaction::Transaction(request));
-                    }
-                    warn!(
-                        "machine not queried yet (power outage?), request all"
-                    );
                     let sample_points: Vec<u64> = ctx
                         .query_array
                         .clone()
                         .into_iter()
                         .map(|u| u.as_u64())
                         .collect();
-                    return Ok(Reaction::Request(SessionRunRequest {
-                        session_id: id,
-                        times: sample_points,
-                    }));
+                    let request = SessionRunRequest {
+                        session_id: id.clone(),
+                        times: sample_points.clone(),
+                    };
+                    let archive_key = build_session_run_key(
+                            id.clone(),
+                            sample_points[0].to_string(),
+                            sample_points[1].to_string(),
+                            ctx.query_size.to_string());
+
+                    // have we sampled the times?
+                    let samples_response = archive.get_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        process_session_run_request(request))?;
+
+                    let processed_response = process_session_run_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        samples_response,
+                        ctx.query_size.as_usize())?;
+
+                    let mut hashes = Vec::new();
+
+                    for i in 0..ctx.query_size.as_usize() {
+                        // get the i'th time in query array
+                        let _time = &ctx.query_array.get(i).ok_or(
+                            Error::from(ErrorKind::InvalidContractState(
+                                String::from(
+                                    "could not find element in query array",
+                                ),
+                            )),
+                        )?;
+                        let hash = processed_response.hashes.get(i).unwrap();
+                        hashes.push(hash);
+                    }
+                    // submit the required hashes
+                    let request = TransactionRequest {
+                        concern: instance.concern.clone(),
+                        value: U256::from(0),
+                        function: "replyQuery".into(),
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        // improve these types by letting the
+                        // dapp submit ethereum_types and convert
+                        // them inside the transaction manager
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        data: vec![
+                            Token::Uint(instance.index),
+                            Token::Array(
+                                ctx.query_array
+                                    .clone()
+                                    .iter_mut()
+                                    .map(|q: &mut U256| -> _ {
+                                        Token::Uint(q.clone())
+                                    })
+                                    .collect(),
+                            ),
+                            Token::Array(
+                                hashes
+                                    .into_iter()
+                                    .map(|h| -> _ {
+                                        Token::FixedBytes(
+                                            h.clone().to_vec(),
+                                        )
+                                    })
+                                    .collect(),
+                            ),
+                        ],
+                        strategy: transaction::Strategy::Simplest,
+                    };
+                    return Ok(Reaction::Transaction(request));
                 }
                 _ => {
                     return Err(Error::from(ErrorKind::InvalidContractState(
@@ -242,123 +240,120 @@ impl DApp<()> for Partition {
                         instance.index,
                         &instance.concern.contract_address,
                     );
+                    
                     trace!("Calculating posted hashes of machine {}", id);
-                    // have we sampled this machine yet?
-                    if let Some(samples) = archive.get(&id) {
-                        // take the run samples (not the step samples)
-                        let run_samples = &samples.run;
-                        for i in 0..(ctx.query_size.as_usize() - 1) {
-                            // get the i'th time in query array
-                            let time =
-                                ctx.query_array.get(i).ok_or(Error::from(
-                                    ErrorKind::InvalidContractState(format!(
-                                    "could not find element {} in query array",
-                                    i
-                                )),
-                                ))?;
-                            // get (i + 1)'th time in query array
-                            let next_time = ctx.query_array.get(i + 1).ok_or(
-                                Error::from(ErrorKind::InvalidContractState(
-                                    format!(
-                                    "could not find element {} in query array",
-                                    i + 1
-                                ),
-                                )),
-                            )?;
-                            // get the (i + 1)'th hash in hash array
-                            let claimed_hash = &ctx
-                                .hash_array
-                                .get(i + 1)
-                                .ok_or(Error::from(
-                                    ErrorKind::InvalidContractState(format!(
-                                    "could not find element {} in hash array",
-                                    i
-                                )),
-                                ))?;
-                            // have we sampled that specific time?
-                            let hash = match run_samples.get(next_time) {
-                                Some(hash) => hash,
-                                None => {
-                                    // some hash not calculated yet, request all
-                                    let sample_points: Vec<u64> = ctx
-                                        .query_array
-                                        .clone()
-                                        .into_iter()
-                                        .map(|u| u.as_u64())
-                                        .collect();
-                                    return Ok(Reaction::Request(
-                                        SessionRunRequest {
-                                            session_id: id,
-                                            times: sample_points,
-                                        },
-                                    ));
-                                }
-                            };
-
-                            if hash != *claimed_hash {
-                                // do we need another partition?
-                                if next_time.as_u64() - time.as_u64() > 1 {
-                                    // submit the relevant query
-                                    let request = TransactionRequest {
-                                        concern: instance.concern.clone(),
-                                        value: U256::from(0),
-                                        function: "makeQuery".into(),
-                                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                        // improve these types by letting the
-                                        // dapp submit ethereum_types and convert
-                                        // them inside the transaction manager
-                                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                        data: vec![
-                                            Token::Uint(instance.index),
-                                            Token::Uint(U256::from(i)),
-                                            Token::Uint(*time),
-                                            Token::Uint(*next_time),
-                                        ],
-                                        strategy:
-                                            transaction::Strategy::Simplest,
-                                    };
-                                    return Ok(Reaction::Transaction(request));
-                                } else {
-                                    // submit divergence time
-                                    let request = TransactionRequest {
-                                        concern: instance.concern.clone(),
-                                        value: U256::from(0),
-                                        function: "presentDivergence".into(),
-                                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                        // improve these types by letting the
-                                        // dapp submit ethereum_types and convert
-                                        // them inside the transaction manager
-                                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                        data: vec![
-                                            Token::Uint(instance.index),
-                                            Token::Uint(*time),
-                                        ],
-                                        strategy:
-                                            transaction::Strategy::Simplest,
-                                    };
-                                    return Ok(Reaction::Transaction(request));
-                                }
-                            }
-                        }
-                        // no disagreement found. important bug!!!!
-                        error!(
-                            "bug found: no disagreement in dispute {:?}!!!",
-                            instance
-                        );
-                    }
-                    warn!(
-                        "machine not queried yet (power outage?), request all"
-                    );
                     let sample_points: Vec<u64> = ctx
                         .query_array
                         .clone()
                         .into_iter()
                         .map(|u| u.as_u64())
                         .collect();
-                    return Ok(Reaction::Request(SessionRunRequest {
-                        session_id: id,
-                        times: sample_points,
-                    }));
+                    let request = SessionRunRequest {
+                        session_id: id.clone(),
+                        times: sample_points.clone(),
+                    };
+                    let archive_key = build_session_run_key(
+                            id.clone(),
+                            sample_points[0].to_string(),
+                            sample_points[1].to_string(),
+                            ctx.query_size.to_string());
+
+                    // have we sampled the times?
+                    let samples_response = archive.get_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        process_session_run_request(request))?;
+
+                    let processed_response = process_session_run_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        samples_response,
+                        ctx.query_size.as_usize())?;
+
+                    for i in 0..(ctx.query_size.as_usize() - 1) {
+                        // get the i'th time in query array
+                        let time =
+                            ctx.query_array.get(i).ok_or(Error::from(
+                                ErrorKind::InvalidContractState(format!(
+                                "could not find element {} in query array",
+                                i
+                            )),
+                            ))?;
+                        // get (i + 1)'th time in query array
+                        let next_time = ctx.query_array.get(i + 1).ok_or(
+                            Error::from(ErrorKind::InvalidContractState(
+                                format!(
+                                "could not find element {} in query array",
+                                i + 1
+                            ),
+                            )),
+                        )?;
+                        // get the (i + 1)'th hash in hash array
+                        let claimed_hash = &ctx
+                            .hash_array
+                            .get(i + 1)
+                            .ok_or(Error::from(
+                                ErrorKind::InvalidContractState(format!(
+                                "could not find element {} in hash array",
+                                i
+                            )),
+                            ))?;
+                        // have we sampled that specific time?
+                        let hash = processed_response.hashes.get(i + 1).unwrap();
+
+                        if hash != *claimed_hash {
+                            // do we need another partition?
+                            if next_time.as_u64() - time.as_u64() > 1 {
+                                // submit the relevant query
+                                let request = TransactionRequest {
+                                    concern: instance.concern.clone(),
+                                    value: U256::from(0),
+                                    function: "makeQuery".into(),
+                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                    // improve these types by letting the
+                                    // dapp submit ethereum_types and convert
+                                    // them inside the transaction manager
+                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                    data: vec![
+                                        Token::Uint(instance.index),
+                                        Token::Uint(U256::from(i)),
+                                        Token::Uint(*time),
+                                        Token::Uint(*next_time),
+                                    ],
+                                    strategy:
+                                        transaction::Strategy::Simplest,
+                                };
+                                return Ok(Reaction::Transaction(request));
+                            } else {
+                                // submit divergence time
+                                let request = TransactionRequest {
+                                    concern: instance.concern.clone(),
+                                    value: U256::from(0),
+                                    function: "presentDivergence".into(),
+                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                    // improve these types by letting the
+                                    // dapp submit ethereum_types and convert
+                                    // them inside the transaction manager
+                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                    data: vec![
+                                        Token::Uint(instance.index),
+                                        Token::Uint(*time),
+                                    ],
+                                    strategy:
+                                        transaction::Strategy::Simplest,
+                                };
+                                return Ok(Reaction::Transaction(request));
+                            }
+                        }
+                    }
+                    // no disagreement found. important bug!!!!
+                    error!(
+                        "bug found: no disagreement in dispute {:?}!!!",
+                        instance
+                    );
+                    return Err(Error::from(format!("no disagreement in dispute")));
                 }
                 "WaitingHashes" => {
                     return win_by_deadline_or_idle(

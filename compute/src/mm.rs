@@ -24,15 +24,16 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::build_machine_id;
+use super::{build_machine_id, build_session_step_key,
+    process_session_step_response, process_session_step_request};
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
-use super::dispatcher::{Archive, DApp, Reaction, SessionStepRequest};
-use super::emulator::AccessOperation;
+use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
+use super::{SessionStepRequest, AccessOperation, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_STEP};
 
 pub struct MM();
 
@@ -107,98 +108,103 @@ impl DApp<U256> for MM {
                     &instance.concern.contract_address,
                 );
                 trace!("Calculating step of machine {}", id);
-                // have we steped this machine yet?
-                if let Some(samples) = archive.get(&id) {
-                    // take the step samples (not the run samples)
-                    let step_samples = &samples.step;
-                    // have we sampled the divergence time?
-                    if let Some(step_log) = step_samples.get(divergence_time) {
-                        // if all proofs have been inserted, finish proof phase
-                        if ctx.history_length.as_usize() >= step_log.len() {
-                            let request = TransactionRequest {
-                                concern: instance.concern.clone(),
-                                value: U256::from(0),
-                                function: "finishProofPhase".into(),
-                                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                // improve these types by letting the
-                                // dapp submit ethereum_types and convert
-                                // them inside the transaction manager
-                                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                data: vec![Token::Uint(instance.index)],
-                                strategy: transaction::Strategy::Simplest,
-                            };
-                            return Ok(Reaction::Transaction(request));
-                        }
-
-                        // otherwise, submit one more proof step
-                        let access =
-                            (&step_log[ctx.history_length.as_usize()]).clone();
-                        let mut siblings: Vec<_> = access
-                            .proof
-                            .sibling_hashes
-                            .into_iter()
-                            .map(|hash| Token::FixedBytes(hash.0.to_vec()))
-                            .collect();
-                        trace!("Size of siblings: {}", siblings.len());
-                        // !!!!! This should not be necessary, !!!!!!!
-                        // !!!!! the emulator should do it     !!!!!!!
-                        siblings.reverse();
-                        match access.operation {
-                            AccessOperation::Read => {
-                                let request = TransactionRequest {
-                                    concern: instance.concern.clone(),
-                                    value: U256::from(0),
-                                    function: "proveRead".into(),
-                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                    // improve these types by letting the
-                                    // dapp submit ethereum_types and convert
-                                    // them inside the transaction manager
-                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                    data: vec![
-                                        Token::Uint(instance.index),
-                                        Token::Uint(U256::from(access.address)),
-                                        Token::FixedBytes(
-                                            access.value_read.to_vec()
-                                        ),
-                                        Token::Array(siblings),
-                                    ],
-                                    strategy: transaction::Strategy::Simplest,
-                                };
-                                return Ok(Reaction::Transaction(request));
-                            }
-                            AccessOperation::Write => {
-                                let request = TransactionRequest {
-                                    concern: instance.concern.clone(),
-                                    value: U256::from(0),
-                                    function: "proveWrite".into(),
-                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                    // improve these types by letting the
-                                    // dapp submit ethereum_types and convert
-                                    // them inside the transaction manager
-                                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                    data: vec![
-                                        Token::Uint(instance.index),
-                                        Token::Uint(U256::from(access.address)),
-                                        Token::FixedBytes(
-                                            access.value_read.to_vec(),
-                                        ),
-                                        Token::FixedBytes(
-                                            access.value_written.to_vec(),
-                                        ),
-                                        Token::Array(siblings),
-                                    ],
-                                    strategy: transaction::Strategy::Simplest,
-                                };
-                                return Ok(Reaction::Transaction(request));
-                            }
-                        }
-                    }
-                };
-                // divergence step log has not been calculated yet, request it
-                return Ok(Reaction::Step(SessionStepRequest {
-                    session_id: id,
+                let request = SessionStepRequest {
+                    session_id: id.clone(),
                     time: divergence_time.as_u64(),
-                }));
+                };
+                let archive_key = build_session_step_key(
+                        id.clone(),
+                        divergence_time.to_string());
+
+                // have we sampled the divergence time?
+                let samples_response = archive.get_response(
+                    EMULATOR_SERVICE_NAME.to_string(),
+                    archive_key.clone(),
+                    EMULATOR_METHOD_STEP.to_string(),
+                    process_session_step_request(request))?;
+
+                let processed_response = process_session_step_response(samples_response);
+
+                let step_log = processed_response.log;
+                // if all proofs have been inserted, finish proof phase
+                if ctx.history_length.as_usize() >= step_log.len() {
+                    let request = TransactionRequest {
+                        concern: instance.concern.clone(),
+                        value: U256::from(0),
+                        function: "finishProofPhase".into(),
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        // improve these types by letting the
+                        // dapp submit ethereum_types and convert
+                        // them inside the transaction manager
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        data: vec![Token::Uint(instance.index)],
+                        strategy: transaction::Strategy::Simplest,
+                    };
+                    return Ok(Reaction::Transaction(request));
+                }
+
+                // otherwise, submit one more proof step
+                let access =
+                    (&step_log[ctx.history_length.as_usize()]).clone();
+                let mut siblings: Vec<_> = access
+                    .proof
+                    .sibling_hashes
+                    .into_iter()
+                    .map(|hash| Token::FixedBytes(hash.0.to_vec()))
+                    .collect();
+                trace!("Size of siblings: {}", siblings.len());
+                // !!!!! This should not be necessary, !!!!!!!
+                // !!!!! the emulator should do it     !!!!!!!
+                siblings.reverse();
+                match access.operation {
+                    AccessOperation::Read => {
+                        let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "proveRead".into(),
+                            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            // improve these types by letting the
+                            // dapp submit ethereum_types and convert
+                            // them inside the transaction manager
+                            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            data: vec![
+                                Token::Uint(instance.index),
+                                Token::Uint(U256::from(access.address)),
+                                Token::FixedBytes(
+                                    access.value_read.to_vec()
+                                ),
+                                Token::Array(siblings),
+                            ],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+                        return Ok(Reaction::Transaction(request));
+                    }
+                    AccessOperation::Write => {
+                        let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "proveWrite".into(),
+                            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            // improve these types by letting the
+                            // dapp submit ethereum_types and convert
+                            // them inside the transaction manager
+                            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            data: vec![
+                                Token::Uint(instance.index),
+                                Token::Uint(U256::from(access.address)),
+                                Token::FixedBytes(
+                                    access.value_read.to_vec(),
+                                ),
+                                Token::FixedBytes(
+                                    access.value_written.to_vec(),
+                                ),
+                                Token::Array(siblings),
+                            ],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+                        return Ok(Reaction::Transaction(request));
+                    }
+                }
             }
             _ => {}
         }
