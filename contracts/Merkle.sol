@@ -58,9 +58,8 @@ library Merkle {
         require((_logOfSize & _position) == 0, "Position is not aligned");
         require(siblings.length == 64 - _logOfSize, "Proof length does not match"); // is this necessary? Even its not the correct size the function will revert eitherway
 
-        uint64 eight = 8;
         for (uint i = 0; i < siblings.length; i++) {
-            if ((_position & (eight << i)) == 0) {
+            if ((_position & (_logOfSize << i)) == 0) { // should this be _logOfSize << i?
                 _previousDrive = keccak256(abi.encodePacked(_previousDrive, siblings[i]));
                 _newDrive = keccak256(abi.encodePacked(_newDrive, siblings[i]));
             } else {
