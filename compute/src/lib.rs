@@ -34,7 +34,6 @@ pub mod emulator_service;
 extern crate configuration;
 extern crate error;
 extern crate grpc;
-extern crate grpc_protobuf;
 extern crate bytes;
 
 #[macro_use]
@@ -94,7 +93,7 @@ pub fn build_session_step_key(id: String, divergence_time: String) -> String {
 // structure from the blob response stored in the archive
 
 pub fn process_session_run_response(service: String, key: String, method: String, response: Vec<u8>, len: usize) -> error::Result<SessionRunResult> {
-    let marshaller: Box<dyn Marshaller<manager_high::SessionRunResult> + Sync + Send> = Box::new(grpc_protobuf::MarshallerProtobuf);
+    let marshaller: Box<dyn Marshaller<manager_high::SessionRunResult> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
     let response: SessionRunResult = marshaller.read(bytes::Bytes::from(response)).unwrap().into();
 
     if response.hashes.len() == len {
@@ -105,12 +104,12 @@ pub fn process_session_run_response(service: String, key: String, method: String
 }
 
 pub fn process_session_step_response(response: Vec<u8>) -> SessionStepResult {
-    let marshaller: Box<dyn Marshaller<manager_high::SessionStepResult> + Sync + Send> = Box::new(grpc_protobuf::MarshallerProtobuf);
+    let marshaller: Box<dyn Marshaller<manager_high::SessionStepResult> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
     marshaller.read(bytes::Bytes::from(response)).unwrap().into()
 }
 
 pub fn process_new_session_response(response: Vec<u8>) -> H256 {
-    let marshaller: Box<dyn Marshaller<cartesi_base::Hash> + Sync + Send> = Box::new(grpc_protobuf::MarshallerProtobuf);
+    let marshaller: Box<dyn Marshaller<cartesi_base::Hash> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
     H256::from_slice(&marshaller.read(bytes::Bytes::from(response)).unwrap().content)
 }
 
@@ -118,7 +117,7 @@ pub fn process_new_session_response(response: Vec<u8>) -> H256 {
 // structure into the blob request for future usage
 
 pub fn process_session_run_request(request: SessionRunRequest) -> Vec<u8> {
-    let marshaller: Box<dyn Marshaller<manager_high::SessionRunRequest> + Sync + Send> = Box::new(grpc_protobuf::MarshallerProtobuf);
+    let marshaller: Box<dyn Marshaller<manager_high::SessionRunRequest> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
     
     let mut req = manager_high::SessionRunRequest::new();
     req.set_session_id(request.session_id);
@@ -128,7 +127,7 @@ pub fn process_session_run_request(request: SessionRunRequest) -> Vec<u8> {
 }
 
 pub fn process_session_step_request(request: SessionStepRequest) -> Vec<u8> {
-    let marshaller: Box<dyn Marshaller<manager_high::SessionStepRequest> + Sync + Send> = Box::new(grpc_protobuf::MarshallerProtobuf);
+    let marshaller: Box<dyn Marshaller<manager_high::SessionStepRequest> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
     
     let mut req = manager_high::SessionStepRequest::new();
     req.set_session_id(request.session_id);
@@ -138,7 +137,7 @@ pub fn process_session_step_request(request: SessionStepRequest) -> Vec<u8> {
 }
 
 pub fn process_new_session_request(request: NewSessionRequest) -> Vec<u8> {
-    let marshaller: Box<dyn Marshaller<manager_high::NewSessionRequest> + Sync + Send> = Box::new(grpc_protobuf::MarshallerProtobuf);
+    let marshaller: Box<dyn Marshaller<manager_high::NewSessionRequest> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
     
     let mut req = manager_high::NewSessionRequest::new();
     req.set_session_id(request.session_id);
