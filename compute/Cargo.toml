@@ -20,6 +20,6 @@ serde_derive = "1.0.0"
 emulator_interface = { path = "../dispatcher/lib/grpc-interfaces/emulator_interface" }
 state = { path = "../dispatcher/state" }
 dispatcher = { path = "../dispatcher/dispatcher" }
-grpc = { git = "https://github.com/cartesi-corp/grpc-rust", branch = "make_marshall_public" }
+grpc = { git = "https://github.com/cartesi/grpc-rust", branch = "make_marshall_public" }
 protobuf = "=2.7.0"
 bytes = "0.4.12"
