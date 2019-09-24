@@ -24,8 +24,7 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::{build_machine_id, build_session_run_key,
-    process_session_run_response, process_session_run_request};
+use super::{build_machine_id, build_session_run_key};
 use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
@@ -35,7 +34,7 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role, VG, SessionRunRequest, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
+use super::{Role, VG, SessionRunRequest, SessionRunResult, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
 use vg::{VGCtx, VGCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -161,22 +160,15 @@ impl DApp<()> for Compute {
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let samples_response = archive.get_response(
+                    let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
                         EMULATOR_METHOD_RUN.to_string(),
-                        process_session_run_request(request))?;
-
-                    let processed_response = process_session_run_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        samples_response,
-                        2)?;
+                        request.into())?
+                        .into();
 
                     let hash = processed_response.hashes[1];
                     
-                    // if yes, submit the final hash
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
                         value: U256::from(0),
@@ -264,18 +256,12 @@ impl DApp<()> for Compute {
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let samples_response = archive.get_response(
+                    let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
                         EMULATOR_METHOD_RUN.to_string(),
-                        process_session_run_request(request))?;
-
-                    let processed_response = process_session_run_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        samples_response,
-                        2)?;
+                        request.into())?
+                        .into();
 
                     let hash = processed_response.hashes[1];
                     if hash == ctx.claimed_final_hash {

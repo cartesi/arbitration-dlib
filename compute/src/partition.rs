@@ -24,8 +24,7 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::{build_machine_id, build_session_run_key,
-    process_session_run_response, process_session_run_request};
+use super::{build_machine_id, build_session_run_key};
 use super::dispatcher::{
     AddressField, BoolArray, Bytes32Array, String32Field, U256Array, U256Array5,
 };
@@ -35,7 +34,7 @@ use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
-use super::{Role, SessionRunRequest, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
+use super::{Role, SessionRunRequest, SessionRunResult, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
 use compute::win_by_deadline_or_idle;
 
 pub struct Partition();
@@ -164,18 +163,12 @@ impl DApp<()> for Partition {
                             ctx.query_size.to_string());
 
                     // have we sampled the times?
-                    let samples_response = archive.get_response(
+                    let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
                         EMULATOR_METHOD_RUN.to_string(),
-                        process_session_run_request(request))?;
-
-                    let processed_response = process_session_run_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        samples_response,
-                        ctx.query_size.as_usize())?;
+                        request.into())?
+                        .into();
 
                     let mut hashes = Vec::new();
 
@@ -259,18 +252,12 @@ impl DApp<()> for Partition {
                             ctx.query_size.to_string());
 
                     // have we sampled the times?
-                    let samples_response = archive.get_response(
+                    let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
                         EMULATOR_METHOD_RUN.to_string(),
-                        process_session_run_request(request))?;
-
-                    let processed_response = process_session_run_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        samples_response,
-                        ctx.query_size.as_usize())?;
+                        request.into())?
+                        .into();
 
                     for i in 0..(ctx.query_size.as_usize() - 1) {
                         // get the i'th time in query array

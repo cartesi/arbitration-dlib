@@ -24,8 +24,7 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::{build_machine_id, build_session_step_key,
-    process_session_step_response, process_session_step_request};
+use super::{build_machine_id, build_session_step_key};
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
@@ -33,7 +32,7 @@ use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
-use super::{SessionStepRequest, AccessOperation, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_STEP};
+use super::{SessionStepRequest, SessionStepResult, AccessOperation, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_STEP};
 
 pub struct MM();
 
@@ -117,13 +116,12 @@ impl DApp<U256> for MM {
                         divergence_time.to_string());
 
                 // have we sampled the divergence time?
-                let samples_response = archive.get_response(
+                let processed_response: SessionStepResult = archive.get_response(
                     EMULATOR_SERVICE_NAME.to_string(),
                     archive_key.clone(),
                     EMULATOR_METHOD_STEP.to_string(),
-                    process_session_step_request(request))?;
-
-                let processed_response = process_session_step_response(samples_response);
+                    request.into())?
+                    .into();
 
                 let step_log = processed_response.log;
                 // if all proofs have been inserted, finish proof phase

@@ -38,7 +38,7 @@ use super::Role;
 use super::compute::{
     cartesi_base,
     EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
-    NewSessionRequest, process_new_session_request};
+    NewSessionRequest, NewSessionResult};
 use super::compute::{Compute, ComputeCtx, ComputeCtxParsed};
 use std::fs;
 
@@ -152,11 +152,12 @@ impl DApp<()> for ArbitrationTest {
             machine: machine_request
         };
 
-        let _samples_response = archive.get_response(
+        let _processed_response: NewSessionResult = archive.get_response(
             EMULATOR_SERVICE_NAME.to_string(),
             id.clone(),
             EMULATOR_METHOD_NEW.to_string(),
-            process_new_session_request(request))?;
+            request.into())?
+            .into();
         
         // we inspect the compute contract
         let compute_instance = instance.sub_instances.get(0).ok_or(

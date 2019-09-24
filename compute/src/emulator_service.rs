@@ -99,6 +99,24 @@ impl From<emulator_interface::manager_high::SessionRunResult>
     }
 }
 
+/// Representation of the result of creating a new machine
+#[derive(Debug, Clone)]
+pub struct NewSessionResult {
+    pub hash: H256,
+}
+
+impl From<cartesi_base::Hash>
+    for NewSessionResult
+{
+    fn from(
+        result: cartesi_base::Hash,
+    ) -> Self {
+        NewSessionResult {
+            hash: H256::from_slice(&result.content)
+        }
+    }
+}
+
 /// Access operation is either a `Read` or a `Write`
 #[derive(Debug, Clone)]
 pub enum AccessOperation {
