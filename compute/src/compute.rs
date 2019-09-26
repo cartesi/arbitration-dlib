@@ -154,9 +154,7 @@ impl DApp<()> for Compute {
                     };
                     let archive_key = build_session_run_key(
                         id.clone(),
-                        sample_points[0].to_string(),
-                        sample_points[1].to_string(),
-                        2.to_string());
+                        sample_points.clone());
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
@@ -257,9 +255,7 @@ impl DApp<()> for Compute {
                     };
                     let archive_key = build_session_run_key(
                         id.clone(),
-                        sample_points[0].to_string(),
-                        sample_points[1].to_string(),
-                        2.to_string());
+                        sample_points.clone());
                     let id_clone = id.clone();
 
                     trace!("Calculating final hash of machine {}", id);

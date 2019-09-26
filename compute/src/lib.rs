@@ -81,8 +81,8 @@ pub fn build_machine_id(_index: U256, _address: &Address) -> String {
     return "test_new_session_id".to_string();
 }
 
-pub fn build_session_run_key(id: String, start_time: String, final_time: String, query_size: String) -> String {
-    return format!("{}_run_{}_{}_{}", id, start_time, final_time, query_size);
+pub fn build_session_run_key(id: String, times: Vec<u64>) -> String {
+    return format!("{}_run_{:?}", id, times);
 }
 
 pub fn build_session_step_key(id: String, divergence_time: String) -> String {

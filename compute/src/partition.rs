@@ -157,10 +157,8 @@ impl DApp<()> for Partition {
                         times: sample_points.clone(),
                     };
                     let archive_key = build_session_run_key(
-                            id.clone(),
-                            sample_points[0].to_string(),
-                            sample_points[1].to_string(),
-                            ctx.query_size.to_string());
+                        id.clone(),
+                        sample_points.clone());
 
                     // have we sampled the times?
                     let _invalid_session_msg = format!("No session in registry with provided session_id: {}", id);
@@ -253,10 +251,8 @@ impl DApp<()> for Partition {
                         times: sample_points.clone(),
                     };
                     let archive_key = build_session_run_key(
-                            id.clone(),
-                            sample_points[0].to_string(),
-                            sample_points[1].to_string(),
-                            ctx.query_size.to_string());
+                        id.clone(),
+                        sample_points.clone());
 
                     // have we sampled the times?
                     let _invalid_session_msg = format!("No session in registry with provided session_id: {}", id);
