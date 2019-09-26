@@ -160,11 +160,18 @@ impl DApp<()> for Compute {
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
+                    let _invalid_session_msg = format!("No session in registry with provided session_id: {}", id);
                     let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
                         EMULATOR_METHOD_RUN.to_string(),
                         request.into())?
+                        .map_err(move |_e| {
+                            Error::from(ErrorKind::ArchiveInvalidError(
+                                EMULATOR_SERVICE_NAME.to_string(),
+                                id,
+                                EMULATOR_METHOD_RUN.to_string()))
+                        })?
                         .into();
 
                     let hash = processed_response.hashes[1];
@@ -253,14 +260,22 @@ impl DApp<()> for Compute {
                         sample_points[0].to_string(),
                         sample_points[1].to_string(),
                         2.to_string());
+                    let id_clone = id.clone();
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
+                    let _invalid_session_msg = format!("No session in registry with provided session_id: {}", id);
                     let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
                         EMULATOR_METHOD_RUN.to_string(),
                         request.into())?
+                        .map_err(move |_e| {
+                            Error::from(ErrorKind::ArchiveInvalidError(
+                                EMULATOR_SERVICE_NAME.to_string(),
+                                id_clone,
+                                EMULATOR_METHOD_RUN.to_string()))
+                        })?
                         .into();
 
                     let hash = processed_response.hashes[1];

@@ -152,11 +152,25 @@ impl DApp<()> for ArbitrationTest {
             machine: machine_request
         };
 
+        let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
         let _processed_response: NewSessionResult = archive.get_response(
             EMULATOR_SERVICE_NAME.to_string(),
             id.clone(),
             EMULATOR_METHOD_NEW.to_string(),
             request.into())?
+            .map_err(move |e| {
+                if e == duplicate_session_msg {
+                    Error::from(ErrorKind::ArchiveNeedsDummy(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        id,
+                        EMULATOR_METHOD_NEW.to_string()))
+                } else {
+                    Error::from(ErrorKind::ArchiveInvalidError(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        id,
+                        EMULATOR_METHOD_NEW.to_string()))
+                }
+            })?
             .into();
         
         // we inspect the compute contract
