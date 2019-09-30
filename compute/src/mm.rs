@@ -116,7 +116,6 @@ impl DApp<U256> for MM {
                         divergence_time.to_string());
 
                 // have we sampled the divergence time?
-                let _invalid_session_msg = format!("No session in registry with provided session_id: {}", id);
                 let processed_response: SessionStepResult = archive.get_response(
                     EMULATOR_SERVICE_NAME.to_string(),
                     archive_key.clone(),

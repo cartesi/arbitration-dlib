@@ -158,7 +158,6 @@ impl DApp<()> for Compute {
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let _invalid_session_msg = format!("No session in registry with provided session_id: {}", id);
                     let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
@@ -260,7 +259,6 @@ impl DApp<()> for Compute {
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let _invalid_session_msg = format!("No session in registry with provided session_id: {}", id);
                     let processed_response: SessionRunResult = archive.get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
