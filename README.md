@@ -1,6 +1,6 @@
 # Arbitration D-Lib
 
-Arbritration DLib is the combination of the on-chain protocol and off-chain protocol that work together to resolve any disputes that might occur during the execution of a Cartesi Dapp. The behavior of the off-chain and on-chain code are very similar. The on-chain code is written in Solidity and the off-chain in Rust.
+ArbitrationLib is the combination of the on-chain protocol and off-chain protocol that work together to resolve any disputes that might occur during the execution of a Cartesi Dapp. The behavior of the off-chain and on-chain code are very similar. The on-chain code is written in Solidity and the off-chain in Rust.
 
 Most of the Solidity contracts in this repository follow the Instantiator design pattern.
 

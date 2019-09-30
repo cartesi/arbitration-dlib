@@ -1,4 +1,4 @@
-// Arbritration DLib is the combination of the on-chain protocol and off-chain
+// Arbitration DLib is the combination of the on-chain protocol and off-chain
 // protocol that work together to resolve any disputes that might occur during the
 // execution of a Cartesi DApp.
 
