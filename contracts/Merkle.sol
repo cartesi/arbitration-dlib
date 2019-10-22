@@ -30,22 +30,11 @@ pragma solidity ^0.5.0;
 
 library Merkle {
     function getRoot(uint64 _position, bytes8 _value, bytes32[] memory proof) internal pure returns (bytes32) {
-        require((_position & 7) == 0, "Position is not aligned");
-        require(proof.length == 61, "Proof length does not match");
         bytes32 runningHash = keccak256(abi.encodePacked(_value));
-        // iterate the hash with the uncle subtree provided in proof
-        uint64 eight = 8;
-        for (uint i = 0; i < 61; i++) {
-            if ((_position & (eight << i)) == 0) {
-                runningHash = keccak256(abi.encodePacked(runningHash, proof[i]));
-            } else {
-                runningHash = keccak256(abi.encodePacked(proof[i], runningHash));
-            }
-        }
-        return (runningHash);
+
+        return getRootWithDrive(_position, 3, runningHash, proof);
     }
 
-    // getRootDrive
     function getRootWithDrive(
         uint64 _position,
         uint64 _logOfSize,
@@ -57,7 +46,7 @@ library Merkle {
 
         uint64 size = 2 ** _logOfSize;
 
-        require((size & _position) == 0, "Position is not aligned");
+        require(((size - 1) & _position) == 0, "Position is not aligned");
         require(siblings.length == 64 - _logOfSize, "Proof length does not match");
 
         for (uint i = 0; i < siblings.length; i++) {
@@ -69,6 +58,5 @@ library Merkle {
         }
 
         return _drive;
-
     }
 }
