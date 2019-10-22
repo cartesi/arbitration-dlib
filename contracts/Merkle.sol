@@ -45,32 +45,30 @@ library Merkle {
         return (runningHash);
     }
 
-    function proveDrive(
+    // getRootDrive
+    function getRootWithDrive(
         uint64 _position,
         uint64 _logOfSize,
-        bytes32 _previousRoot,
-        bytes32 _previousDrive,
-        bytes32 _newRoot,
-        bytes32 _newDrive,
+        bytes32 _drive,
         bytes32[] memory siblings
-    ) internal pure returns (bool) {
-        require(_logOfSize >= 6, "Must be at least a word");
-        require((_logOfSize & _position) == 0, "Position is not aligned");
-        require(siblings.length == 64 - _logOfSize, "Proof length does not match"); // is this necessary? Even its not the correct size the function will revert eitherway
+    ) internal pure returns (bytes32) {
+        require(_logOfSize >= 3, "Must be at least a word");
+        require(_logOfSize <= 64, "Cannot be bigger than the machine itself");
+
+        uint64 size = 2 ** _logOfSize;
+
+        require((size & _position) == 0, "Position is not aligned");
+        require(siblings.length == 64 - _logOfSize, "Proof length does not match");
 
         for (uint i = 0; i < siblings.length; i++) {
-            if ((_position & (_logOfSize << i)) == 0) { // should this be _logOfSize << i?
-                _previousDrive = keccak256(abi.encodePacked(_previousDrive, siblings[i]));
-                _newDrive = keccak256(abi.encodePacked(_newDrive, siblings[i]));
+            if ((_position & (size << i)) == 0) {
+                _drive = keccak256(abi.encodePacked(_drive, siblings[i]));
             } else {
-                _previousDrive = keccak256(abi.encodePacked(siblings[i], _previousDrive));
-                _newDrive = keccak256(abi.encodePacked(siblings[i], _newDrive));
+                _drive = keccak256(abi.encodePacked(siblings[i], _drive));
             }
         }
 
-        require(_previousDrive == _previousRoot, "Previous drive is not compatible");
-        require(_newDrive == _newRoot, "New drive doesnt match to updated root");
+        return _drive;
 
-        return true;
     }
 }
