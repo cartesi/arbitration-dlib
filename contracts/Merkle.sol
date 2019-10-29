@@ -29,6 +29,20 @@ pragma solidity ^0.5.0;
 
 
 library Merkle {
+    function getPristineHash(uint8 _log2Size) internal pure returns (bytes32) {
+        require(_log2Size >= 3, "Has to be at least one word");
+        require(_log2Size <= 64, "Cannot be bigger than the machine itself");
+
+        bytes8 value = 0;
+        bytes32 runningHash = keccak256(abi.encodePacked(value));
+
+        for (uint256 i = 3; i < _log2Size; i++) {
+            runningHash = keccak256(abi.encodePacked(runningHash, runningHash));
+        }
+
+        return runningHash;
+    }
+
     function getRoot(uint64 _position, bytes8 _value, bytes32[] memory proof) internal pure returns (bytes32) {
         bytes32 runningHash = keccak256(abi.encodePacked(_value));
 
