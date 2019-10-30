@@ -3,4 +3,4 @@
 	url = ../dispatcher
 [submodule "lib/grpc-interfaces"]
 	path = lib/grpc-interfaces
-	url = git@github.com:cartesi-corp/grpc-interfaces.git
+	url = ../grpc-interfaces.git
