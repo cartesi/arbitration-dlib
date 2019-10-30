@@ -17,7 +17,7 @@ ethabi = "6.1.0"
 serde_json = "1.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
-emulator_interface = { path = "../dispatcher/lib/grpc-interfaces/emulator_interface" }
+emulator_interface = { path = "../lib/grpc-interfaces/emulator_interface" }
 state = { path = "../dispatcher/state" }
 dispatcher = { path = "../dispatcher/dispatcher" }
 grpc = { git = "https://github.com/cartesi/grpc-rust", branch = "make_marshall_public" }

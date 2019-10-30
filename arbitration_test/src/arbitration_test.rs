@@ -59,7 +59,7 @@ struct ArbitrationTestCtxParsed(
     String32Field, // currentState
 );
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 struct ArbitrationTestCtx {
     challenger: Address,
     claimer: Address,
@@ -211,6 +211,51 @@ impl DApp<()> for ArbitrationTest {
                 return Compute::react(compute_instance, archive, &());
             }
         }
+    }
+    
+    fn get_pretty_instance(
+        instance: &state::Instance,
+        archive: &Archive,
+        _: &(),
+    ) -> Result<state::Instance> {
+        
+        // get context (state) of the arbitration test instance
+        let parsed: ArbitrationTestCtxParsed =
+            serde_json::from_str(&instance.json_data).chain_err(|| {
+                format!(
+                    "Could not parse arbitration test instance json_data: {}",
+                    &instance.json_data
+                )
+            })?;
+        let ctx: ArbitrationTestCtx = parsed.into();
+        let json_data = serde_json::to_string(&ctx).unwrap();
+
+        // get context (state) of the sub instances
+
+        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+
+        for sub in &instance.sub_instances {
+            pretty_sub_instances.push(
+                Box::new(
+                    Compute::get_pretty_instance(
+                        sub,
+                        archive,
+                        &(),
+                    )
+                    .unwrap()
+                )
+            )
+        }
+
+        let pretty_instance = state::Instance {
+            name: "Compute".to_string(),
+            concern: instance.concern.clone(),
+            index: instance.index,
+            json_data: json_data,
+            sub_instances: pretty_sub_instances,
+        };
+
+        return Ok(pretty_instance)
     }
 }
 

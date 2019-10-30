@@ -58,7 +58,7 @@ pub struct ComputeCtxParsed(
     String32Field, // currentState
 );
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct ComputeCtx {
     pub challenger: Address,
     pub claimer: Address,
@@ -358,6 +358,51 @@ impl DApp<()> for Compute {
                 }
             },
         }
+    }
+    
+    fn get_pretty_instance(
+        instance: &state::Instance,
+        archive: &Archive,
+        _: &(),
+    ) -> Result<state::Instance> {
+        
+        // get context (state) of the compute instance
+        let parsed: ComputeCtxParsed =
+            serde_json::from_str(&instance.json_data).chain_err(|| {
+                format!(
+                    "Could not parse compute instance json_data: {}",
+                    &instance.json_data
+                )
+            })?;
+        let ctx: ComputeCtx = parsed.into();
+        let json_data = serde_json::to_string(&ctx).unwrap();
+
+        // get context (state) of the sub instances
+
+        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+
+        for sub in &instance.sub_instances {
+            pretty_sub_instances.push(
+                Box::new(
+                    VG::get_pretty_instance(
+                        sub,
+                        archive,
+                        &(),
+                    )
+                    .unwrap()
+                )
+            )
+        }
+
+        let pretty_instance = state::Instance {
+            name: "Compute".to_string(),
+            concern: instance.concern.clone(),
+            index: instance.index,
+            json_data: json_data,
+            sub_instances: pretty_sub_instances,
+        };
+
+        return Ok(pretty_instance)
     }
 }
 
