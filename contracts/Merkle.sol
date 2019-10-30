@@ -73,4 +73,59 @@ library Merkle {
 
         return _drive;
     }
+
+    function getLog2Floor(uint256 number) internal pure returns (uint32) {
+
+        uint32 result = 0;
+
+        uint256 checkNumber = number;
+        checkNumber = checkNumber >> 1;
+        while (checkNumber > 0) {
+            ++result;
+            checkNumber = checkNumber >> 1;
+        }
+
+        return result;
+    }
+
+    function isPowerOf2(uint256 number) internal pure returns (bool) {
+
+        uint256 checkNumber = number;
+        if (checkNumber == 0) {
+            return false;
+        }
+
+        while ((checkNumber & 1) == 0) {
+            checkNumber = checkNumber >> 1;
+        }
+
+        checkNumber = checkNumber >> 1;
+
+        if (checkNumber == 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// @notice Calculate the root of Merkle tree from an array of power of 2 elements
+    /// @param hashes The array containing power of 2 elements
+    /// @return byte32 the root hash being calculated
+    function calculateRootFromPowerOfTwo(bytes32[] memory hashes) internal pure returns (bytes32) {
+        // revert when the input is not of power of 2
+        require(isPowerOf2(hashes.length), "The input array must contain power of 2 elements");
+
+        if (hashes.length == 1) {
+            return hashes[0];
+        }else {
+            bytes32[] memory newHashes = new bytes32[](hashes.length >> 1);
+
+            for (uint256 i = 0; i < hashes.length; i += 2) {
+                newHashes[i >> 1] = keccak256(abi.encodePacked(hashes[i], hashes[i + 1]));
+            }
+
+            return calculateRootFromPowerOfTwo(newHashes);
+        }
+    }
+
 }
