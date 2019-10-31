@@ -77,6 +77,7 @@ impl DApp<U256> for MM {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
+        post_action: &Option<String>,
         divergence_time: &U256,
     ) -> Result<Reaction> {
         let parsed: MMCtxParsed = serde_json::from_str(&instance.json_data)

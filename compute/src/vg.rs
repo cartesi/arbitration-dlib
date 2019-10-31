@@ -105,6 +105,7 @@ impl DApp<()> for VG {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
+        post_action: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         let parsed: VGCtxParsed = serde_json::from_str(&instance.json_data)
@@ -199,6 +200,7 @@ impl DApp<()> for VG {
                             return Partition::react(
                                 partition_instance,
                                 archive,
+                                &None,
                                 &(),
                             );
                         }
@@ -282,6 +284,7 @@ impl DApp<()> for VG {
                             return Partition::react(
                                 partition_instance,
                                 archive,
+                                &None,
                                 &(),
                             );
                         }
@@ -310,6 +313,7 @@ impl DApp<()> for VG {
                             return MM::react(
                                 mm_instance,
                                 archive,
+                                &None,
                                 &ctx.divergence_time,
                             );
                         }

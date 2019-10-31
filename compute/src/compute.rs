@@ -93,6 +93,7 @@ impl DApp<()> for Compute {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
+        post_action: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the compute instance
@@ -227,7 +228,7 @@ impl DApp<()> for Compute {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &());
+                            return VG::react(vg_instance, archive, &None, &());
                         }
                     }
                 }
@@ -347,7 +348,7 @@ impl DApp<()> for Compute {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &());
+                            return VG::react(vg_instance, archive, &None, &());
                         }
                     }
                 }

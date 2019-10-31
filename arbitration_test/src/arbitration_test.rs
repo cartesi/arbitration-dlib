@@ -89,6 +89,7 @@ impl DApp<()> for ArbitrationTest {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
+        post_action: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the arbitration test instance
@@ -208,7 +209,7 @@ impl DApp<()> for ArbitrationTest {
             _ => {
                 // compute is still active,
                 // pass control to the appropriate dapp
-                return Compute::react(compute_instance, archive, &());
+                return Compute::react(compute_instance, archive, &None, &());
             }
         }
     }
