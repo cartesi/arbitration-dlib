@@ -29,7 +29,8 @@
 //! generated types.
 
 use super::ethereum_types::H256;
-use super::cartesi_base;
+use super::{cartesi_base, manager_high};
+use super::grpc::marshall::Marshaller;
 
 pub const EMULATOR_SERVICE_NAME: &'static str = "emulator";
 pub const EMULATOR_METHOD_NEW: &'static str = "/CartesiManagerHigh.MachineManagerHigh/NewSession";
@@ -265,5 +266,86 @@ impl From<emulator_interface::manager_high::SessionStepResult>
                 .map(|hash| hash.into())
                 .collect(),
         }
+    }
+}
+
+impl From<Vec<u8>>
+    for SessionRunResult
+{
+    fn from(
+        response: Vec<u8>,
+    ) -> Self {
+        let marshaller: Box<dyn Marshaller<manager_high::SessionRunResult> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
+        marshaller.read(bytes::Bytes::from(response)).unwrap().into()
+    }
+}
+
+impl From<Vec<u8>>
+    for SessionStepResult
+{
+    fn from(
+        response: Vec<u8>,
+    ) -> Self {
+        let marshaller: Box<dyn Marshaller<manager_high::SessionStepResult> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
+        marshaller.read(bytes::Bytes::from(response)).unwrap().into()
+    }
+}
+
+impl From<Vec<u8>>
+    for NewSessionResult
+{
+    fn from(
+        response: Vec<u8>,
+    ) -> Self {
+        let marshaller: Box<dyn Marshaller<cartesi_base::Hash> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
+        marshaller.read(bytes::Bytes::from(response)).unwrap().into()
+    }
+}
+
+impl From<SessionRunRequest>
+    for Vec<u8>
+{
+    fn from(
+        request: SessionRunRequest,
+    ) -> Self {
+        let marshaller: Box<dyn Marshaller<manager_high::SessionRunRequest> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
+    
+        let mut req = manager_high::SessionRunRequest::new();
+        req.set_session_id(request.session_id);
+        req.set_final_cycles(request.times);
+
+        marshaller.write(&req).unwrap()
+    }
+}
+
+impl From<SessionStepRequest>
+    for Vec<u8>
+{
+    fn from(
+        request: SessionStepRequest,
+    ) -> Self {
+        let marshaller: Box<dyn Marshaller<manager_high::SessionStepRequest> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
+    
+        let mut req = manager_high::SessionStepRequest::new();
+        req.set_session_id(request.session_id);
+        req.set_initial_cycle(request.time);
+
+        marshaller.write(&req).unwrap()
+    }
+}
+
+impl From<NewSessionRequest>
+    for Vec<u8>
+{
+    fn from(
+        request: NewSessionRequest,
+    ) -> Self {
+        let marshaller: Box<dyn Marshaller<manager_high::NewSessionRequest> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
+    
+        let mut req = manager_high::NewSessionRequest::new();
+        req.set_session_id(request.session_id);
+        req.set_machine(request.machine);
+
+        marshaller.write(&req).unwrap()
     }
 }
