@@ -95,7 +95,7 @@ impl DApp<()> for Partition {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_action: &Option<String>,
+        post_payload: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         let parsed: PartitionCtxParsed =

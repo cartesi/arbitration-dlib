@@ -105,7 +105,7 @@ impl DApp<()> for VG {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_action: &Option<String>,
+        post_payload: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         let parsed: VGCtxParsed = serde_json::from_str(&instance.json_data)
