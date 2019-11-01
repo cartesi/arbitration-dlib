@@ -302,6 +302,17 @@ impl From<Vec<u8>>
     }
 }
 
+impl From<Vec<u8>>
+    for NewSessionRequest
+{
+    fn from(
+        response: Vec<u8>,
+    ) -> Self {
+        let marshaller: Box<dyn Marshaller<manager_high::NewSessionRequest> + Sync + Send> = Box::new(grpc::protobuf::MarshallerProtobuf);
+        marshaller.read(bytes::Bytes::from(response)).unwrap().into()
+    }
+}
+
 impl From<SessionRunRequest>
     for Vec<u8>
 {
