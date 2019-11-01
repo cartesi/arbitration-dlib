@@ -51,7 +51,7 @@ use ethereum_types::{Address, U256};
 pub use compute::{Compute, ComputeCtx, ComputeCtxParsed};
 pub use mm::MM;
 pub use partition::Partition;
-pub use vg::VG;
+pub use vg::{VG, VGCtx, VGCtxParsed};
 pub use emulator_interface::{cartesi_base, manager_high};
 pub use emulator_service::{
     AccessOperation, NewSessionRequest, NewSessionResult,
