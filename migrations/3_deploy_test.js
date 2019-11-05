@@ -5,7 +5,7 @@ var path = require('path');
 var rel = "../build/contracts";
 
 var ArbitrationTestPath = path.join(__dirname, rel, "/ArbitrationTestInstantiator.json");
-var ArbitrationTestInstantiator = artifacts.require("./ArbitrationTestInstantiator.sol");
+var ArbitrationTestInstantiator = artifacts.require("./test/ArbitrationTestInstantiator.sol");
 
 const final_time = 100000000;
 const round_duration = 100000;

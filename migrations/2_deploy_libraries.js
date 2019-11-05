@@ -16,21 +16,21 @@ var ComputePath = path.join(__dirname, rel, "/ComputeInstantiator.json");
 var TestHashPath = path.join(__dirname, rel, "/TestHash.json");
 
 var MMInstantiator = artifacts.require("./MMInstantiator.sol");
-var SimpleMemoryInstantiator = artifacts.require("./SimpleMemoryInstantiator.sol");
-var Hasher = artifacts.require("./Hasher.sol");
+var SimpleMemoryInstantiator = artifacts.require("./test/SimpleMemoryInstantiator.sol");
+var Hasher = artifacts.require("./test/Hasher.sol");
 var PartitionInstantiator = artifacts.require("./PartitionInstantiator.sol");
 var VGInstantiator = artifacts.require("./VGInstantiator.sol");
 var ComputeInstantiator = artifacts.require("./ComputeInstantiator.sol");
-var TestHash = artifacts.require("./TestHash.sol");
+var TestHash = artifacts.require("./test/TestHash.sol");
 
 //test aux
 
 var MMInstantiatorTestAux =
-    artifacts.require("./testAuxiliaries/MMInstantiatorTestAux.sol");
+    artifacts.require("./test/MMInstantiatorTestAux.sol");
 
 //test aux
 var PartitionTestAux =
-    artifacts.require("./testAuxiliaries/PartitionTestAux.sol");
+    artifacts.require("./test/PartitionTestAux.sol");
 
 module.exports = function(deployer, network, accounts) {
   deployer.then(async () => {
