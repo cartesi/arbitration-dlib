@@ -1,4 +1,4 @@
-FROM rust:1.38 as build
+FROM rust:1.38 as builder
 
 ENV BASE /opt/cartesi
 
@@ -43,8 +43,8 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 
 WORKDIR /opt/cartesi
 
-# Copy the build artifact from the build stage
-COPY --from=build /usr/local/cargo/bin/arbitration_test .
+# Copy the builder artifact from the build stage
+COPY --from=builder /usr/local/cargo/bin/arbitration_test .
 
 # Copy dispatcher scripts
 COPY ./dispatcher-entrypoint.sh .

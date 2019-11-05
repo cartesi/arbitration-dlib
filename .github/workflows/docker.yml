@@ -15,8 +15,17 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Pull images for caching
+        run: |
+          docker pull cartesi/arbitration-test:builder || true
+          docker pull cartesi/arbitration-test:latest || true
+
       - name: Build Arbitration Test
-        run: docker build . -t cartesi/arbitration-test:latest -f Dockerfile.test
+        run: |
+          docker build . --target builder --cache-from cartesi/arbitration-test:builder -t cartesi/arbitration-test:builder -f Dockerfile.test
+          docker build . --cache-from cartesi/arbitration-test:builder --cache-from cartesi/arbitration-test:latest -t cartesi/arbitration-test:latest -f Dockerfile.test
       
       - name: Push Arbitration Test to Docker Hub
-        run: docker push cartesi/arbitration-test:latest
+        run: |
+          docker push cartesi/arbitration-test:builder
+          docker push cartesi/arbitration-test:latest
