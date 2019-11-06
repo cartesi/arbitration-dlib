@@ -27,7 +27,7 @@
 /// @title An instantiator of compute
 pragma solidity ^0.5.0;
 
-import "./Decorated.sol";
+import "@cartesi/util/contracts/Decorated.sol";
 import "./ComputeInterface.sol";
 import "./VGInterface.sol";
 

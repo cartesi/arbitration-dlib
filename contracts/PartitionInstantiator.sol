@@ -27,7 +27,7 @@
 /// @title Partition instantiator
 pragma solidity ^0.5.0;
 
-import "./Decorated.sol";
+import "@cartesi/util/contracts/Decorated.sol";
 import "./PartitionInterface.sol";
 
 

@@ -27,7 +27,7 @@
 /// @title Interface for memory manager instantiator
 pragma solidity ^0.5.0;
 
-import "./Instantiator.sol";
+import "@cartesi/util/contracts/Instantiator.sol";
 
 
 contract MMInterface is Instantiator {

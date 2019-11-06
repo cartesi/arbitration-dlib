@@ -27,8 +27,8 @@
 // @title Verification game instantiator
 pragma solidity ^0.5.0;
 
-import "./Decorated.sol";
-import "./Instantiator.sol";
+import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/util/contracts/Instantiator.sol";
 import "./VGInterface.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";

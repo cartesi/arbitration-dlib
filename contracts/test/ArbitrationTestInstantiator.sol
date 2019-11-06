@@ -27,7 +27,7 @@
 /// @title An instantiator of arbitration test
 pragma solidity ^0.5.0;
 
-import "../Decorated.sol";
+import "@cartesi/util/contracts/Decorated.sol";
 import "./ArbitrationTestInterface.sol";
 import "../ComputeInterface.sol";
 

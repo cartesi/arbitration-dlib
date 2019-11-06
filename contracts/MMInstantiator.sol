@@ -27,9 +27,9 @@
 /// @title An instantiator of memory managers
 pragma solidity ^0.5.0;
 
-import "./Decorated.sol";
+import "@cartesi/util/contracts/Decorated.sol";
 import "./MMInterface.sol";
-import "./Merkle.sol";
+import "@cartesi/util/contracts/Merkle.sol";
 
 
 contract MMInstantiator is MMInterface, Decorated {
