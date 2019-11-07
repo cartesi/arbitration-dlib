@@ -147,7 +147,7 @@ impl DApp<()> for ArbitrationTest {
             instance.index,
             &instance.concern.contract_address,
         );
-        let machine_request = build_machine()?;
+        let machine_request = build_machine().chain_err(|| format!("could not build machine message"))?;
         let request = NewSessionRequest {
             session_id: id.clone(),
             machine: machine_request
