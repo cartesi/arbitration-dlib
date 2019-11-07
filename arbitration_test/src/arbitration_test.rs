@@ -147,7 +147,7 @@ impl DApp<()> for ArbitrationTest {
             instance.index,
             &instance.concern.contract_address,
         );
-        let machine_request = build_machine();
+        let machine_request = build_machine()?;
         let request = NewSessionRequest {
             session_id: id.clone(),
             machine: machine_request
@@ -343,7 +343,7 @@ const TEST_ROM: Rom = Rom {
     backing: "rom-linux.bin"
 };
 
-fn build_machine() -> cartesi_base::MachineRequest {
+fn build_machine() -> Result<cartesi_base::MachineRequest> {
     let mut ram_msg = cartesi_base::RAM::new();
     ram_msg.set_length(TEST_RAM.length);
     ram_msg.set_backing(EMULATOR_BASE_PATH.to_string() + &TEST_RAM.backing.to_string());
@@ -354,8 +354,8 @@ fn build_machine() -> cartesi_base::MachineRequest {
     for drive in TEST_DRIVES.iter() {
         let drive_path = EMULATOR_BASE_PATH.to_string() + &drive.backing.to_string();
         // TODO: error handling for files metadata
-        let metadata = fs::metadata(TEST_BASE_PATH.to_string() + &drive.backing.to_string());
-        let drive_size = metadata.unwrap().len();
+        let metadata = fs::metadata(TEST_BASE_PATH.to_string() + &drive.backing.to_string())?;
+        let drive_size = metadata.len();
         let mut drive_msg = cartesi_base::Drive::new();
 
         drive_msg.set_start(drive_start);
@@ -381,5 +381,5 @@ fn build_machine() -> cartesi_base::MachineRequest {
     machine.set_ram(ram_msg);
     machine.set_flash(protobuf::RepeatedField::from_vec(drives_msg));
 
-    return machine;
+    return Ok(machine);
 }
