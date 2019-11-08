@@ -7,25 +7,21 @@ RUN \
     apt-get install --no-install-recommends -y cmake && \
     rm -rf /var/lib/apt/lists/*
 
-WORKDIR $BASE
+WORKDIR $BASE/arbitration_test
 
-COPY ./lib/ $BASE/lib
-COPY ./dispatcher/ $BASE/dispatcher
-
-WORKDIR $BASE/compute
-
-# Compile dependencies
-COPY ./compute/Cargo.toml ./
-COPY ./compute/Cargo.lock ./
+# Compile cache arbitration test
+COPY ./arbitration_test/Cargo_cache.toml ./Cargo.toml
 RUN mkdir -p ./src && echo "fn main() { }" > ./src/main.rs
 RUN cargo build -j $(nproc) --release
 
 WORKDIR $BASE
 
-# Compile tournament test
-COPY ./arbitration_test/ $BASE/arbitration_test
+COPY ./lib/ $BASE/lib
+COPY ./dispatcher/ $BASE/dispatcher
 COPY ./compute/ $BASE/compute
+COPY ./arbitration_test/ $BASE/arbitration_test
 
+# Compile arbitration test
 RUN cargo install -j $(nproc) --path ./arbitration_test
 
 # Runtime image
