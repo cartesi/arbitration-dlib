@@ -22,8 +22,8 @@ jobs:
 
       - name: Build Arbitration Test
         run: |
-          docker build . --target builder --cache-from cartesi/arbitration-test:builder -t cartesi/arbitration-test:builder -f Dockerfile.test
-          docker build . --cache-from cartesi/arbitration-test:builder --cache-from cartesi/arbitration-test:latest -t cartesi/arbitration-test:latest -f Dockerfile.test
+          docker build . --target builder --cache-from cartesi/arbitration-test:builder -t cartesi/arbitration-test:builder
+          docker build . --cache-from cartesi/arbitration-test:builder --cache-from cartesi/arbitration-test:latest -t cartesi/arbitration-test:latest
       
       - name: Push Arbitration Test to Docker Hub
         run: |
