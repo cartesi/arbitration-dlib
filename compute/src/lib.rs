@@ -57,8 +57,11 @@ pub use emulator_service::{
     AccessOperation, NewSessionRequest, NewSessionResult,
     SessionRunRequest, SessionStepRequest,
     SessionRunResult, SessionStepResult,
+    SessionReadMemoryRequest, SessionReadMemoryResult,
+    SessionGetProofRequest, SessionGetProofResult,
     EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
-    EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP};
+    EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
+    EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF};
 
 #[derive(Debug)]
 enum Role {
