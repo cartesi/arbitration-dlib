@@ -1,20 +1,21 @@
 {
   "name": "@cartesi/arbitration",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.3",
   "description": "Arbitration DLib",
   "scripts": {
     "prepare": "truffle compile",
     "test": "mocha"
   },
   "dependencies": {
-    "@cartesi/util": "^0.1.0-alpha.6"
+    "@cartesi/util": "^0.1.0"
   },
   "devDependencies": {
-    "truffle": "^5.0.44"
+    "@truffle/hdwallet-provider": "^1.0.26",
+    "truffle": "^5.1.3"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/cartesi-corp/arbitration-dlib.git"
+    "url": "git://github.com/cartesi/arbitration-dlib.git"
   },
   "keywords": [
     "cartesi"
@@ -22,7 +23,8 @@
   "files": [
     "contracts",
     "migrations",
-    "build"
+    "build",
+    "truffle-config.js"
   ],
   "author": "Danilo Tuler <danilo@cartesi.io>",
   "license": "Apache-2.0"
