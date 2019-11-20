@@ -47,6 +47,7 @@ COPY ./dispatcher-entrypoint.sh .
 
 CMD dockerize \
     -wait file:///opt/cartesi/dispatcher/config/keys_done \
+    -wait file:///opt/cartesi/blockchain/contracts/deploy_done \
     -wait file:///opt/cartesi/dispatcher/config/config_done \
     -wait file:///root/host/test-files/files_done \
     -wait tcp://ganache:8545 \
