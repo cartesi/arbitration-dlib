@@ -24,7 +24,7 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::{build_machine_id, build_session_step_key};
+use super::{build_session_step_key};
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
@@ -60,6 +60,12 @@ pub struct MMCtx {
     pub current_state: String,
 }
 
+#[derive(Default)]
+pub struct MMParams {
+    pub machine_id: String,
+    pub divergence_time: U256
+}
+
 impl From<MMCtxParsed> for MMCtx {
     fn from(parsed: MMCtxParsed) -> MMCtx {
         MMCtx {
@@ -73,12 +79,12 @@ impl From<MMCtxParsed> for MMCtx {
     }
 }
 
-impl DApp<U256> for MM {
+impl DApp<MMParams> for MM {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
         post_payload: &Option<String>,
-        divergence_time: &U256,
+        params: &MMParams,
     ) -> Result<Reaction> {
         let parsed: MMCtxParsed = serde_json::from_str(&instance.json_data)
             .chain_err(|| {
@@ -103,18 +109,15 @@ impl DApp<U256> for MM {
         match ctx.current_state.as_ref() {
             "WaitingProofs" => {
                 // machine id
-                let id = build_machine_id(
-                    instance.index,
-                    &instance.concern.contract_address,
-                );
+                let id = params.machine_id.clone();
                 trace!("Calculating step of machine {}", id);
                 let request = SessionStepRequest {
                     session_id: id.clone(),
-                    time: divergence_time.as_u64(),
+                    time: params.divergence_time.as_u64(),
                 };
                 let archive_key = build_session_step_key(
                         id.clone(),
-                        divergence_time.to_string());
+                        params.divergence_time.to_string());
 
                 // have we sampled the divergence time?
                 let processed_response: SessionStepResult = archive.get_response(
@@ -220,7 +223,7 @@ impl DApp<U256> for MM {
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
-        divergence_time: &U256,
+        _params: &MMParams,
     ) -> Result<state::Instance> {
         
         // get context (state) of the mm instance

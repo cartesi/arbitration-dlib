@@ -24,7 +24,7 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::{build_machine_id, build_session_run_key};
+use super::{build_session_run_key};
 use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
@@ -87,14 +87,14 @@ impl From<ComputeCtxParsed> for ComputeCtx {
     }
 }
 
-impl DApp<()> for Compute {
+impl DApp<String> for Compute {
     /// React to the compute contract, submitting solutions, confirming
     /// or challenging them when appropriate
     fn react(
         instance: &state::Instance,
         archive: &Archive,
         post_payload: &Option<String>,
-        _: &(),
+        machine_id: &String,
     ) -> Result<Reaction> {
         // get context (state) of the compute instance
         let parsed: ComputeCtxParsed =
@@ -143,10 +143,7 @@ impl DApp<()> for Compute {
                 }
                 "WaitingClaim" => {
                     // machine id
-                    let id = build_machine_id(
-                        instance.index,
-                        &instance.concern.contract_address,
-                    );
+                    let id = machine_id.clone();
                     let sample_points: Vec<u64> =
                         vec![0, ctx.final_time.as_u64()];
                     let request = SessionRunRequest {
@@ -228,7 +225,7 @@ impl DApp<()> for Compute {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &None, &());
+                            return VG::react(vg_instance, archive, &None, machine_id);
                         }
                     }
                 }
@@ -243,10 +240,7 @@ impl DApp<()> for Compute {
                     // here goes the calculation of the final hash
                     // to check the claim and potentialy raise challenge
                     // machine id
-                    let id = build_machine_id(
-                        instance.index,
-                        &instance.concern.contract_address,
-                    );
+                    let id = machine_id.clone();
                     let sample_points: Vec<u64> =
                         vec![0, ctx.final_time.as_u64()];
                     let request = SessionRunRequest {
@@ -348,7 +342,7 @@ impl DApp<()> for Compute {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &None, &());
+                            return VG::react(vg_instance, archive, &None, machine_id);
                         }
                     }
                 }
@@ -364,7 +358,7 @@ impl DApp<()> for Compute {
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
-        _: &(),
+        machine_id: &String,
     ) -> Result<state::Instance> {
         
         // get context (state) of the compute instance
@@ -388,7 +382,7 @@ impl DApp<()> for Compute {
                     VG::get_pretty_instance(
                         sub,
                         archive,
-                        &(),
+                        machine_id,
                     )
                     .unwrap()
                 )

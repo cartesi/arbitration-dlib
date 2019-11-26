@@ -24,7 +24,7 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-use super::{build_machine_id, build_session_run_key};
+use super::{build_session_run_key};
 use super::dispatcher::{
     AddressField, BoolArray, Bytes32Array, String32Field, U256Array, U256Array5,
 };
@@ -91,12 +91,12 @@ impl From<PartitionCtxParsed> for PartitionCtx {
     }
 }
 
-impl DApp<()> for Partition {
+impl DApp<String> for Partition {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
         post_payload: &Option<String>,
-        _: &(),
+        machine_id: &String,
     ) -> Result<Reaction> {
         let parsed: PartitionCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
@@ -141,10 +141,7 @@ impl DApp<()> for Partition {
                 }
                 "WaitingHashes" => {
                     // machine id
-                    let id = build_machine_id(
-                        instance.index,
-                        &instance.concern.contract_address,
-                    );
+                    let id = machine_id.clone();
                     
                     trace!("Calculating queried hashes of machine {}", id);
                     let sample_points: Vec<u64> = ctx
@@ -234,10 +231,7 @@ impl DApp<()> for Partition {
             Role::Challenger => match ctx.current_state.as_ref() {
                 "WaitingQuery" => {
                     // machine id
-                    let id = build_machine_id(
-                        instance.index,
-                        &instance.concern.contract_address,
-                    );
+                    let id = machine_id.clone();
                     
                     trace!("Calculating posted hashes of machine {}", id);
                     let sample_points: Vec<u64> = ctx
@@ -371,7 +365,7 @@ impl DApp<()> for Partition {
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
-        _: &(),
+        _machine_id: &String,
     ) -> Result<state::Instance> {
         
         // get context (state) of the partition instance

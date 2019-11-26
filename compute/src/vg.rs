@@ -35,7 +35,7 @@ use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
 use super::{Partition, Role, MM};
 use compute::win_by_deadline_or_idle;
-use mm::{MMCtx, MMCtxParsed};
+use mm::{MMCtx, MMCtxParsed, MMParams};
 use partition::{PartitionCtx, PartitionCtxParsed};
 
 pub struct VG();
@@ -101,12 +101,12 @@ impl From<VGCtxParsed> for VGCtx {
     }
 }
 
-impl DApp<()> for VG {
+impl DApp<String> for VG {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
         post_payload: &Option<String>,
-        _: &(),
+        machine_id: &String,
     ) -> Result<Reaction> {
         let parsed: VGCtxParsed = serde_json::from_str(&instance.json_data)
             .chain_err(|| {
@@ -201,7 +201,7 @@ impl DApp<()> for VG {
                                 partition_instance,
                                 archive,
                                 &None,
-                                &(),
+                                &machine_id,
                             );
                         }
                     }
@@ -285,7 +285,7 @@ impl DApp<()> for VG {
                                 partition_instance,
                                 archive,
                                 &None,
-                                &(),
+                                machine_id,
                             );
                         }
                     }
@@ -310,11 +310,15 @@ impl DApp<()> for VG {
 
                     match mm_ctx.current_state.as_ref() {
                         "WaitingProofs" => {
+                            let params = MMParams {
+                                divergence_time: ctx.divergence_time,
+                                machine_id: machine_id.clone()
+                            };
                             return MM::react(
                                 mm_instance,
                                 archive,
                                 &None,
-                                &ctx.divergence_time,
+                                &params,
                             );
                         }
                         "WaitingReplay" => {
@@ -355,7 +359,7 @@ impl DApp<()> for VG {
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
-        _: &(),
+        machine_id: &String,
     ) -> Result<state::Instance> {
         
         // get context (state) of the vg instance
@@ -381,7 +385,7 @@ impl DApp<()> for VG {
                             Partition::get_pretty_instance(
                                 sub,
                                 archive,
-                                &(),
+                                machine_id,
                             )
                             .unwrap()
                         )
@@ -389,13 +393,17 @@ impl DApp<()> for VG {
                 }
             },
             "WaitMemoryProveValues" => {
+                let params = MMParams {
+                    divergence_time: ctx.divergence_time,
+                    machine_id: machine_id.clone()
+                };
                 for sub in &instance.sub_instances {
                     pretty_sub_instances.push(
                         Box::new(
                             MM::get_pretty_instance(
                                 sub,
                                 archive,
-                                &ctx.divergence_time,
+                                &params,
                             )
                             .unwrap()
                         )

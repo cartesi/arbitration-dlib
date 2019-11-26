@@ -209,7 +209,11 @@ impl DApp<()> for ArbitrationTest {
             _ => {
                 // compute is still active,
                 // pass control to the appropriate dapp
-                return Compute::react(compute_instance, archive, &None, &());
+                let id = build_machine_id(
+                    instance.index,
+                    &instance.concern.contract_address,
+                );
+                return Compute::react(compute_instance, archive, &None, &id);
             }
         }
     }
@@ -235,13 +239,17 @@ impl DApp<()> for ArbitrationTest {
 
         let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
 
+        let id = build_machine_id(
+            instance.index,
+            &instance.concern.contract_address,
+        );
         for sub in &instance.sub_instances {
             pretty_sub_instances.push(
                 Box::new(
                     Compute::get_pretty_instance(
                         sub,
                         archive,
-                        &(),
+                        &id,
                     )
                     .unwrap()
                 )
@@ -256,7 +264,7 @@ impl DApp<()> for ArbitrationTest {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }
 
