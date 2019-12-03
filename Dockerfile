@@ -52,6 +52,7 @@ COPY ./dispatcher-entrypoint.sh $BASE/bin/dispatcher-entrypoint.sh
 
 ENV ETHEREUM_HOST "ganache"
 ENV ETHEREUM_PORT "8545"
+ENV ETHEREUM_TIMEOUT "120s"
 
 CMD dockerize \
     -wait file://$BASE/etc/keys/keys_done \
@@ -60,5 +61,5 @@ CMD dockerize \
     -wait file:///root/host/test-files/files_done \
     -wait tcp://${ETHEREUM_HOST}:${ETHEREUM_PORT} \
     -wait tcp://machine-manager:50051 \
-    -timeout 240s \
+    -timeout ${ETHEREUM_TIMEOUT} \
     $BASE/bin/dispatcher-entrypoint.sh
