@@ -50,12 +50,15 @@ COPY --from=builder /usr/local/cargo/bin/arbitration_test $BASE/bin/arbitration_
 # Copy dispatcher scripts
 COPY ./dispatcher-entrypoint.sh $BASE/bin/dispatcher-entrypoint.sh
 
+ENV ETHEREUM_HOST "ganache"
+ENV ETHEREUM_PORT "8545"
+
 CMD dockerize \
     -wait file://$BASE/etc/keys/keys_done \
     -wait file://$BASE/share/blockchain/contracts/deploy_done \
     -wait file://$BASE/etc/dispatcher/config_done \
     -wait file:///root/host/test-files/files_done \
-    -wait tcp://ganache:8545 \
+    -wait tcp://${ETHEREUM_HOST}:${ETHEREUM_PORT} \
     -wait tcp://machine-manager:50051 \
     -timeout 120s \
     $BASE/bin/dispatcher-entrypoint.sh
