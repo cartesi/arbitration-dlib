@@ -60,5 +60,5 @@ CMD dockerize \
     -wait file:///root/host/test-files/files_done \
     -wait tcp://${ETHEREUM_HOST}:${ETHEREUM_PORT} \
     -wait tcp://machine-manager:50051 \
-    -timeout 120s \
+    -timeout 240s \
     $BASE/bin/dispatcher-entrypoint.sh
