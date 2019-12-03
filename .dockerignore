@@ -7,7 +7,5 @@ test/*/
 *.bin
 *.abi
 /out
-compute/target
-dispatcher/target
-arbitration_test/target
+**/target
 build
