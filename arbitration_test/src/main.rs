@@ -23,7 +23,6 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 // error-chain recursion
 #![recursion_limit = "1024"]
 #![warn(unused_extern_crates)]

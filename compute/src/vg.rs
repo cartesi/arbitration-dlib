@@ -23,10 +23,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
-use super::dispatcher::{
-    AddressField, Bytes32Field, String32Field, U256Array6,
-};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Array6};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -105,16 +102,15 @@ impl DApp<String> for VG {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         machine_id: &String,
     ) -> Result<Reaction> {
-        let parsed: VGCtxParsed = serde_json::from_str(&instance.json_data)
-            .chain_err(|| {
-                format!(
-                    "Could not parse vg instance json_data: {}",
-                    &instance.json_data
-                )
-            })?;
+        let parsed: VGCtxParsed = serde_json::from_str(&instance.json_data).chain_err(|| {
+            format!(
+                "Could not parse vg instance json_data: {}",
+                &instance.json_data
+            )
+        })?;
         let ctx: VGCtx = parsed.into();
         trace!("Context for vg (index {}) {:?}", instance.index, ctx);
 
@@ -132,9 +128,9 @@ impl DApp<String> for VG {
             cl if (cl == ctx.claimer) => Role::Claimer,
             ch if (ch == ctx.challenger) => Role::Challenger,
             _ => {
-                return Err(Error::from(ErrorKind::InvalidContractState(
-                    String::from("User is neither claimer nor challenger"),
-                )));
+                return Err(Error::from(ErrorKind::InvalidContractState(String::from(
+                    "User is neither claimer nor challenger",
+                ))));
             }
         };
         trace!("Role played (index {}) is: {:?}", instance.index, role);
@@ -143,22 +139,20 @@ impl DApp<String> for VG {
             Role::Claimer => match ctx.current_state.as_ref() {
                 "WaitPartition" => {
                     // get the partition instance to see if its is finished
-                    let partition_instance =
-                        instance.sub_instances.get(0).ok_or(Error::from(
-                            ErrorKind::InvalidContractState(format!(
-                                "There is no partition instance {}",
-                                ctx.current_state
-                            )),
-                        ))?;
+                    let partition_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                        ErrorKind::InvalidContractState(format!(
+                            "There is no partition instance {}",
+                            ctx.current_state
+                        )),
+                    ))?;
 
                     let partition_parsed: PartitionCtxParsed =
-                        serde_json::from_str(&partition_instance.json_data)
-                            .chain_err(|| {
-                                format!(
-                            "Could not parse partition instance json_data: {}",
-                            &instance.json_data
-                                )
-                            })?;
+                        serde_json::from_str(&partition_instance.json_data).chain_err(|| {
+                            format!(
+                                "Could not parse partition instance json_data: {}",
+                                &instance.json_data
+                            )
+                        })?;
                     let partition_ctx: PartitionCtx = partition_parsed.into();
 
                     match partition_ctx.current_state.as_ref() {
@@ -215,9 +209,10 @@ impl DApp<String> for VG {
                     );
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
             Role::Challenger => match ctx.current_state.as_ref() {
@@ -227,22 +222,20 @@ impl DApp<String> for VG {
                     // not quite the same
                     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     // get the partition instance to see if its is finished
-                    let partition_instance =
-                        instance.sub_instances.get(0).ok_or(Error::from(
-                            ErrorKind::InvalidContractState(format!(
-                                "There is no partition instance {}",
-                                ctx.current_state
-                            )),
-                        ))?;
+                    let partition_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                        ErrorKind::InvalidContractState(format!(
+                            "There is no partition instance {}",
+                            ctx.current_state
+                        )),
+                    ))?;
 
                     let partition_parsed: PartitionCtxParsed =
-                        serde_json::from_str(&partition_instance.json_data)
-                            .chain_err(|| {
-                                format!(
-                            "Could not parse partition instance json_data: {}",
-                            &instance.json_data
-                                )
-                            })?;
+                        serde_json::from_str(&partition_instance.json_data).chain_err(|| {
+                            format!(
+                                "Could not parse partition instance json_data: {}",
+                                &instance.json_data
+                            )
+                        })?;
                     let partition_ctx: PartitionCtx = partition_parsed.into();
 
                     match partition_ctx.current_state.as_ref() {
@@ -291,35 +284,29 @@ impl DApp<String> for VG {
                     }
                 }
                 "WaitMemoryProveValues" => {
-                    let mm_instance = instance.sub_instances.get(0).ok_or(
-                        Error::from(ErrorKind::InvalidContractState(format!(
+                    let mm_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                        ErrorKind::InvalidContractState(format!(
                             "There is no memory manager instance {}",
                             ctx.current_state
-                        ))),
-                    )?;
+                        )),
+                    ))?;
 
-                    let mm_parsed: MMCtxParsed =
-                        serde_json::from_str(&mm_instance.json_data)
-                            .chain_err(|| {
-                                format!(
-                                    "Could not parse mm instance json_data: {}",
-                                    &instance.json_data
-                                )
-                            })?;
+                    let mm_parsed: MMCtxParsed = serde_json::from_str(&mm_instance.json_data)
+                        .chain_err(|| {
+                            format!(
+                                "Could not parse mm instance json_data: {}",
+                                &instance.json_data
+                            )
+                        })?;
                     let mm_ctx: MMCtx = mm_parsed.into();
 
                     match mm_ctx.current_state.as_ref() {
                         "WaitingProofs" => {
                             let params = MMParams {
                                 divergence_time: ctx.divergence_time,
-                                machine_id: machine_id.clone()
+                                machine_id: machine_id.clone(),
                             };
-                            return MM::react(
-                                mm_instance,
-                                archive,
-                                &None,
-                                &params,
-                            );
+                            return MM::react(mm_instance, archive, &None, &params);
                         }
                         "WaitingReplay" => {
                             // start the machine run challenge
@@ -348,66 +335,51 @@ impl DApp<String> for VG {
                     }
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         machine_id: &String,
     ) -> Result<state::Instance> {
-        
         // get context (state) of the vg instance
-        let parsed: VGCtxParsed =
-            serde_json::from_str(&instance.json_data).chain_err(|| {
-                format!(
-                    "Could not parse vg instance json_data: {}",
-                    &instance.json_data
-                )
-            })?;
+        let parsed: VGCtxParsed = serde_json::from_str(&instance.json_data).chain_err(|| {
+            format!(
+                "Could not parse vg instance json_data: {}",
+                &instance.json_data
+            )
+        })?;
         let ctx: VGCtx = parsed.into();
         let json_data = serde_json::to_string(&ctx).unwrap();
 
         // get context (state) of the sub instances
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let mut pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         match ctx.current_state.as_ref() {
             "WaitPartition" => {
                 for sub in &instance.sub_instances {
-                    pretty_sub_instances.push(
-                        Box::new(
-                            Partition::get_pretty_instance(
-                                sub,
-                                archive,
-                                machine_id,
-                            )
-                            .unwrap()
-                        )
-                    )
+                    pretty_sub_instances.push(Box::new(
+                        Partition::get_pretty_instance(sub, archive, machine_id).unwrap(),
+                    ))
                 }
-            },
+            }
             "WaitMemoryProveValues" => {
                 let params = MMParams {
                     divergence_time: ctx.divergence_time,
-                    machine_id: machine_id.clone()
+                    machine_id: machine_id.clone(),
                 };
                 for sub in &instance.sub_instances {
-                    pretty_sub_instances.push(
-                        Box::new(
-                            MM::get_pretty_instance(
-                                sub,
-                                archive,
-                                &params,
-                            )
-                            .unwrap()
-                        )
-                    )
+                    pretty_sub_instances.push(Box::new(
+                        MM::get_pretty_instance(sub, archive, &params).unwrap(),
+                    ))
                 }
             }
             _ => {}
@@ -421,6 +393,6 @@ impl DApp<String> for VG {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }

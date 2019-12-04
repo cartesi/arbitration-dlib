@@ -23,8 +23,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
-use super::{build_session_run_key};
+use super::build_session_run_key;
 use super::dispatcher::{
     AddressField, BoolArray, Bytes32Array, String32Field, U256Array, U256Array5,
 };
@@ -34,7 +33,9 @@ use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
-use super::{Role, SessionRunRequest, SessionRunResult, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
+use super::{
+    Role, SessionRunRequest, SessionRunResult, EMULATOR_METHOD_RUN, EMULATOR_SERVICE_NAME,
+};
 use compute::win_by_deadline_or_idle;
 
 pub struct Partition();
@@ -95,7 +96,7 @@ impl DApp<String> for Partition {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         machine_id: &String,
     ) -> Result<Reaction> {
         let parsed: PartitionCtxParsed =
@@ -122,9 +123,9 @@ impl DApp<String> for Partition {
             cl if (cl == ctx.claimer) => Role::Claimer,
             ch if (ch == ctx.challenger) => Role::Challenger,
             _ => {
-                return Err(Error::from(ErrorKind::InvalidContractState(
-                    String::from("User is neither claimer nor challenger"),
-                )));
+                return Err(Error::from(ErrorKind::InvalidContractState(String::from(
+                    "User is neither claimer nor challenger",
+                ))));
             }
         };
         trace!("Role played (index {}) is: {:?}", instance.index, role);
@@ -142,7 +143,7 @@ impl DApp<String> for Partition {
                 "WaitingHashes" => {
                     // machine id
                     let id = machine_id.clone();
-                    
+
                     trace!("Calculating queried hashes of machine {}", id);
                     let sample_points: Vec<u64> = ctx
                         .query_array
@@ -154,21 +155,22 @@ impl DApp<String> for Partition {
                         session_id: id.clone(),
                         times: sample_points.clone(),
                     };
-                    let archive_key = build_session_run_key(
-                        id.clone(),
-                        sample_points.clone());
+                    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
 
                     // have we sampled the times?
-                    let processed_response: SessionRunResult = archive.get_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        request.into())?
+                    let processed_response: SessionRunResult = archive
+                        .get_response(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            archive_key.clone(),
+                            EMULATOR_METHOD_RUN.to_string(),
+                            request.into(),
+                        )?
                         .map_err(move |_e| {
                             Error::from(ErrorKind::ArchiveInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 id,
-                                EMULATOR_METHOD_RUN.to_string()))
+                                EMULATOR_METHOD_RUN.to_string(),
+                            ))
                         })?
                         .into();
 
@@ -176,13 +178,11 @@ impl DApp<String> for Partition {
 
                     for i in 0..ctx.query_size.as_usize() {
                         // get the i'th time in query array
-                        let _time = &ctx.query_array.get(i).ok_or(
-                            Error::from(ErrorKind::InvalidContractState(
-                                String::from(
-                                    "could not find element in query array",
-                                ),
+                        let _time = &ctx.query_array.get(i).ok_or(Error::from(
+                            ErrorKind::InvalidContractState(String::from(
+                                "could not find element in query array",
                             )),
-                        )?;
+                        ))?;
                         let hash = processed_response.hashes.get(i).unwrap();
                         hashes.push(hash);
                     }
@@ -202,19 +202,13 @@ impl DApp<String> for Partition {
                                 ctx.query_array
                                     .clone()
                                     .iter_mut()
-                                    .map(|q: &mut U256| -> _ {
-                                        Token::Uint(q.clone())
-                                    })
+                                    .map(|q: &mut U256| -> _ { Token::Uint(q.clone()) })
                                     .collect(),
                             ),
                             Token::Array(
                                 hashes
                                     .into_iter()
-                                    .map(|h| -> _ {
-                                        Token::FixedBytes(
-                                            h.clone().to_vec(),
-                                        )
-                                    })
+                                    .map(|h| -> _ { Token::FixedBytes(h.clone().to_vec()) })
                                     .collect(),
                             ),
                         ],
@@ -223,16 +217,17 @@ impl DApp<String> for Partition {
                     return Ok(Reaction::Transaction(request));
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
             Role::Challenger => match ctx.current_state.as_ref() {
                 "WaitingQuery" => {
                     // machine id
                     let id = machine_id.clone();
-                    
+
                     trace!("Calculating posted hashes of machine {}", id);
                     let sample_points: Vec<u64> = ctx
                         .query_array
@@ -244,52 +239,47 @@ impl DApp<String> for Partition {
                         session_id: id.clone(),
                         times: sample_points.clone(),
                     };
-                    let archive_key = build_session_run_key(
-                        id.clone(),
-                        sample_points.clone());
+                    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
 
                     // have we sampled the times?
-                    let processed_response: SessionRunResult = archive.get_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        request.into())?
+                    let processed_response: SessionRunResult = archive
+                        .get_response(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            archive_key.clone(),
+                            EMULATOR_METHOD_RUN.to_string(),
+                            request.into(),
+                        )?
                         .map_err(move |_e| {
                             Error::from(ErrorKind::ArchiveInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 id,
-                                EMULATOR_METHOD_RUN.to_string()))
+                                EMULATOR_METHOD_RUN.to_string(),
+                            ))
                         })?
                         .into();
 
                     for i in 0..(ctx.query_size.as_usize() - 1) {
                         // get the i'th time in query array
-                        let time =
-                            ctx.query_array.get(i).ok_or(Error::from(
-                                ErrorKind::InvalidContractState(format!(
+                        let time = ctx.query_array.get(i).ok_or(Error::from(
+                            ErrorKind::InvalidContractState(format!(
                                 "could not find element {} in query array",
                                 i
                             )),
-                            ))?;
+                        ))?;
                         // get (i + 1)'th time in query array
-                        let next_time = ctx.query_array.get(i + 1).ok_or(
-                            Error::from(ErrorKind::InvalidContractState(
-                                format!(
+                        let next_time = ctx.query_array.get(i + 1).ok_or(Error::from(
+                            ErrorKind::InvalidContractState(format!(
                                 "could not find element {} in query array",
                                 i + 1
-                            ),
                             )),
-                        )?;
+                        ))?;
                         // get the (i + 1)'th hash in hash array
-                        let claimed_hash = &ctx
-                            .hash_array
-                            .get(i + 1)
-                            .ok_or(Error::from(
-                                ErrorKind::InvalidContractState(format!(
+                        let claimed_hash = &ctx.hash_array.get(i + 1).ok_or(Error::from(
+                            ErrorKind::InvalidContractState(format!(
                                 "could not find element {} in hash array",
                                 i
                             )),
-                            ))?;
+                        ))?;
                         // have we sampled that specific time?
                         let hash = processed_response.hashes.get(i + 1).unwrap();
 
@@ -312,8 +302,7 @@ impl DApp<String> for Partition {
                                         Token::Uint(*time),
                                         Token::Uint(*next_time),
                                     ],
-                                    strategy:
-                                        transaction::Strategy::Simplest,
+                                    strategy: transaction::Strategy::Simplest,
                                 };
                                 return Ok(Reaction::Transaction(request));
                             } else {
@@ -327,22 +316,15 @@ impl DApp<String> for Partition {
                                     // dapp submit ethereum_types and convert
                                     // them inside the transaction manager
                                     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                    data: vec![
-                                        Token::Uint(instance.index),
-                                        Token::Uint(*time),
-                                    ],
-                                    strategy:
-                                        transaction::Strategy::Simplest,
+                                    data: vec![Token::Uint(instance.index), Token::Uint(*time)],
+                                    strategy: transaction::Strategy::Simplest,
                                 };
                                 return Ok(Reaction::Transaction(request));
                             }
                         }
                     }
                     // no disagreement found. important bug!!!!
-                    error!(
-                        "bug found: no disagreement in dispute {:?}!!!",
-                        instance
-                    );
+                    error!("bug found: no disagreement in dispute {:?}!!!", instance);
                     return Err(Error::from(format!("no disagreement in dispute")));
                 }
                 "WaitingHashes" => {
@@ -354,20 +336,20 @@ impl DApp<String> for Partition {
                     );
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
-        archive: &Archive,
+        _archive: &Archive,
         _machine_id: &String,
     ) -> Result<state::Instance> {
-        
         // get context (state) of the partition instance
         let parsed: PartitionCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
@@ -381,7 +363,7 @@ impl DApp<String> for Partition {
 
         // get context (state) of the sub instances
 
-        let pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         let pretty_instance = state::Instance {
             name: "Partition".to_string(),
@@ -391,6 +373,6 @@ impl DApp<String> for Partition {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }

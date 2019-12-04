@@ -23,45 +23,39 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 #![warn(unused_extern_crates)]
 pub mod compute;
+pub mod emulator_service;
 pub mod mm;
 pub mod partition;
 pub mod vg;
-pub mod emulator_service;
 
 extern crate configuration;
 extern crate error;
 extern crate grpc;
-extern crate bytes;
 
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate log;
 extern crate dispatcher;
+extern crate emulator_interface;
 extern crate ethabi;
 extern crate ethereum_types;
 extern crate transaction;
-extern crate emulator_interface;
-
-use ethereum_types::{Address, U256};
 
 pub use compute::{Compute, ComputeCtx, ComputeCtxParsed};
-pub use mm::MM;
-pub use partition::Partition;
-pub use vg::{VG, VGCtx, VGCtxParsed};
 pub use emulator_interface::{cartesi_base, manager_high};
 pub use emulator_service::{
-    AccessOperation, NewSessionRequest, NewSessionResult,
-    SessionRunRequest, SessionStepRequest,
-    SessionRunResult, SessionStepResult,
-    SessionReadMemoryRequest, SessionReadMemoryResult,
-    SessionGetProofRequest, SessionGetProofResult,
-    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
-    EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
-    EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF};
+    AccessOperation, NewSessionRequest, NewSessionResult, SessionGetProofRequest,
+    SessionGetProofResult, SessionReadMemoryRequest, SessionReadMemoryResult, SessionRunRequest,
+    SessionRunResult, SessionStepRequest, SessionStepResult, EMULATOR_METHOD_NEW,
+    EMULATOR_METHOD_PROOF, EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
+    EMULATOR_SERVICE_NAME,
+};
+pub use mm::MM;
+pub use partition::Partition;
+pub use vg::{VGCtx, VGCtxParsed, VG};
 
 #[derive(Debug)]
 enum Role {

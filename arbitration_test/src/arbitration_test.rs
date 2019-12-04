@@ -26,20 +26,19 @@
 extern crate protobuf;
 
 use super::build_machine_id;
+use super::compute::{
+    cartesi_base, NewSessionRequest, NewSessionResult, EMULATOR_METHOD_NEW, EMULATOR_SERVICE_NAME,
+};
+use super::compute::{Compute, ComputeCtx, ComputeCtxParsed};
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
+use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::ethereum_types::{Address, H256, U256};
 use super::Role;
-use super::compute::{
-    cartesi_base,
-    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
-    NewSessionRequest, NewSessionResult};
-use super::compute::{Compute, ComputeCtx, ComputeCtxParsed};
 use std::fs;
 
 pub struct ArbitrationTest();
@@ -89,19 +88,23 @@ impl DApp<()> for ArbitrationTest {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the arbitration test instance
-        let parsed: ArbitrationTestCtxParsed =
-            serde_json::from_str(&instance.json_data).chain_err(|| {
+        let parsed: ArbitrationTestCtxParsed = serde_json::from_str(&instance.json_data)
+            .chain_err(|| {
                 format!(
                     "Could not parse arbitration instance json_data: {}",
                     &instance.json_data
                 )
             })?;
         let ctx: ArbitrationTestCtx = parsed.into();
-        trace!("Context for arbitration (index {}) {:?}", instance.index, ctx);
+        trace!(
+            "Context for arbitration (index {}) {:?}",
+            instance.index,
+            ctx
+        );
 
         match ctx.current_state.as_ref() {
             "Finished" => {
@@ -115,13 +118,13 @@ impl DApp<()> for ArbitrationTest {
             cl if (cl == ctx.claimer) => Role::Claimer,
             ch if (ch == ctx.challenger) => Role::Challenger,
             _ => {
-                return Err(Error::from(ErrorKind::InvalidContractState(
-                    String::from("User is neither claimer nor challenger"),
-                )));
+                return Err(Error::from(ErrorKind::InvalidContractState(String::from(
+                    "User is neither claimer nor challenger",
+                ))));
             }
         };
         trace!("Role played (index {}) is: {:?}", instance.index, role);
-        
+
         match ctx.current_state.as_ref() {
             "Idle" => {
                 match role {
@@ -135,7 +138,7 @@ impl DApp<()> for ArbitrationTest {
                             strategy: transaction::Strategy::Simplest,
                         };
                         return Ok(Reaction::Transaction(request));
-                    },
+                    }
                     _ => {}
                 }
             }
@@ -143,59 +146,62 @@ impl DApp<()> for ArbitrationTest {
         };
 
         // machine id
-        let id = build_machine_id(
-            instance.index,
-            &instance.concern.contract_address,
-        );
-        let machine_request = build_machine().chain_err(|| format!("could not build machine message"))?;
+        let id = build_machine_id(instance.index, &instance.concern.contract_address);
+        let machine_request =
+            build_machine().chain_err(|| format!("could not build machine message"))?;
         let request = NewSessionRequest {
             session_id: id.clone(),
-            machine: machine_request
+            machine: machine_request,
         };
 
-        let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
-        let _processed_response: NewSessionResult = archive.get_response(
-            EMULATOR_SERVICE_NAME.to_string(),
-            id.clone(),
-            EMULATOR_METHOD_NEW.to_string(),
-            request.into())?
+        let duplicate_session_msg = format!(
+            "Trying to register a session with a session_id that already exists: {}",
+            id
+        );
+        let _processed_response: NewSessionResult = archive
+            .get_response(
+                EMULATOR_SERVICE_NAME.to_string(),
+                id.clone(),
+                EMULATOR_METHOD_NEW.to_string(),
+                request.into(),
+            )?
             .map_err(move |e| {
                 if e == duplicate_session_msg {
                     Error::from(ErrorKind::ArchiveNeedsDummy(
                         EMULATOR_SERVICE_NAME.to_string(),
                         id,
-                        EMULATOR_METHOD_NEW.to_string()))
+                        EMULATOR_METHOD_NEW.to_string(),
+                    ))
                 } else {
                     Error::from(ErrorKind::ArchiveInvalidError(
                         EMULATOR_SERVICE_NAME.to_string(),
                         id,
-                        EMULATOR_METHOD_NEW.to_string()))
+                        EMULATOR_METHOD_NEW.to_string(),
+                    ))
                 }
             })?
             .into();
-        
+
         // we inspect the compute contract
-        let compute_instance = instance.sub_instances.get(0).ok_or(
-            Error::from(ErrorKind::InvalidContractState(format!(
-                "There is no compute instance {}",
-                ctx.current_state
-            ))),
-        )?;
-        let compute_parsed: ComputeCtxParsed =
-            serde_json::from_str(&compute_instance.json_data)
-                .chain_err(|| {
-                    format!(
-                        "Could not parse compute instance json_data: {}",
-                        &compute_instance.json_data
-                    )
-                })?;
+        let compute_instance =
+            instance
+                .sub_instances
+                .get(0)
+                .ok_or(Error::from(ErrorKind::InvalidContractState(format!(
+                    "There is no compute instance {}",
+                    ctx.current_state
+                ))))?;
+        let compute_parsed: ComputeCtxParsed = serde_json::from_str(&compute_instance.json_data)
+            .chain_err(|| {
+                format!(
+                    "Could not parse compute instance json_data: {}",
+                    &compute_instance.json_data
+                )
+            })?;
         let compute_ctx: ComputeCtx = compute_parsed.into();
 
         match compute_ctx.current_state.as_ref() {
-            "ClaimerMissedDeadline" |
-            "ChallengerWon" |
-            "ClaimerWon" |
-            "ConsensusResult" => {
+            "ClaimerMissedDeadline" | "ChallengerWon" | "ClaimerWon" | "ConsensusResult" => {
                 // claim Finished in arbitration test contract
                 let request = TransactionRequest {
                     concern: instance.concern.clone(),
@@ -209,24 +215,20 @@ impl DApp<()> for ArbitrationTest {
             _ => {
                 // compute is still active,
                 // pass control to the appropriate dapp
-                let id = build_machine_id(
-                    instance.index,
-                    &instance.concern.contract_address,
-                );
+                let id = build_machine_id(instance.index, &instance.concern.contract_address);
                 return Compute::react(compute_instance, archive, &None, &id);
             }
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
-        
         // get context (state) of the arbitration test instance
-        let parsed: ArbitrationTestCtxParsed =
-            serde_json::from_str(&instance.json_data).chain_err(|| {
+        let parsed: ArbitrationTestCtxParsed = serde_json::from_str(&instance.json_data)
+            .chain_err(|| {
                 format!(
                     "Could not parse arbitration test instance json_data: {}",
                     &instance.json_data
@@ -237,23 +239,13 @@ impl DApp<()> for ArbitrationTest {
 
         // get context (state) of the sub instances
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let mut pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
-        let id = build_machine_id(
-            instance.index,
-            &instance.concern.contract_address,
-        );
+        let id = build_machine_id(instance.index, &instance.concern.contract_address);
         for sub in &instance.sub_instances {
-            pretty_sub_instances.push(
-                Box::new(
-                    Compute::get_pretty_instance(
-                        sub,
-                        archive,
-                        &id,
-                    )
-                    .unwrap()
-                )
-            )
+            pretty_sub_instances.push(Box::new(
+                Compute::get_pretty_instance(sub, archive, &id).unwrap(),
+            ))
         }
 
         let pretty_instance = state::Instance {
@@ -269,79 +261,92 @@ impl DApp<()> for ArbitrationTest {
 }
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// below are the codes to generate hard-coded new machine request 
+// below are the codes to generate hard-coded new machine request
 // may need to revise in the future
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 macro_rules! drive_label_0 {
-    () => ( "rootfs" )
+    () => {
+        "rootfs"
+    };
 }
 macro_rules! drive_label_1 {
-    () => ( "input" )
+    () => {
+        "input"
+    };
 }
 macro_rules! drive_label_2 {
-    () => ( "job" )
+    () => {
+        "job"
+    };
 }
 macro_rules! drive_label_3 {
-    () => ( "output" )
+    () => {
+        "output"
+    };
 }
 
 macro_rules! mtdparts_string {
-    () => ( concat!(
-            "mtdparts=flash.0:-(", drive_label_0!(), ")",
-            "flash.1:-(", drive_label_1!(), ")",
-            "flash.2:-(", drive_label_2!(), ")",
-            "flash.3:-(", drive_label_3!(), ")");
-    )
+    () => {
+        concat!(
+            "mtdparts=flash.0:-(",
+            drive_label_0!(),
+            ")",
+            "flash.1:-(",
+            drive_label_1!(),
+            ")",
+            "flash.2:-(",
+            drive_label_2!(),
+            ")",
+            "flash.3:-(",
+            drive_label_3!(),
+            ")"
+        );
+    };
 }
 
-const ONEMB: u64 = 1024*1024;
+const ONEMB: u64 = 1024 * 1024;
 const EMULATOR_BASE_PATH: &'static str = "/root/host/";
 const TEST_BASE_PATH: &'static str = "/root/host/test-files/";
 const OUTPUT_DRIVE_NAME: &'static str = "out_pristine.ext2";
 
 struct Ram {
     length: u64,
-    backing: &'static str
+    backing: &'static str,
 }
 
 struct Rom {
     bootargs: &'static str,
-    backing: &'static str
+    backing: &'static str,
 }
 
 struct Drive {
     backing: &'static str,
     shared: bool,
-    label: &'static str
 }
 
 const TEST_RAM: Ram = Ram {
     length: 64 << 20,
-    backing: "kernel.bin"
+    backing: "kernel.bin",
 };
 
 const TEST_DRIVES: [Drive; 4] = [
     Drive {
         backing: concat!(drive_label_0!(), ".ext2"),
         shared: false,
-        label: drive_label_0!()
-    }, 
+    },
     Drive {
         backing: concat!(drive_label_1!(), ".ext2"),
         shared: false,
-        label: drive_label_1!()
-    }, 
+    },
     Drive {
         backing: concat!(drive_label_2!(), ".ext2"),
         shared: false,
-        label: drive_label_2!()
-    }, 
+    },
     Drive {
         backing: OUTPUT_DRIVE_NAME,
         shared: false,
-        label: drive_label_3!()
-    }
+    },
 ];
 
 const TEST_ROM: Rom = Rom {
@@ -376,7 +381,7 @@ fn build_machine() -> Result<cartesi_base::MachineRequest> {
         if drive_size < ONEMB {
             drive_start += ONEMB;
         } else {
-            drive_start +=  drive_size.next_power_of_two();
+            drive_start += drive_size.next_power_of_two();
         }
     }
 

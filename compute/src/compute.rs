@@ -23,8 +23,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
-use super::{build_session_run_key};
+use super::build_session_run_key;
 use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
@@ -34,7 +33,9 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role, VG, SessionRunRequest, SessionRunResult, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
+use super::{
+    Role, SessionRunRequest, SessionRunResult, EMULATOR_METHOD_RUN, EMULATOR_SERVICE_NAME, VG,
+};
 use vg::{VGCtx, VGCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -93,7 +94,7 @@ impl DApp<String> for Compute {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         machine_id: &String,
     ) -> Result<Reaction> {
         // get context (state) of the compute instance
@@ -110,10 +111,7 @@ impl DApp<String> for Compute {
         // these states should not occur as they indicate an innactive instance,
         // but it is possible that the blockchain state changed between queries
         match ctx.current_state.as_ref() {
-            "ClaimerMissedDeadline"
-            | "ChallengerWon"
-            | "ClaimerWon"
-            | "ConsensusResult" => {
+            "ClaimerMissedDeadline" | "ChallengerWon" | "ClaimerWon" | "ConsensusResult" => {
                 return Ok(Reaction::Idle);
             }
             _ => {}
@@ -124,9 +122,9 @@ impl DApp<String> for Compute {
             cl if (cl == ctx.claimer) => Role::Claimer,
             ch if (ch == ctx.challenger) => Role::Challenger,
             _ => {
-                return Err(Error::from(ErrorKind::InvalidContractState(
-                    String::from("User is neither claimer nor challenger"),
-                )));
+                return Err(Error::from(ErrorKind::InvalidContractState(String::from(
+                    "User is neither claimer nor challenger",
+                ))));
             }
         };
         trace!("Role played (index {}) is: {:?}", instance.index, role);
@@ -144,33 +142,33 @@ impl DApp<String> for Compute {
                 "WaitingClaim" => {
                     // machine id
                     let id = machine_id.clone();
-                    let sample_points: Vec<u64> =
-                        vec![0, ctx.final_time.as_u64()];
+                    let sample_points: Vec<u64> = vec![0, ctx.final_time.as_u64()];
                     let request = SessionRunRequest {
                         session_id: id.clone(),
                         times: sample_points.clone(),
                     };
-                    let archive_key = build_session_run_key(
-                        id.clone(),
-                        sample_points.clone());
+                    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let processed_response: SessionRunResult = archive.get_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        request.into())?
+                    let processed_response: SessionRunResult = archive
+                        .get_response(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            archive_key.clone(),
+                            EMULATOR_METHOD_RUN.to_string(),
+                            request.into(),
+                        )?
                         .map_err(move |_e| {
                             Error::from(ErrorKind::ArchiveInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 id,
-                                EMULATOR_METHOD_RUN.to_string()))
+                                EMULATOR_METHOD_RUN.to_string(),
+                            ))
                         })?
                         .into();
 
                     let hash = processed_response.hashes[1];
-                    
+
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
                         value: U256::from(0),
@@ -190,20 +188,19 @@ impl DApp<String> for Compute {
                 }
                 "WaitingChallenge" => {
                     // we inspect the verification contract
-                    let vg_instance = instance.sub_instances.get(0).ok_or(
-                        Error::from(ErrorKind::InvalidContractState(format!(
+                    let vg_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                        ErrorKind::InvalidContractState(format!(
                             "There is no vg instance {}",
                             ctx.current_state
-                        ))),
-                    )?;
-                    let vg_parsed: VGCtxParsed =
-                        serde_json::from_str(&vg_instance.json_data)
-                            .chain_err(|| {
-                                format!(
-                                    "Could not parse vg instance json_data: {}",
-                                    &vg_instance.json_data
-                                )
-                            })?;
+                        )),
+                    ))?;
+                    let vg_parsed: VGCtxParsed = serde_json::from_str(&vg_instance.json_data)
+                        .chain_err(|| {
+                            format!(
+                                "Could not parse vg instance json_data: {}",
+                                &vg_instance.json_data
+                            )
+                        })?;
                     let vg_ctx: VGCtx = vg_parsed.into();
 
                     match vg_ctx.current_state.as_ref() {
@@ -230,9 +227,10 @@ impl DApp<String> for Compute {
                     }
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
             Role::Challenger => match ctx.current_state.as_ref() {
@@ -241,38 +239,35 @@ impl DApp<String> for Compute {
                     // to check the claim and potentialy raise challenge
                     // machine id
                     let id = machine_id.clone();
-                    let sample_points: Vec<u64> =
-                        vec![0, ctx.final_time.as_u64()];
+                    let sample_points: Vec<u64> = vec![0, ctx.final_time.as_u64()];
                     let request = SessionRunRequest {
                         session_id: id.clone(),
                         times: sample_points.clone(),
                     };
-                    let archive_key = build_session_run_key(
-                        id.clone(),
-                        sample_points.clone());
+                    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
                     let id_clone = id.clone();
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let processed_response: SessionRunResult = archive.get_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        request.into())?
+                    let processed_response: SessionRunResult = archive
+                        .get_response(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            archive_key.clone(),
+                            EMULATOR_METHOD_RUN.to_string(),
+                            request.into(),
+                        )?
                         .map_err(move |_e| {
                             Error::from(ErrorKind::ArchiveInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 id_clone,
-                                EMULATOR_METHOD_RUN.to_string()))
+                                EMULATOR_METHOD_RUN.to_string(),
+                            ))
                         })?
                         .into();
 
                     let hash = processed_response.hashes[1];
                     if hash == ctx.claimed_final_hash {
-                        info!(
-                            "Confirming final hash {:?} for {}",
-                            hash, id
-                        );
+                        info!("Confirming final hash {:?} for {}", hash, id);
                         let request = TransactionRequest {
                             concern: instance.concern.clone(),
                             value: U256::from(0),
@@ -307,20 +302,19 @@ impl DApp<String> for Compute {
                 }
                 "WaitingChallenge" => {
                     // we inspect the verification contract
-                    let vg_instance = instance.sub_instances.get(0).ok_or(
-                        Error::from(ErrorKind::InvalidContractState(format!(
+                    let vg_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                        ErrorKind::InvalidContractState(format!(
                             "There is no vg instance {}",
                             ctx.current_state
-                        ))),
-                    )?;
-                    let vg_parsed: VGCtxParsed =
-                        serde_json::from_str(&vg_instance.json_data)
-                            .chain_err(|| {
-                                format!(
-                                    "Could not parse vg instance json_data: {}",
-                                    &vg_instance.json_data
-                                )
-                            })?;
+                        )),
+                    ))?;
+                    let vg_parsed: VGCtxParsed = serde_json::from_str(&vg_instance.json_data)
+                        .chain_err(|| {
+                            format!(
+                                "Could not parse vg instance json_data: {}",
+                                &vg_instance.json_data
+                            )
+                        })?;
                     let vg_ctx: VGCtx = vg_parsed.into();
 
                     match vg_ctx.current_state.as_ref() {
@@ -347,20 +341,20 @@ impl DApp<String> for Compute {
                     }
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         machine_id: &String,
     ) -> Result<state::Instance> {
-        
         // get context (state) of the compute instance
         let parsed: ComputeCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
@@ -374,19 +368,12 @@ impl DApp<String> for Compute {
 
         // get context (state) of the sub instances
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let mut pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         for sub in &instance.sub_instances {
-            pretty_sub_instances.push(
-                Box::new(
-                    VG::get_pretty_instance(
-                        sub,
-                        archive,
-                        machine_id,
-                    )
-                    .unwrap()
-                )
-            )
+            pretty_sub_instances.push(Box::new(
+                VG::get_pretty_instance(sub, archive, machine_id).unwrap(),
+            ))
         }
 
         let pretty_instance = state::Instance {
@@ -397,7 +384,7 @@ impl DApp<String> for Compute {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }
 

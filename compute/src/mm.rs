@@ -23,8 +23,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
-use super::{build_session_step_key};
+use super::build_session_step_key;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
@@ -32,7 +31,10 @@ use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
-use super::{SessionStepRequest, SessionStepResult, AccessOperation, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_STEP};
+use super::{
+    AccessOperation, SessionStepRequest, SessionStepResult, EMULATOR_METHOD_STEP,
+    EMULATOR_SERVICE_NAME,
+};
 
 pub struct MM();
 
@@ -63,7 +65,7 @@ pub struct MMCtx {
 #[derive(Default)]
 pub struct MMParams {
     pub machine_id: String,
-    pub divergence_time: U256
+    pub divergence_time: U256,
 }
 
 impl From<MMCtxParsed> for MMCtx {
@@ -83,16 +85,15 @@ impl DApp<MMParams> for MM {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         params: &MMParams,
     ) -> Result<Reaction> {
-        let parsed: MMCtxParsed = serde_json::from_str(&instance.json_data)
-            .chain_err(|| {
-                format!(
-                    "Could not parse mm instance json_data: {}",
-                    &instance.json_data
-                )
-            })?;
+        let parsed: MMCtxParsed = serde_json::from_str(&instance.json_data).chain_err(|| {
+            format!(
+                "Could not parse mm instance json_data: {}",
+                &instance.json_data
+            )
+        })?;
         let ctx: MMCtx = parsed.into();
 
         trace!("Context for mm {:?}", ctx);
@@ -115,21 +116,23 @@ impl DApp<MMParams> for MM {
                     session_id: id.clone(),
                     time: params.divergence_time.as_u64(),
                 };
-                let archive_key = build_session_step_key(
-                        id.clone(),
-                        params.divergence_time.to_string());
+                let archive_key =
+                    build_session_step_key(id.clone(), params.divergence_time.to_string());
 
                 // have we sampled the divergence time?
-                let processed_response: SessionStepResult = archive.get_response(
-                    EMULATOR_SERVICE_NAME.to_string(),
-                    archive_key.clone(),
-                    EMULATOR_METHOD_STEP.to_string(),
-                    request.into())?
+                let processed_response: SessionStepResult = archive
+                    .get_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_STEP.to_string(),
+                        request.into(),
+                    )?
                     .map_err(move |_e| {
                         Error::from(ErrorKind::ArchiveInvalidError(
                             EMULATOR_SERVICE_NAME.to_string(),
                             id,
-                            EMULATOR_METHOD_STEP.to_string()))
+                            EMULATOR_METHOD_STEP.to_string(),
+                        ))
                     })?
                     .into();
 
@@ -152,8 +155,7 @@ impl DApp<MMParams> for MM {
                 }
 
                 // otherwise, submit one more proof step
-                let access =
-                    (&step_log[ctx.history_length.as_usize()]).clone();
+                let access = (&step_log[ctx.history_length.as_usize()]).clone();
                 let mut siblings: Vec<_> = access
                     .proof
                     .sibling_hashes
@@ -178,9 +180,7 @@ impl DApp<MMParams> for MM {
                             data: vec![
                                 Token::Uint(instance.index),
                                 Token::Uint(U256::from(access.address)),
-                                Token::FixedBytes(
-                                    access.value_read.to_vec()
-                                ),
+                                Token::FixedBytes(access.value_read.to_vec()),
                                 Token::Array(siblings),
                             ],
                             strategy: transaction::Strategy::Simplest,
@@ -200,12 +200,8 @@ impl DApp<MMParams> for MM {
                             data: vec![
                                 Token::Uint(instance.index),
                                 Token::Uint(U256::from(access.address)),
-                                Token::FixedBytes(
-                                    access.value_read.to_vec(),
-                                ),
-                                Token::FixedBytes(
-                                    access.value_written.to_vec(),
-                                ),
+                                Token::FixedBytes(access.value_read.to_vec()),
+                                Token::FixedBytes(access.value_written.to_vec()),
                                 Token::Array(siblings),
                             ],
                             strategy: transaction::Strategy::Simplest,
@@ -219,27 +215,25 @@ impl DApp<MMParams> for MM {
 
         return Ok(Reaction::Idle);
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
-        archive: &Archive,
+        _archive: &Archive,
         _params: &MMParams,
     ) -> Result<state::Instance> {
-        
         // get context (state) of the mm instance
-        let parsed: MMCtxParsed =
-            serde_json::from_str(&instance.json_data).chain_err(|| {
-                format!(
-                    "Could not parse mm instance json_data: {}",
-                    &instance.json_data
-                )
-            })?;
+        let parsed: MMCtxParsed = serde_json::from_str(&instance.json_data).chain_err(|| {
+            format!(
+                "Could not parse mm instance json_data: {}",
+                &instance.json_data
+            )
+        })?;
         let ctx: MMCtx = parsed.into();
         let json_data = serde_json::to_string(&ctx).unwrap();
 
         // get context (state) of the sub instances
 
-        let pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         let pretty_instance = state::Instance {
             name: "MM".to_string(),
@@ -249,6 +243,6 @@ impl DApp<MMParams> for MM {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }
