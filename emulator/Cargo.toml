@@ -10,7 +10,7 @@ log = "0.4"
 env_logger = "0.6.0"
 httpbis = "~0.7"
 protobuf = "2"
-grpc = { git = "https://github.com/stepancheg/grpc-rust", branch = "v0.6" }
+grpc = { git = "https://github.com/cartesi/grpc-rust", branch = "make_marshall_public" }
 futures = "~0.1"
 futures-cpupool = "~0.1"
 rustc-hex = "2.0.1"

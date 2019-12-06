@@ -625,7 +625,7 @@ dependencies = [
  "ethereum-types 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-cpupool 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "grpc 0.6.1 (git+https://github.com/stepancheg/grpc-rust.git?branch=v0.6)",
+ "grpc 0.6.1 (git+https://github.com/cartesi/grpc-rust?branch=make_marshall_public)",
  "httpbis 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "protobuf 2.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
