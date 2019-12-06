@@ -7,6 +7,9 @@ test/*/
 *.bin
 *.abi
 /out
-compute/target
 arbitration_test/target
+compute/target
+emulator/target
 build
+emulator/src/*.rs
+!emulator/src/lib.rs

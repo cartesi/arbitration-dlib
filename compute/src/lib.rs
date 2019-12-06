@@ -39,13 +39,13 @@ extern crate serde_derive;
 #[macro_use]
 extern crate log;
 extern crate dispatcher;
-extern crate emulator_interface;
+extern crate emulator;
 extern crate ethabi;
 extern crate ethereum_types;
 extern crate transaction;
 
 pub use compute::{Compute, ComputeCtx, ComputeCtxParsed};
-pub use emulator_interface::{cartesi_base, manager_high};
+pub use emulator::{cartesi_base, manager_high};
 pub use emulator_service::{
     AccessOperation, NewSessionRequest, NewSessionResult, SessionGetProofRequest,
     SessionGetProofResult, SessionReadMemoryRequest, SessionReadMemoryResult, SessionRunRequest,
