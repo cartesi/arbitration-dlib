@@ -14,10 +14,10 @@ extern crate protoc_rust_grpc;
 fn main() {
     protoc_rust_grpc::run(protoc_rust_grpc::Args {
         out_dir: "src",
-        includes: &["../lib/grpc-interfaces"],
+        includes: &["../grpc-interfaces"],
         input: &[
-            "../lib/grpc-interfaces/cartesi-base.proto",
-            "../lib/grpc-interfaces/manager-high.proto",
+            "../grpc-interfaces/cartesi-base.proto",
+            "../grpc-interfaces/manager-high.proto",
         ],
         rust_protobuf: true, // generate protobuf messages, not just services
         ..Default::default()
