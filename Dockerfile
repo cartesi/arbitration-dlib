@@ -4,7 +4,7 @@ ENV BASE /opt/cartesi
 
 RUN \
     apt-get update && \
-    apt-get install --no-install-recommends -y cmake && \
+    apt-get install --no-install-recommends -y cmake protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR $BASE/arbitration_test
@@ -19,6 +19,7 @@ WORKDIR $BASE
 COPY ./lib/ $BASE/lib
 COPY ./dispatcher/ $BASE/dispatcher
 COPY ./compute/ $BASE/compute
+COPY ./emulator/ $BASE/emulator
 COPY ./arbitration_test/ $BASE/arbitration_test
 
 # Compile arbitration test
