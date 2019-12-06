@@ -16,7 +16,7 @@ RUN cargo build -j $(nproc) --release
 
 WORKDIR $BASE
 
-COPY ./lib/ $BASE/lib
+COPY ./grpc-interfaces/ $BASE/grpc-interfaces
 COPY ./dispatcher/ $BASE/dispatcher
 COPY ./compute/ $BASE/compute
 COPY ./emulator/ $BASE/emulator
