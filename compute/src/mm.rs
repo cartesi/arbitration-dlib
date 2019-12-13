@@ -130,7 +130,7 @@ impl DApp<MMParams> for MM {
                     .map_err(move |_e| {
                         Error::from(ErrorKind::ArchiveInvalidError(
                             EMULATOR_SERVICE_NAME.to_string(),
-                            id,
+                            archive_key,
                             EMULATOR_METHOD_STEP.to_string(),
                         ))
                     })?
