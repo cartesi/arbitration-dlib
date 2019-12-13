@@ -1,13 +1,13 @@
 {
   "name": "@cartesi/arbitration",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "description": "Arbitration DLib",
   "scripts": {
     "prepare": "truffle compile",
     "test": "mocha"
   },
   "dependencies": {
-    "@cartesi/util": "^0.1.0"
+    "@cartesi/util": "^0.1.1"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^1.0.26",
