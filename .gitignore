@@ -7,7 +7,6 @@ test/*/
 *.bin
 *.abi
 /out
-arbitration_test/target
 compute/target
 emulator/target
 build
