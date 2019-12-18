@@ -149,6 +149,7 @@ impl DApp<MMParams> for MM {
                         // them inside the transaction manager
                         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         data: vec![Token::Uint(instance.index)],
+                        gas: None,
                         strategy: transaction::Strategy::Simplest,
                     };
                     return Ok(Reaction::Transaction(request));
@@ -183,6 +184,7 @@ impl DApp<MMParams> for MM {
                                 Token::FixedBytes(access.value_read.to_vec()),
                                 Token::Array(siblings),
                             ],
+                            gas: None,
                             strategy: transaction::Strategy::Simplest,
                         };
                         return Ok(Reaction::Transaction(request));
@@ -204,6 +206,7 @@ impl DApp<MMParams> for MM {
                                 Token::FixedBytes(access.value_written.to_vec()),
                                 Token::Array(siblings),
                             ],
+                            gas: None,
                             strategy: transaction::Strategy::Simplest,
                         };
                         return Ok(Reaction::Transaction(request));

@@ -168,6 +168,7 @@ impl DApp<String> for VG {
                                 // them inside the transaction manager
                                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -184,6 +185,7 @@ impl DApp<String> for VG {
                                 // them inside the transaction manager
                                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -251,6 +253,7 @@ impl DApp<String> for VG {
                                 // them inside the transaction manager
                                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -267,6 +270,7 @@ impl DApp<String> for VG {
                                 // them inside the transaction manager
                                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -320,6 +324,7 @@ impl DApp<String> for VG {
                                 // them inside the transaction manager
                                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));

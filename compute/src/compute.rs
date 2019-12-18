@@ -182,6 +182,7 @@ impl DApp<String> for Compute {
                             Token::Uint(instance.index),
                             Token::FixedBytes(hash.0.to_vec()),
                         ],
+                        gas: None,
                         strategy: transaction::Strategy::Simplest,
                     };
                     return Ok(Reaction::Transaction(request));
@@ -211,6 +212,7 @@ impl DApp<String> for Compute {
                                 value: U256::from(0),
                                 function: "winByVG".into(),
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -273,6 +275,7 @@ impl DApp<String> for Compute {
                             value: U256::from(0),
                             function: "confirm".into(),
                             data: vec![Token::Uint(instance.index)],
+                            gas: None,
                             strategy: transaction::Strategy::Simplest,
                         };
                         return Ok(Reaction::Transaction(request));
@@ -286,6 +289,7 @@ impl DApp<String> for Compute {
                             value: U256::from(0),
                             function: "challenge".into(),
                             data: vec![Token::Uint(instance.index)],
+                            gas: None,
                             strategy: transaction::Strategy::Simplest,
                         };
 
@@ -325,6 +329,7 @@ impl DApp<String> for Compute {
                                 value: U256::from(0),
                                 function: "winByVG".into(),
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -406,6 +411,7 @@ pub fn win_by_deadline_or_idle(
             value: U256::from(0),
             function: "claimVictoryByTime".into(),
             data: vec![Token::Uint(index)],
+            gas: None,
             strategy: transaction::Strategy::Simplest,
         };
         return Ok(Reaction::Transaction(request));

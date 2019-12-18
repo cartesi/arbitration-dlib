@@ -212,6 +212,7 @@ impl DApp<String> for Partition {
                                     .collect(),
                             ),
                         ],
+                        gas: None,
                         strategy: transaction::Strategy::Simplest,
                     };
                     return Ok(Reaction::Transaction(request));
@@ -302,6 +303,7 @@ impl DApp<String> for Partition {
                                         Token::Uint(*time),
                                         Token::Uint(*next_time),
                                     ],
+                                    gas: None,
                                     strategy: transaction::Strategy::Simplest,
                                 };
                                 return Ok(Reaction::Transaction(request));
@@ -317,6 +319,7 @@ impl DApp<String> for Partition {
                                     // them inside the transaction manager
                                     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                     data: vec![Token::Uint(instance.index), Token::Uint(*time)],
+                                    gas: None,
                                     strategy: transaction::Strategy::Simplest,
                                 };
                                 return Ok(Reaction::Transaction(request));
