@@ -247,7 +247,6 @@ impl DApp<String> for Compute {
                         times: sample_points.clone(),
                     };
                     let archive_key = build_session_run_key(id.clone(), sample_points.clone());
-                    let id_clone = id.clone();
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
