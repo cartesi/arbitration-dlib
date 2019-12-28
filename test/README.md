@@ -1,11 +1,10 @@
 # Quick Start #
 
+run export NPM_TOKEN=<NPM_TOKEN>
+run npm install
 install python 3.7 and pip  
-run pip install pytest  
-run pip install web3  
-run pip install py-solc-x
-run pip install numpy
-run install_solc.py (only need to be run once)
+run pip install -r requirements.txt
+run ganache-cli in a separate terminal
 run prepare_python_tests.sh  
 run run_python_tests.sh  
 

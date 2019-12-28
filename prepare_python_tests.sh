@@ -5,8 +5,8 @@
 
 # remove build directory to do a clean build
 rm ./build/ -rf
-sudo truffle compile
-sudo truffle migrate --reset > migrate.log
+truffle compile
+truffle migrate --reset > migrate.log
 
 # retreive contracts info from migrate log
 contracts_info=`cat migrate.log |\

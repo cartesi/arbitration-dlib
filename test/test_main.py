@@ -28,7 +28,6 @@ import os
 import json
 from enum import Enum
 from web3 import Web3
-from solcx import get_solc_version, set_solc_version, compile_files
 
 class MMState(Enum):
     WaitingProofs = 0
@@ -60,7 +59,6 @@ class VGState(Enum):
 class BaseTest:
 
     def __init__(self, port):
-        get_solc_version()
 
         #Connecting to node
         self.port = port
