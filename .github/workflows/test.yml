@@ -1,0 +1,14 @@
+name: Build
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    services:
+        image: trufflesuite/ganache-cli
+        ports:
+            - 8545:8545
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+            python-version: '3.x'
