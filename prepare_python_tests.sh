@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # this script will compile and migrate the contracts using truffle
 # and create a file `contracts.json` containing the necessary contract information for testing
 
