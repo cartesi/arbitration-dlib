@@ -20,5 +20,5 @@ jobs:
             python-version: '3.x'
       - run: pip3 install -r requirements.txt
       
-      - run: prepare_python_tests.sh
-      - run: run_python_tests.sh
+      - run: ./prepare_python_tests.sh
+      - run: ./run_python_tests.sh
