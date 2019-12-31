@@ -4,9 +4,10 @@ jobs:
   test:
     runs-on: ubuntu-18.04
     services:
-        image: trufflesuite/ganache-cli
-        ports:
-            - 8545:8545
+        ganache:
+            image: trufflesuite/ganache-cli
+            ports:
+                - 8545:8545
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
