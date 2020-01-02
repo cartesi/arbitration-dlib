@@ -31,6 +31,8 @@ import pytest
 from web3 import Web3
 from test_main import BaseTest, PartitionState
 
+VM_ERROR_MESSAGE = "execution error: revert"
+
 @pytest.fixture(autouse=True)
 def run_between_tests(port):
     base_test = BaseTest(port)
@@ -125,7 +127,8 @@ def test_partition_claimer_timeout(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        # assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][0:len(VM_ERROR_MESSAGE)] == VM_ERROR_MESSAGE
     else:
         raise Exception(error_msg)
 
@@ -178,7 +181,8 @@ def test_partition_challenger_timeout(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        # assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][0:len(VM_ERROR_MESSAGE)] == VM_ERROR_MESSAGE
     else:
         raise Exception(error_msg)
 

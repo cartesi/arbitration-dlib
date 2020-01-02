@@ -31,6 +31,8 @@ import requests
 from web3 import Web3
 from test_main import BaseTest, MMState
 
+VM_ERROR_MESSAGE = "execution error: revert"
+
 @pytest.fixture(autouse=True)
 def run_between_tests(port):
     base_test = BaseTest(port)
@@ -382,7 +384,8 @@ def test_instantiator(port):
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
         # assert error_dict['message'] == "VM Exception while processing transaction: revert Provider and client need to differ", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        # assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][0:len(VM_ERROR_MESSAGE)] == VM_ERROR_MESSAGE
         
     else:
         raise Exception(error_msg)
