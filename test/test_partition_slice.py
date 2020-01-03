@@ -53,18 +53,21 @@ def test_partition_slice(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index_1 = partition_logs[0]['args']['_index']
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index_1 = partition_logs['args']['_index']
 
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index_2 = partition_logs[0]['args']['_index']
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index_2 = partition_logs['args']['_index']
     
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index_3 = partition_logs[0]['args']['_index']
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index_3 = partition_logs['args']['_index']
 
     left_point = 2
     right_point = 5
