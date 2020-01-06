@@ -63,16 +63,27 @@ def test_partition_claim_victory_by_time(port):
         if(i%2) == 0:
             tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, initial_hash_seed, final_hash_seed, 5000 * i, 3 * i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-            partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-            index = partition_logs[0]['args']['_index']
+
+            # TODO: The commented-out code below should be the actual preferred way to process transaction logs, but it causes
+            #       "MismatchedABI" warnings. This should be investigated further.
+            #       (This code pattern occurs several times throughout the test files.)
+            #
+            # partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
+            # index = partition_logs[0]['args']['_index']
+            #
+            log_to_process = tx_receipt['logs'][0]
+            partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+            index = partition_logs['args']['_index']
 
             tx_hash = base_test.partition_testaux.functions.setState(index, PartitionState.WaitingHashes.value).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
         else:
             tx_hash = base_test.partition_testaux.functions.instantiate(address_2, address_1, initial_hash_seed, final_hash_seed, 5000 * i, 3 * i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-            partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-            index = partition_logs[0]['args']['_index']
+
+            log_to_process = tx_receipt['logs'][0]
+            partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+            index = partition_logs['args']['_index']
 
             tx_hash = base_test.partition_testaux.functions.setState(index, PartitionState.WaitingQuery.value).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
@@ -86,8 +97,10 @@ def test_partition_claim_victory_by_time(port):
         tx_hash = base_test.partition_testaux.functions.claimVictoryByTime(index).transact({'from': address_1})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
+        # This processReceipt() gives no warning.
         partition_logs = base_test.partition_testaux.events.ChallengeEnded().processReceipt(tx_receipt)
         ret_index = partition_logs[0]['args']['_index']
+        
         error_msg = "Should receive ChallengeEnded event"
         assert ret_index == index, error_msg
 
@@ -111,8 +124,10 @@ def test_partition_claimer_timeout(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 50000, 3, 3600).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -138,8 +153,10 @@ def test_partition_claimer_timeout(port):
     tx_hash = base_test.partition_testaux.functions.claimVictoryByTime(index).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
+    # This processReceipt() gives no warning.
     partition_logs = base_test.partition_testaux.events.ChallengeEnded().processReceipt(tx_receipt)
     ret_index = partition_logs[0]['args']['_index']
+    
     error_msg = "Should receive ChallengeEnded event"
     assert ret_index == index, error_msg
     
@@ -155,8 +172,10 @@ def test_partition_challenger_timeout(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(challenger, claimer, initial_hash_seed, final_hash_seed, 50000, query_size, 3600).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     mock_reply_array = []
     mock_posted_times = []
@@ -192,7 +211,9 @@ def test_partition_challenger_timeout(port):
     tx_hash = base_test.partition_testaux.functions.claimVictoryByTime(index).transact({'from': claimer})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
+    # This processReceipt() gives no warning.
     partition_logs = base_test.partition_testaux.events.ChallengeEnded().processReceipt(tx_receipt)
     ret_index = partition_logs[0]['args']['_index']
+
     error_msg = "Should receive ChallengeEnded event"
     assert ret_index == index, error_msg

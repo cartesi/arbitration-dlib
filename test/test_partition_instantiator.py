@@ -52,8 +52,11 @@ def test_instantiator(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, bytes([5]), bytes([225]), 50000, 3, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    next_index = partition_logs[0]['args']['_index']
+
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    next_index = partition_logs['args']['_index']
+    
     next_index += 1
 
     # start from 3 to prevent revert when finalTime is not larger than zero
@@ -66,8 +69,10 @@ def test_instantiator(port):
             # call instantiate function via transaction
             tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, initial_hash_seed, final_hash_seed, 50000 * i, i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-            partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-            index = partition_logs[0]['args']['_index']
+            
+            log_to_process = tx_receipt['logs'][0]
+            partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+            index = partition_logs['args']['_index']
 
             error_msg = "Challenger address should be address_1"
             ret_challenger = base_test.partition_testaux.functions.getChallengerAtIndex(index).call({'from': address_1})
@@ -83,8 +88,10 @@ def test_instantiator(port):
         else:
             tx_hash = base_test.partition_testaux.functions.instantiate(address_3, address_2, initial_hash_seed, final_hash_seed, 50000 * i, i + 7, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-            partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-            index = partition_logs[0]['args']['_index']
+
+            log_to_process = tx_receipt['logs'][0]
+            partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+            index = partition_logs['args']['_index']
 
             error_msg = "Challenger address should be address_3"
             ret_challenger = base_test.partition_testaux.functions.getChallengerAtIndex(index).call({'from': address_1})

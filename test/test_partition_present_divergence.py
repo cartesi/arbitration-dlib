@@ -59,8 +59,10 @@ def test_partition_present_divergence(port):
         # call instantiate function via transaction
         tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 5000 * i, 3 * i, 55 * i).transact({'from': address_1})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-        partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-        index = partition_logs[0]['args']['_index']
+
+        log_to_process = tx_receipt['logs'][0]
+        partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+        index = partition_logs['args']['_index']
 
         divergence_time = base_test.partition_testaux.functions.getFinalTimeAtIndex(index).call({'from': address_1}) - i
 

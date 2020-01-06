@@ -54,8 +54,10 @@ def test_partition_reply_query(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 3000000, 19, 150).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     query_size = base_test.partition_testaux.functions.getQuerySize(index).call({'from': address_1})
 
@@ -91,8 +93,10 @@ def test_partition_reply_query(port):
         
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 3000000, 19, 150).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+    
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     query_size = base_test.partition_testaux.functions.getQuerySize(index).call({'from': address_1})
 

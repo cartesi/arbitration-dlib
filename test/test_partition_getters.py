@@ -56,8 +56,10 @@ def test_divergence_time(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     # call setDivergenceTimeAtIndex function via transaction
     tx_hash = base_test.partition_testaux.functions.setDivergenceTimeAtIndex(index, new_divergence_time).transact({'from': provider})
@@ -78,8 +80,10 @@ def test_time_submitted(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+    
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     # call setTimeSubmittedAtIndex function via transaction
     tx_hash = base_test.partition_testaux.functions.setTimeSubmittedAtIndex(index, key).transact({'from': provider})
@@ -101,8 +105,10 @@ def test_time_hash(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, 3, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+    
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     # call setTimeHashAtIndex function via transaction
     tx_hash = base_test.partition_testaux.functions.setTimeHashAtIndex(index, key, new_time_hash).transact({'from': provider})
@@ -124,8 +130,10 @@ def test_query_array(port):
 
     tx_hash = base_test.partition_testaux.functions.instantiate(provider, client, initial_hash_seed, final_hash_seed, 5000, query_size, 55).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    partition_logs = base_test.partition_testaux.events.PartitionCreated().processReceipt(tx_receipt)
-    index = partition_logs[0]['args']['_index']
+    
+    log_to_process = tx_receipt['logs'][0]
+    partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
+    index = partition_logs['args']['_index']
 
     for i in range(0, query_size):
         # call setQueryArrayAtIndex function via transaction
