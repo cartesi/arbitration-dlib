@@ -118,7 +118,7 @@ contract VGInstantiator is Decorated, VGInterface {
         require(_finalTime > 0, "Final time must be greater than zero");
         instance[currentIndex].challenger = _challenger;
         instance[currentIndex].claimer = _claimer;
-        instance[currentIndex].roundDuration = _roundDuration;
+        instance[currentIndex].roundDuration = _roundDuration * log2PlusOne(_finalTime);
         instance[currentIndex].machine = MachineInterface(_machineAddress);
         instance[currentIndex].initialHash = _initialHash;
         instance[currentIndex].claimerFinalHash = _claimerFinalHash;
@@ -138,7 +138,7 @@ contract VGInstantiator is Decorated, VGInterface {
             currentIndex,
             _challenger,
             _claimer,
-            _roundDuration,
+            _roundDuration * log2PlusOne(_finalTime),
             _machineAddress,
             _initialHash,
             _claimerFinalHash,
@@ -383,5 +383,16 @@ contract VGInstantiator is Decorated, VGInterface {
         clearInstance(_index);
         instance[_index].currentState = state.FinishedClaimerWon;
         emit VGFinished(instance[_index].currentState);
+    }
+
+    function log2PlusOne(uint x) public pure returns (uint y){
+        uint leading = 256;
+
+        while (x != 0) {
+            x = x >> 1;
+            leading--;
+        }
+        // plus one to do an approx ceiling
+        return (255 - leading) + 1;
     }
 }
