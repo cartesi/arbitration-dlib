@@ -31,8 +31,6 @@ import requests
 from web3 import Web3
 from test_main import BaseTest, MMState
 
-VM_ERROR_MESSAGE = "execution error: revert"
-
 @pytest.fixture(autouse=True)
 def run_between_tests(port):
     base_test = BaseTest(port)
@@ -68,23 +66,21 @@ def test_proveread_and_provewrite(port):
 
     error_msg = "ProveRead Transaction should fail, state should be WaitingProofs"
     try:
-        tx_hash = base_test.mm_testaux.functions.proveRead(index, 3, bytes("initial", 'utf-8'), fake_proof).transact({'from': provider, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.proveRead(index, 3, bytes("initial", 'utf-8'), fake_proof).transact({'from': provider})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingProofs, cannot proveRead", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingProofs, cannot proveRead", error_msg
     else:
         raise Exception(error_msg)
         
     error_msg = "ProveWrite Transaction should fail, state should be WaitingProofs"
     try:
-        tx_hash = base_test.mm_testaux.functions.proveWrite(index, 0, bytes("oldValue", 'utf-8'), bytes("newValue", 'utf-8'), fake_proof).transact({'from': provider, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.proveWrite(index, 0, bytes("oldValue", 'utf-8'), bytes("newValue", 'utf-8'), fake_proof).transact({'from': provider})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingProofs, cannot proveWrite", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingProofs, cannot proveWrite", error_msg
     else:
         raise Exception(error_msg)
 
@@ -104,12 +100,11 @@ def test_finish_proof_phase(port):
 
     error_msg = "FinishProofPhase Transaction should fail, state should be WaitingProofs"
     try:
-        tx_hash = base_test.mm_testaux.functions.finishProofPhase(index).transact({'from': provider, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.finishProofPhase(index).transact({'from': provider})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingProofs, cannot finishProofPhase", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingProofs, cannot finishProofPhase", error_msg
     else:
         raise Exception(error_msg)
         
@@ -129,12 +124,11 @@ def test_finish_replay(port):
 
     error_msg = "FinishReplayPhase Transaction should fail, state should be WaitingReplay"
     try:
-        tx_hash = base_test.mm_testaux.functions.finishReplayPhase(index).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.finishReplayPhase(index).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingReply, cannot finishReplayPhase", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingReply, cannot finishReplayPhase", error_msg
     else:
         raise Exception(error_msg)
         
@@ -157,12 +151,11 @@ def test_finish_replay(port):
     
     error_msg = "FinishReplayPhase Transaction should fail, historyPointer != history.length"
     try:
-        tx_hash = base_test.mm_testaux.functions.finishReplayPhase(index).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.finishReplayPhase(index).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert History pointer does not match length", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "History pointer does not match length", error_msg
     else:
         raise Exception(error_msg)
 
@@ -215,23 +208,21 @@ def test_read_and_write(port):
 
     error_msg = "Write Transaction should fail, state should be WaitingReplay"
     try:
-        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[position]).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[position]).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingReply, cannot write", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingReply, cannot write", error_msg
     else:
         raise Exception(error_msg)
         
     error_msg = "Read Transaction should fail, state should be WaitingReplay"
     try:
-        tx_hash = base_test.mm_testaux.functions.read(second_index, position).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.read(second_index, position).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert CurrentState is not WaitingReply, cannot read", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingReply, cannot read", error_msg
     else:
         raise Exception(error_msg)
 
@@ -251,23 +242,21 @@ def test_read_and_write(port):
 
     error_msg = "Write Transaction should fail, position not aligned"
     try:
-        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[position]).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[position]).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert Position is not aligned", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "Position is not aligned", error_msg
     else:
         raise Exception(error_msg)
         
     error_msg = "Read Transaction should fail, position not aligned"
     try:
-        tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert Position is not aligned", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "Position is not aligned", error_msg
     else:
         raise Exception(error_msg)
 
@@ -308,23 +297,21 @@ def test_read_and_write(port):
 
     error_msg = "Write Transaction should fail, wasRead is true"
     try:
-        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[1]).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[1]).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert PointInHistory was not write", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "PointInHistory was not write", error_msg
     else:
         raise Exception(error_msg)
         
     error_msg = "Read Transaction should fail, wasRead is false"
     try:
-        tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert PointInHistory has not been read", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "PointInHistory has not been read", error_msg
     else:
         raise Exception(error_msg)
         
@@ -339,23 +326,21 @@ def test_read_and_write(port):
 
     error_msg = "Write Transaction should fail, pointInHistory.position != position"
     try:
-        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[2]).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.write(second_index, position, list_of_values[2]).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert PointInHistory's position does not match", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "PointInHistory's position does not match", error_msg
     else:
         raise Exception(error_msg)
         
     error_msg = "Read Transaction should fail, pointInHistory.position != position"
     try:
-        tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert PointInHistory's position does not match", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "PointInHistory's position does not match", error_msg
     else:
         raise Exception(error_msg)
         
@@ -363,12 +348,11 @@ def test_read_and_write(port):
 
     error_msg = "Write Transaction should fail, pointInHistory.position != position"
     try:
-        tx_hash = base_test.mm_testaux.functions.write(second_index, position, bytes([7])).transact({'from': client, 'gas': 2000000})
+        tx_hash = base_test.mm_testaux.functions.write(second_index, position, bytes([7])).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert PointInHistory's value does not match", error_msg
-        assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
+        assert error_dict['message'][50:] == "PointInHistory's value does not match", error_msg
     else:
         raise Exception(error_msg)
 
@@ -383,9 +367,7 @@ def test_instantiator(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'] == "VM Exception while processing transaction: revert Provider and client need to differ", error_msg
-        # assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
-        assert error_dict['message'][0:len(VM_ERROR_MESSAGE)] == VM_ERROR_MESSAGE
+        assert error_dict['message'][50:] == "Provider and client need to differ", error_msg
         
     else:
         raise Exception(error_msg)

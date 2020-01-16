@@ -31,8 +31,6 @@ import pytest
 from web3 import Web3
 from test_main import BaseTest, PartitionState
 
-VM_ERROR_MESSAGE = "execution error: revert"
-
 @pytest.fixture(autouse=True)
 def run_between_tests(port):
     base_test = BaseTest(port)
@@ -130,9 +128,6 @@ def test_partition_claimer_timeout(port):
     index = partition_logs['args']['_index']
 
     headers = {'content-type': 'application/json'}
-    payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
-    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
-    snapshot_id = response['result']
     payload = {"method": "evm_increaseTime", "params": [3500], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
@@ -142,8 +137,7 @@ def test_partition_claimer_timeout(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
-        assert error_dict['message'][0:len(VM_ERROR_MESSAGE)] == VM_ERROR_MESSAGE
+        assert error_dict['message'][50:] == "Fail to ClaimVictoryByTime in current condition", error_msg
     else:
         raise Exception(error_msg)
 
@@ -188,9 +182,6 @@ def test_partition_challenger_timeout(port):
     tx_hash = base_test.partition_testaux.functions.replyQuery(index, mock_posted_times, mock_reply_array).transact({'from': claimer})
 
     headers = {'content-type': 'application/json'}
-    payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
-    response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
-    snapshot_id = response['result']
     payload = {"method": "evm_increaseTime", "params": [3500], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
@@ -200,8 +191,7 @@ def test_partition_challenger_timeout(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        # assert error_dict['message'][0:49] == "VM Exception while processing transaction: revert", error_msg
-        assert error_dict['message'][0:len(VM_ERROR_MESSAGE)] == VM_ERROR_MESSAGE
+        assert error_dict['message'][50:] == "Fail to ClaimVictoryByTime in current condition", error_msg
     else:
         raise Exception(error_msg)
 

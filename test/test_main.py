@@ -60,11 +60,7 @@ class BaseTest:
 
     def __init__(self, port):
 
-        if (w3.isConnected()):
-            print("Connected to node\n")
-        else:
-            print("Couldn't connect to node, exiting")
-            sys.exit(1)
+        assert w3.isConnected(), "Couldn't connect to node"
 
         self.endpoint = "http://127.0.0.1:8545"
         self.w3 = w3
