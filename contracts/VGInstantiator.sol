@@ -118,7 +118,7 @@ contract VGInstantiator is Decorated, VGInterface {
         require(_finalTime > 0, "Final time must be greater than zero");
         instance[currentIndex].challenger = _challenger;
         instance[currentIndex].claimer = _claimer;
-        instance[currentIndex].roundDuration = _roundDuration * log2PlusOne(_finalTime);
+        instance[currentIndex].roundDuration = _roundDuration * log2OverTwo(_finalTime);
         instance[currentIndex].machine = MachineInterface(_machineAddress);
         instance[currentIndex].initialHash = _initialHash;
         instance[currentIndex].claimerFinalHash = _claimerFinalHash;
@@ -138,7 +138,7 @@ contract VGInstantiator is Decorated, VGInterface {
             currentIndex,
             _challenger,
             _claimer,
-            _roundDuration * log2PlusOne(_finalTime),
+            _roundDuration * log2OverTwo(_finalTime),
             _machineAddress,
             _initialHash,
             _claimerFinalHash,
@@ -385,7 +385,8 @@ contract VGInstantiator is Decorated, VGInterface {
         emit VGFinished(instance[_index].currentState);
     }
 
-    function log2PlusOne(uint x) public pure returns (uint y){
+    //TODO: It is supposed to be log10 * C, because we're using a partition of 10
+    function log2OverTwo(uint x) public pure returns (uint y){
         uint leading = 256;
 
         while (x != 0) {
@@ -393,6 +394,6 @@ contract VGInstantiator is Decorated, VGInterface {
             leading--;
         }
         // plus one to do an approx ceiling
-        return (255 - leading) + 1;
+        return (255 - leading) / 2;
     }
 }
