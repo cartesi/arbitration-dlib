@@ -27,6 +27,11 @@ module.exports = {
       network_id: "15", // Match any network id
       gas: 6283185
     },
+    unittests: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*", // Match any network id
+    },
     ropsten: network('ropsten', 3),
     kovan: network('kovan', 42),
     rinkeby: network('rinkeby', 4),
