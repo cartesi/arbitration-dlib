@@ -118,7 +118,7 @@ contract VGInstantiator is Decorated, VGInterface {
         require(_finalTime > 0, "Final time must be greater than zero");
         instance[currentIndex].challenger = _challenger;
         instance[currentIndex].claimer = _claimer;
-        instance[currentIndex].roundDuration = _roundDuration * log2OverTwo(_finalTime);
+        instance[currentIndex].roundDuration = _roundDuration * log2OverTwo(_finalTime) + 4;
         instance[currentIndex].machine = MachineInterface(_machineAddress);
         instance[currentIndex].initialHash = _initialHash;
         instance[currentIndex].claimerFinalHash = _claimerFinalHash;
@@ -138,7 +138,7 @@ contract VGInstantiator is Decorated, VGInterface {
             currentIndex,
             _challenger,
             _claimer,
-            _roundDuration * log2OverTwo(_finalTime),
+            _roundDuration * log2OverTwo(_finalTime) + 4,
             _machineAddress,
             _initialHash,
             _claimerFinalHash,
