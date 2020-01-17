@@ -229,9 +229,9 @@ Review if events are appropriate for light client
 
 ## Contributing
 
-Thank you for your interest in Cartesi! Head over to our [Contributing Guidelines](https://github.com/cartesi/arbitration-dlib/blob/master/CONTRIBUTING.md) for instructions on how to sign our Contributors Agreement and get started with Cartesi!
+Thank you for your interest in Cartesi! Head over to our [Contributing Guidelines](CONTRIBUTING.md) for instructions on how to sign our Contributors Agreement and get started with Cartesi!
 
-Please note we have a [Code of Conduct](https://github.com/cartesi/arbitration-dlib/blob/master/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
+Please note we have a [Code of Conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
 ## Authors
 
@@ -241,6 +241,6 @@ Please note we have a [Code of Conduct](https://github.com/cartesi/arbitration-d
 
 Note: This component currently has dependencies that are licensed under the GNU GPL, version 3, and so you should treat this component as a whole as being under the GPL version 3. But all Cartesi-written code in this component is licensed under the Apache License, version 2, or a compatible permissive license, and can be used independently under the Apache v2 license. After this component is rewritten, the entire component will be released under the Apache v2 license.
 The arbitration d-lib repository and all contributions are licensed under
-[GPL 3](https://www.gnu.org/licenses/gpl-3.0.en.html). Please review our [COPYING](https://github.com/cartesi/arbitration-dlib/blob/master/COPYING) file.
+[GPL 3](https://www.gnu.org/licenses/gpl-3.0.en.html). Please review our [COPYING](COPYING) file.
 
 
