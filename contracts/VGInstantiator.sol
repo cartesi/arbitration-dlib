@@ -149,6 +149,8 @@ contract VGInstantiator is Decorated, VGInterface {
     /// @notice In case one of the parties wins the partition challenge by
     /// timeout, then he or she can call this function to claim victory in
     /// the hireCPU contract as well.
+
+    // TO-DO: should this stop existing? We can make claimVictory by timeout generic
     function winByPartitionTimeout(uint256 _index) public
         onlyInstantiated(_index)
     {
@@ -217,8 +219,22 @@ contract VGInstantiator is Decorated, VGInterface {
     function claimVictoryByTime(uint256 _index) public
         onlyInstantiated(_index)
         onlyBy(instance[_index].claimer)
-        onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
     {
+        // TO-DO: should we add onlyAfter as a function in solidity-utils lib?
+        // This should be the onlyAfter modifier, but it cannot use functions:
+        // DeclarationError: Function type can not be used in this context.
+        // TO-DO: change the hardcode numbers
+        require(
+            now > instance[_index].timeOfLastMove + getMaxStateDuration(
+                instance[_index].currentState,
+                instance[_index].roundDuration,
+                40, // time to start machine
+                partition.getQuerySize(instance[_index].partitionInstance),
+                partition.getPartitionGameIndex(instance[_index].partitionInstance),
+                instance[_index].finalTime, //maxCycle
+                500 // pico seconds to run insn
+        ), "Duration of WaitMemoryProveValues must be over");
+
         require(instance[_index].currentState == state.WaitMemoryProveValues, "State should be WaitMemoryProveValues");
         claimerWins(_index);
     }
@@ -235,14 +251,21 @@ contract VGInstantiator is Decorated, VGInterface {
                 bytes32 _hashBeforeDivergence,
                 bytes32 _hashAfterDivergence,
                 bytes32 _currentState,
-                uint[6] memory _uintValues)
+                uint[5] memory _uintValues)
     {
         VGCtx memory i = instance[_index];
 
-        uint[6] memory uintValues = [
-            i.roundDuration,
+        uint[5] memory uintValues = [
             i.finalTime,
-            i.timeOfLastMove,
+            i.timeOfLastMove + getMaxStateDuration(
+                i.currentState,
+                i.roundDuration,
+                40, // time to start machine
+                partition.getQuerySize(i.partitionInstance),
+                partition.getPartitionGameIndex(i.partitionInstance),
+                i.finalTime, //maxCycle
+                500 // pico seconds to run insn
+            ), //deadline
             i.mmInstance,
             i.partitionInstance,
             i.divergenceTime
@@ -279,6 +302,76 @@ contract VGInstantiator is Decorated, VGInterface {
 
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
         return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
+    }
+
+    /// @notice Get the worst case scenario duration for a specific state
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    /// @param _partitionSize size of partition, how many instructions the
+    //          will run to reach the necessary hash
+    /// @param _partitionGameIndex number of interactions that already happened
+    //          in the partition interaction
+
+    /// @param _maxCycle is the maximum amount of steps a machine can perform
+    //          before being forced into becoming halted
+    function getMaxStateDuration(
+        state _state,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public view returns (uint256)
+    {
+        // TODO: the 1 should probably be roundDuration
+        if (_state == state.WaitPartition) {
+            return partition.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _partitionGameIndex, _maxCycle, _picoSecondsToRunInsn);
+        }
+        if (_state == state.WaitMemoryProveValues) {
+            return mm.getMaxInstanceDuration(_roundDuration, _timeToStartMachine);
+        }
+
+        if (_state == state.FinishedClaimerWon || _state == state.FinishedChallengerWon) {
+            return 0; // final state
+        }
+        require(false, "Unrecognized state");
+    }
+
+    /// @notice Get the worst case scenario duration for a specific state
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _maxCycle is the maximum amount of steps a machine can perform
+    //          before being forced into becoming halted
+    function getMaxInstanceDuration(
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public view returns (uint256)
+    {
+        uint256 waitPartitionDuration = getMaxStateDuration(
+            state.WaitPartition,
+            _roundDuration,
+            _timeToStartMachine,
+            _partitionSize,
+            _partitionGameIndex,
+            _maxCycle,
+            _picoSecondsToRunInsn
+        );
+
+        uint256 waitMemoryProveValues = getMaxStateDuration(
+            state.WaitPartition,
+            _roundDuration,
+            _timeToStartMachine,
+            _partitionSize,
+            _partitionGameIndex,
+            _maxCycle,
+            _picoSecondsToRunInsn
+        );
+
+        return waitPartitionDuration + waitMemoryProveValues;
     }
 
     function getSubInstances(uint256 _index, address)
@@ -379,6 +472,14 @@ contract VGInstantiator is Decorated, VGInterface {
         clearInstance(_index);
         instance[_index].currentState = state.FinishedClaimerWon;
         emit VGFinished(instance[_index].currentState);
+    }
+
+    function getPartitionQuerySize(uint256 _index) public view returns (uint256) {
+        return partition.getQuerySize(instance[_index].partitionInstance);
+    }
+
+    function getPartitionGameIndex(uint256 _index) public view returns (uint256) {
+        return partition.getPartitionGameIndex(instance[_index].partitionInstance);
     }
 
     //TODO: It is supposed to be log10 * C, because we're using a partition of 10

@@ -42,6 +42,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         uint[] queryArray;
         uint timeOfLastMove;
         uint roundDuration;
+        uint partitionGameIndex; // number of interactions that already happened in the partition interaction
         state currentState;
         uint divergenceTime;
     }
@@ -145,6 +146,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         }
         instance[_index].currentState = state.WaitingQuery;
         instance[_index].timeOfLastMove = now;
+        instance[_index].partitionGameIndex++;
         emit HashesPosted(_index);
     }
 
@@ -153,7 +155,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     /// limit of the next interval to be queried.
     /// @param leftPoint confirmation of the leftPoint of the interval to be
     /// split. Should be an aggreement point.
-    /// @param leftPoint confirmation of the rightPoint of the interval to be
+    /// @param rightPoint confirmation of the rightPoint of the interval to be
     /// split. Should be a disagreement point.
     function makeQuery(
         uint256 _index,
@@ -183,9 +185,20 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         onlyInstantiated(_index)
         increasesNonce(_index)
     {
+        bool afterDeadline = (now > instance[_index].timeOfLastMove + getMaxStateDuration(
+            instance[_index].currentState,
+            instance[_index].roundDuration,
+            40, // time to build machine for the first time
+            instance[_index].querySize,
+            instance[_index].partitionGameIndex,
+            instance[_index].finalTime,
+            500 // 500 pico seconds per instruction
+        ));
+
         if ((msg.sender == instance[_index].challenger) &&
             (instance[_index].currentState == state.WaitingHashes) &&
-            (now > instance[_index].timeOfLastMove + instance[_index].roundDuration)) {
+            afterDeadline)
+        {
             instance[_index].currentState = state.ChallengerWon;
             deactivate(_index);
             emit ChallengeEnded(_index, uint8(instance[_index].currentState));
@@ -193,7 +206,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         }
         if ((msg.sender == instance[_index].claimer) &&
             (instance[_index].currentState == state.WaitingQuery) &&
-            (now > instance[_index].timeOfLastMove + instance[_index].roundDuration)) {
+            afterDeadline)
+        {
             instance[_index].currentState = state.ClaimerWon;
             deactivate(_index);
             emit ChallengeEnded(_index, uint8(instance[_index].currentState));
@@ -228,6 +242,83 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         );
     }
 
+    /// @notice Get the worst case scenario duration for a specific state
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    /// @param _partitionSize size of partition, how many instructions the
+    //          will run to reach the necessary hash
+    /// @param _partitionGameIndex number of interactions that already happened
+    //          in the partition interaction
+    /// @param _maxCycle number of instructions until the machine is forcibly halted
+    /// @param _picoSecondsToRunInsn time the offchain will take to run one instruction
+    function getMaxStateDuration(
+        state _state,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public pure returns (uint256)
+    {
+        uint256 currentPartitionSize = _maxCycle / (_partitionSize ** _partitionGameIndex);
+
+        if (_state == state.WaitingQuery) {
+            return _timeToStartMachine + ((currentPartitionSize * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+        }
+        if (_state == state.WaitingHashes) {
+            return _timeToStartMachine + ((currentPartitionSize * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+        }
+        if (_state == state.ClaimerWon || _state == state.ChallengerWon || _state == state.DivergenceFound) {
+            return 0; // final state
+        }
+        require(false, "Unrecognized state");
+    }
+
+    /// @notice Get the worst case scenario duration for an instance of this contract
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    /// @param _partitionSize size of partition, how many instructions the
+    //          will run to reach the necessary hash
+    /// @param _partitionGameIndex number of interactions that already happened
+    //          in the partition interaction
+
+    /// @param _maxCycle number of instructions until the machine is forcibly halted
+    /// @param _picoSecondsToRunInsn time the offchain will take to run one instruction
+    function getMaxInstanceDuration(
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public view returns (uint256)
+    {
+        uint256 waitingQueryDuration = getMaxStateDuration(
+            state.WaitingQuery,
+            _roundDuration,
+            _timeToStartMachine,
+            _partitionSize,
+            _partitionGameIndex,
+            _maxCycle,
+            _picoSecondsToRunInsn
+        );
+
+        uint256 waitingHashesDuration = getMaxStateDuration(
+            state.WaitingHashes,
+            _roundDuration,
+            _timeToStartMachine,
+            _partitionSize,
+            _partitionGameIndex,
+            _maxCycle,
+            _picoSecondsToRunInsn
+        );
+
+        // TO-DO: check this. The 2 should be 1 / (1 - 1/querySize)
+        // also has to add the round duration for each state transition
+        return (uint256(2) * waitingQueryDuration) + (uint256(2) * waitingHashesDuration) + (_roundDuration * log2OverTwo(_maxCycle));
+    }
+
     // Getters methods
 
     function getState(uint256 _index, address) public view
@@ -238,15 +329,14 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
                 bool[] memory _submittedArray,
                 bytes32[] memory _hashArray,
                 bytes32 _currentState,
-                uint[5] memory _uintValues)
+                uint[4] memory _uintValues)
     {
         PartitionCtx memory i = instance[_index];
 
-        uint[5] memory uintValues = [
+        uint[4] memory uintValues = [
             i.finalTime,
             i.querySize,
-            i.timeOfLastMove,
-            i.roundDuration,
+            i.timeOfLastMove + getMaxStateDuration(i.currentState, i.roundDuration, 40, i.querySize, i.partitionGameIndex, i.finalTime, 500), //deadline (40 seconds to build machine, 500 pico seconds per insn
             i.divergenceTime
         ];
 
@@ -332,6 +422,17 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         onlyInstantiated(_index)
         returns (uint)
     { return instance[_index].queryArray[i]; }
+
+    function getPartitionGameIndex(uint256 _index) public view 
+        onlyInstantiated(_index)
+        returns (uint256)
+    {return instance[_index].partitionGameIndex; }
+
+    function getQuerySize(uint256 _index) public view 
+        onlyInstantiated(_index)
+        returns (uint256)
+    {return instance[_index].querySize; }
+
 
     // state getters
 
@@ -423,4 +524,17 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         }
         instance[_index].queryArray[queryLastIndex] = rightPoint;
     }
+
+    //TODO: It is supposed to be log10 * C, because we're using a partition of 10
+    function log2OverTwo(uint x) public pure returns (uint y){
+        uint leading = 256;
+
+        while (x != 0) {
+            x = x >> 1;
+            leading--;
+        }
+        // plus one to do an approx ceiling
+        return (255 - leading) / 2;
+    }
+
 }

@@ -29,7 +29,7 @@ class MMState(Enum):
     WaitingProofs = 0
     WaitingReplay = 1
     FinishedReplay = 2
-    
+
 class ComputeState(Enum):
     WaitingClaim = 0
     WaitingConfirmation = 1
@@ -38,14 +38,14 @@ class ComputeState(Enum):
     ChallengerWon = 4
     ClaimerWon = 5
     ConsensusResult = 6
-    
+
 class PartitionState(Enum):
     WaitingQuery = 0
     WaitingHashes = 1
     ChallengerWon = 2
     ClaimerWon = 3
     DivergenceFound = 4
-    
+
 class VGState(Enum):
     WaitPartition = 0
     WaitMemoryProveValues = 1

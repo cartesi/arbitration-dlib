@@ -25,7 +25,7 @@
 
 use super::build_session_run_key;
 use super::dispatcher::{
-    AddressField, BoolArray, Bytes32Array, String32Field, U256Array, U256Array5,
+    AddressField, BoolArray, Bytes32Array, String32Field, U256Array, U256Array4,
 };
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
@@ -52,10 +52,9 @@ pub struct PartitionCtxParsed(
     pub BoolArray,     // submittedArray
     pub Bytes32Array,  // hashArray
     pub String32Field, // currentState
-    pub U256Array5,    // uint values: finalTime
+    pub U256Array4,    // uint values: finalTime
                        // querySize
-                       // timeOfLastMove
-                       // roundDuration
+                       // deadline
                        // divergenceTime
 );
 
@@ -69,8 +68,7 @@ pub struct PartitionCtx {
     pub current_state: String,
     pub final_time: U256,
     pub query_size: U256,
-    pub time_of_last_move: U256,
-    pub round_duration: U256,
+    pub deadline: U256,
     pub divergence_time: U256,
 }
 
@@ -85,9 +83,8 @@ impl From<PartitionCtxParsed> for PartitionCtx {
             current_state: parsed.5.value,
             final_time: parsed.6.value[0],
             query_size: parsed.6.value[1],
-            time_of_last_move: parsed.6.value[2],
-            round_duration: parsed.6.value[3],
-            divergence_time: parsed.6.value[4],
+            deadline: parsed.6.value[2],
+            divergence_time: parsed.6.value[3],
         }
     }
 }
@@ -136,8 +133,7 @@ impl DApp<String> for Partition {
                     return win_by_deadline_or_idle(
                         &instance.concern,
                         instance.index,
-                        ctx.time_of_last_move.as_u64(),
-                        ctx.round_duration.as_u64(),
+                        ctx.deadline.as_u64(),
                     );
                 }
                 "WaitingHashes" => {
@@ -337,8 +333,7 @@ impl DApp<String> for Partition {
                     return win_by_deadline_or_idle(
                         &instance.concern,
                         instance.index,
-                        ctx.time_of_last_move.as_u64(),
-                        ctx.round_duration.as_u64(),
+                        ctx.deadline.as_u64(),
                     );
                 }
                 _ => {

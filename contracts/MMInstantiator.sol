@@ -29,7 +29,7 @@ import "@cartesi/util/contracts/Merkle.sol";
 
 
 contract MMInstantiator is MMInterface, Decorated {
-  // the privider will fill the memory for the client to read and write
+  // the provider will fill the memory for the client to read and write
   // memory starts with hash and all values that are inserted are first verified
   // then client can read inserted values and write some more
   // finally the provider has to update the hash to account for writes
@@ -173,7 +173,7 @@ contract MMInstantiator is MMInterface, Decorated {
         increasesNonce(_index)
         returns (bytes8)
     {
-        require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReply, cannot read");
+        require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReplay, cannot read");
         require((_position & 7) == 0, "Position is not aligned");
         uint pointer = instance[_index].historyPointer;
         ReadWrite storage  pointInHistory = instance[_index].history[pointer];
@@ -194,7 +194,7 @@ contract MMInstantiator is MMInterface, Decorated {
         onlyBy(instance[_index].client)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReply, cannot write");
+        require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReplay, cannot write");
         require((_position & 7) == 0, "Position is not aligned");
         uint pointer = instance[_index].historyPointer;
         ReadWrite storage pointInHistory = instance[_index].history[pointer];
@@ -212,7 +212,7 @@ contract MMInstantiator is MMInterface, Decorated {
         onlyBy(instance[_index].client)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReply, cannot finishReplayPhase");
+        require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReplay, cannot finishReplayPhase");
         require(instance[_index].historyPointer == instance[_index].history.length, "History pointer does not match length");
         delete(instance[_index].history);
         delete(instance[_index].historyPointer);
@@ -292,6 +292,63 @@ contract MMInstantiator is MMInterface, Decorated {
             return "FinishedReplay";
         }
         require(false, "Unrecognized state");
+    }
+
+    /// @notice Get the worst case scenario duration for a specific state
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    function getMaxStateDuration(
+        state _state,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine) public view returns (uint256)
+    {
+        if (_state == state.WaitingProofs) {
+            // proving siblings is assumed to be free
+            // so its time to start the machine 
+            // + one round duration to send the proofs
+            // + one transaction for finishProofPhase transaction
+            return _timeToStartMachine + uint256(2) * _roundDuration;
+        }
+        if (_state == state.WaitingReplay) {
+            // one transaction for the step function to be completed
+            return _roundDuration;
+        }
+        if (_state == state.FinishedReplay) {
+            // one transaction for finishReplay transaction
+            return _roundDuration;
+        }
+
+        require(false, "Unrecognized state");
+    }
+
+    /// @notice Get the worst case scenario duration for an instance of this contract
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    function getMaxInstanceDuration(
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine) public view returns (uint256)
+    {
+        uint256 waitingProofsDuration = getMaxStateDuration(
+            state.WaitingProofs,
+            _roundDuration,
+            _timeToStartMachine
+        );
+
+        uint256 waitingReplayDuration = getMaxStateDuration(
+            state.WaitingReplay,
+            _roundDuration,
+            _timeToStartMachine
+        );
+
+        uint256 finishProofsDuration = getMaxStateDuration(
+            state.WaitingProofs,
+            _roundDuration,
+            _timeToStartMachine
+        );
+
+        return waitingProofsDuration + waitingReplayDuration + finishProofsDuration;
     }
 
     // remove these functions and change tests accordingly

@@ -55,7 +55,7 @@ def test_partition_reply_query(port):
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
     index = partition_logs['args']['_index']
 
-    query_size = base_test.partition_testaux.functions.getQuerySize(index).call({'from': address_1})
+    query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index).call({'from': address_1})
 
     tx_hash = base_test.partition_testaux.functions.doSlice(index, 1, query_size).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
@@ -81,20 +81,20 @@ def test_partition_reply_query(port):
         error_msg = "PostedTimes must be true"
         ret = base_test.partition_testaux.functions.getTimeSubmittedAtIndex(index, time_index).call({'from': address_1})
         assert ret, error_msg
-        
+
         error_msg = "PostedTimes and PostedHashes should match"
         ret_hash = base_test.partition_testaux.functions.getTimeHashAtIndex(index, time_index).call({'from': address_1})
         hash_length = len(mock_reply_array[i])
         assert ret_hash[0:hash_length] == mock_reply_array[i], error_msg
-        
+
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 3000000, 19, 150).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    
+
     log_to_process = tx_receipt['logs'][0]
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
     index = partition_logs['args']['_index']
 
-    query_size = base_test.partition_testaux.functions.getQuerySize(index).call({'from': address_1})
+    query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index).call({'from': address_1})
 
     tx_hash = base_test.partition_testaux.functions.doSlice(index, 1, query_size).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
@@ -120,9 +120,9 @@ def test_partition_reply_query(port):
         error_msg = "PostedTimes must be true"
         ret = base_test.partition_testaux.functions.getTimeSubmittedAtIndex(index, time_index).call({'from': address_1})
         assert ret, error_msg
-        
+
         error_msg = "PostedTimes and PostedHashes should match"
         ret_hash = base_test.partition_testaux.functions.getTimeHashAtIndex(index, time_index).call({'from': address_1})
         hash_length = len(mock_reply_array[i])
         assert ret_hash[0:hash_length] == mock_reply_array[i], error_msg
-    
+

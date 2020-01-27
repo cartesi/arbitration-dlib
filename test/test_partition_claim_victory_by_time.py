@@ -94,7 +94,7 @@ def test_partition_claim_victory_by_time(port):
         # This processReceipt() gives no warning.
         partition_logs = base_test.partition_testaux.events.ChallengeEnded().processReceipt(tx_receipt)
         ret_index = partition_logs[0]['args']['_index']
-        
+
         error_msg = "Should receive ChallengeEnded event"
         assert ret_index == index, error_msg
 
@@ -137,19 +137,19 @@ def test_partition_claimer_timeout(port):
     else:
         raise Exception(error_msg)
 
-    payload = {"method": "evm_increaseTime", "params": [200], "jsonrpc": "2.0", "id": 0}
+    payload = {"method": "evm_increaseTime", "params": [60000], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
-    
+
     tx_hash = base_test.partition_testaux.functions.claimVictoryByTime(index).transact({'from': challenger})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
     # This processReceipt() gives no warning.
     partition_logs = base_test.partition_testaux.events.ChallengeEnded().processReceipt(tx_receipt)
     ret_index = partition_logs[0]['args']['_index']
-    
+
     error_msg = "Should receive ChallengeEnded event"
     assert ret_index == index, error_msg
-    
+
 def test_partition_challenger_timeout(port):
     base_test = BaseTest(port)
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
@@ -191,9 +191,9 @@ def test_partition_challenger_timeout(port):
     else:
         raise Exception(error_msg)
 
-    payload = {"method": "evm_increaseTime", "params": [200], "jsonrpc": "2.0", "id": 0}
+    payload = {"method": "evm_increaseTime", "params": [60000], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
-    
+
     tx_hash = base_test.partition_testaux.functions.claimVictoryByTime(index).transact({'from': claimer})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 

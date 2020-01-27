@@ -52,7 +52,7 @@ def test_instantiator(port):
     log_to_process = tx_receipt['logs'][0]
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
     next_index = partition_logs['args']['_index']
-    
+
     next_index += 1
 
     # start from 3 to prevent revert when finalTime is not larger than zero
@@ -65,7 +65,7 @@ def test_instantiator(port):
             # call instantiate function via transaction
             tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_3, initial_hash_seed, final_hash_seed, 50000 * i, i, 55 * i).transact({'from': address_1})
             tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-            
+
             log_to_process = tx_receipt['logs'][0]
             partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
             index = partition_logs['args']['_index']
@@ -79,7 +79,7 @@ def test_instantiator(port):
             assert ret_claimer == address_3, error_msg
 
             error_msg = "Querysize should match"
-            ret_query_size = base_test.partition_testaux.functions.getQuerySize(index).call({'from': address_1})
+            ret_query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index).call({'from': address_1})
             assert ret_query_size == i, error_msg
         else:
             tx_hash = base_test.partition_testaux.functions.instantiate(address_3, address_2, initial_hash_seed, final_hash_seed, 50000 * i, i + 7, 55 * i).transact({'from': address_1})
@@ -98,7 +98,7 @@ def test_instantiator(port):
             assert ret_claimer == address_2, error_msg
 
             error_msg = "Querysize should match"
-            ret_query_size = base_test.partition_testaux.functions.getQuerySize(index).call({'from': address_1})
+            ret_query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index).call({'from': address_1})
             assert ret_query_size == (i + 7), error_msg
 
         error_msg = "Partition index should be equal to next_index"
@@ -121,5 +121,5 @@ def test_instantiator(port):
         assert ret_final_hash[0:1] == final_hash_seed, error_msg
 
         next_index += 1
-    
-    
+
+

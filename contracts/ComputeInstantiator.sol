@@ -199,15 +199,28 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     /// @notice Claim victory for opponent timeout.
     function claimVictoryByTime(uint256 _index) public
         onlyInstantiated(_index)
-        onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
         increasesNonce(_index)
     {
+       bool afterDeadline = (now > instance[_index].timeOfLastMove + getMaxStateDuration(
+               instance[_index].currentState,
+               instance[_index].roundDuration,
+               40, // time to start machine
+               1, // vg is not instantiated, so it doesnt matter
+               1, // vg is not instantiated, so it doesnt matter
+               instance[_index].finalTime,
+               500) // pico seconds to run instruction
+           );
+
+
+        require(afterDeadline, "Deadline is not over for this specific state");
+
         if ((msg.sender == instance[_index].challenger) && (instance[_index].currentState == state.WaitingClaim)) {
             instance[_index].currentState = state.ClaimerMissedDeadline;
             deactivate(_index);
             emit ComputeFinished(_index, uint8(instance[_index].currentState));
             return;
         }
+
         if ((msg.sender == instance[_index].claimer) && (instance[_index].currentState == state.WaitingConfirmation)) {
             instance[_index].currentState = state.ConsensusResult;
             deactivate(_index);
@@ -215,6 +228,78 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
             return;
         }
         revert("Fail to ClaimVictoryByTime in current condition");
+    }
+
+    function getMaxStateDuration(
+        state _state,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn
+    ) public view returns (uint256)
+    {
+        if (_state == state.WaitingClaim) {
+            // time to run entire machine + time to react
+            return _timeToStartMachine + ((_maxCycle * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+        }
+
+        if (_state == state.WaitingConfirmation) {
+            // time to run entire machine + time to react
+            return _timeToStartMachine + ((_maxCycle * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+        }
+
+        if (_state == state.WaitingChallenge) {
+            // time to run a verification game + time to react
+            return vg.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _partitionGameIndex, _maxCycle, _picoSecondsToRunInsn) + _roundDuration;
+        }
+
+        if (_state == state.ClaimerWon || _state == state.ChallengerWon || _state == state.ClaimerMissedDeadline || _state == state.ConsensusResult) {
+            return 0; // final state
+        }
+    }
+
+    function getMaxInstanceDuration(
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn
+    ) public view returns (uint256)
+    {
+        uint256 waitingClaim = getMaxStateDuration(
+            state.WaitingClaim,
+            _roundDuration,
+            _timeToStartMachine,
+            _partitionSize,
+            _partitionGameIndex,
+            _maxCycle,
+            _picoSecondsToRunInsn
+        );
+
+        uint256 waitingConfirmation = getMaxStateDuration(
+            state.WaitingConfirmation,
+            _roundDuration,
+            _timeToStartMachine,
+            _partitionSize,
+            _partitionGameIndex,
+            _maxCycle,
+            _picoSecondsToRunInsn
+        );
+
+        uint256 waitingChallenge = getMaxStateDuration(
+            state.WaitingChallenge,
+            _roundDuration,
+            _timeToStartMachine,
+            _partitionSize,
+            _partitionGameIndex,
+            _maxCycle,
+            _picoSecondsToRunInsn
+        );
+
+        return waitingClaim + waitingConfirmation + waitingChallenge;
     }
 
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
@@ -242,8 +327,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     function getState(uint256 _index, address) public view returns
         ( address _challenger,
         address _claimer,
-        uint256 _roundDuration,
-        uint256 _timeOfLastMove,
+        uint256 _deadline,
         address _machine,
         bytes32 _initialHash,
         uint256 _finalTime,
@@ -255,34 +339,48 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
 
         // we have to duplicate the code for getCurrentState because of
         // "stack too deep"
+
+        // this variables only matter on challenging state
+        uint256 partitionSize = 1;
+        uint256 partitionGameIndex = 1;
+
         bytes32 currentState;
-        if (instance[_index].currentState == state.WaitingClaim) {
+        if (i.currentState == state.WaitingClaim) {
             currentState = "WaitingClaim";
         }
-        if (instance[_index].currentState == state.WaitingConfirmation) {
+        if (i.currentState == state.WaitingConfirmation) {
             currentState = "WaitingConfirmation";
         }
-        if (instance[_index].currentState == state.ClaimerMissedDeadline) {
+        if (i.currentState == state.ClaimerMissedDeadline) {
             currentState = "ClaimerMissedDeadline";
         }
-        if (instance[_index].currentState == state.WaitingChallenge) {
+        if (i.currentState == state.WaitingChallenge) {
             currentState = "WaitingChallenge";
+            partitionSize = vg.getPartitionQuerySize(i.vgInstance);
+            partitionGameIndex = vg.getPartitionGameIndex(i.vgInstance);
         }
-        if (instance[_index].currentState == state.ChallengerWon) {
+        if (i.currentState == state.ChallengerWon) {
             currentState = "ChallengerWon";
         }
-        if (instance[_index].currentState == state.ClaimerWon) {
+        if (i.currentState == state.ClaimerWon) {
             currentState = "ClaimerWon";
         }
-        if (instance[_index].currentState == state.ConsensusResult) {
+        if (i.currentState == state.ConsensusResult) {
             currentState = "ConsensusResult";
         }
 
         return (
             i.challenger,
             i.claimer,
-            i.roundDuration,
-            i.timeOfLastMove,
+            i.timeOfLastMove +  getMaxStateDuration(
+                i.currentState,
+                i.roundDuration,
+                40, // time to start machine
+                partitionSize,
+                partitionGameIndex,
+                i.finalTime,
+                500 // pico seconds to run insn
+            ),
             i.machine,
             i.initialHash,
             i.finalTime,

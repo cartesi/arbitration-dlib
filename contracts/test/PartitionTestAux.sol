@@ -58,6 +58,10 @@ contract PartitionTestAux is PartitionInstantiator {
         instance[partitionIndex].queryArray[queryIndex] = query;
     }
 
+    function setQuerySizeAtIndex(uint256 partitionIndex, uint256 querySize) public {
+        instance[partitionIndex].querySize = querySize;
+    }
+
     function getQueryArrayAtIndex(uint partitionIndex, uint queryIndex) public view    returns (uint) {
         return instance[partitionIndex].queryArray[queryIndex];
     }
@@ -78,7 +82,7 @@ contract PartitionTestAux is PartitionInstantiator {
         return instance[partitionIndex].finalTime;
     }
 
-    function getQuerySize(uint256 partitionIndex) public view returns (uint) {
+    function getQuerySizeAtIndex(uint256 partitionIndex) public view returns (uint) {
         return instance[partitionIndex].querySize;
     }
 

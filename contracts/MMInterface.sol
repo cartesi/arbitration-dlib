@@ -45,4 +45,6 @@ contract MMInterface is Instantiator {
     function stateIsWaitingProofs(uint256 _index) public view returns (bool);
     function stateIsWaitingReplay(uint256 _index) public view returns (bool);
     function stateIsFinishedReplay(uint256 _index) public view returns (bool);
+    function getMaxStateDuration(state _state, uint256 _roundDuration, uint256 _timeToStartMachine) public view returns (uint256);
+    function getMaxInstanceDuration(uint256 _roundDuration, uint256 _timeToStartMachine) public view returns (uint256);
 }

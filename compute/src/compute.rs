@@ -50,8 +50,7 @@ pub struct Compute();
 pub struct ComputeCtxParsed(
     AddressField,  // challenger
     AddressField,  // claimer
-    U256Field,     // roundDuration
-    U256Field,     // timeOfLastMove
+    U256Field,     // deadline
     AddressField,  // machine
     Bytes32Field,  // initialHash
     U256Field,     // finalTime
@@ -63,8 +62,7 @@ pub struct ComputeCtxParsed(
 pub struct ComputeCtx {
     pub challenger: Address,
     pub claimer: Address,
-    pub round_duration: U256,
-    pub time_of_last_move: U256,
+    pub deadline: U256,
     pub machine: Address,
     pub initial_hash: H256,
     pub final_time: U256,
@@ -77,13 +75,12 @@ impl From<ComputeCtxParsed> for ComputeCtx {
         ComputeCtx {
             challenger: parsed.0.value,
             claimer: parsed.1.value,
-            round_duration: parsed.2.value,
-            time_of_last_move: parsed.3.value,
-            machine: parsed.4.value,
-            initial_hash: parsed.5.value,
-            final_time: parsed.6.value,
-            claimed_final_hash: parsed.7.value,
-            current_state: parsed.8.value,
+            deadline: parsed.2.value,
+            machine: parsed.3.value,
+            initial_hash: parsed.4.value,
+            final_time: parsed.5.value,
+            claimed_final_hash: parsed.6.value,
+            current_state: parsed.7.value,
         }
     }
 }
@@ -135,8 +132,7 @@ impl DApp<String> for Compute {
                     return win_by_deadline_or_idle(
                         &instance.concern,
                         instance.index,
-                        ctx.time_of_last_move.as_u64(),
-                        ctx.round_duration.as_u64(),
+                        ctx.deadline.as_u64(),
                     );
                 }
                 "WaitingClaim" => {
@@ -301,8 +297,7 @@ impl DApp<String> for Compute {
                     return win_by_deadline_or_idle(
                         &instance.concern,
                         instance.index,
-                        ctx.time_of_last_move.as_u64(),
-                        ctx.round_duration.as_u64(),
+                        ctx.deadline.as_u64(),
                     );
                 }
                 "WaitingChallenge" => {
@@ -399,8 +394,7 @@ impl DApp<String> for Compute {
 pub fn win_by_deadline_or_idle(
     concern: &Concern,
     index: U256,
-    time_of_last_move: u64,
-    round_duration: u64,
+    deadline: u64,
 ) -> Result<Reaction> {
     let current_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -408,7 +402,7 @@ pub fn win_by_deadline_or_idle(
         .as_secs();
 
     // if other party missed the deadline
-    if current_time > time_of_last_move + round_duration {
+    if current_time > deadline {
         info!("Claiming victory by time (index: {})", index);
         let request = TransactionRequest {
             concern: concern.clone(),

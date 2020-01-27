@@ -69,7 +69,7 @@ def test_proveread_and_provewrite(port):
         assert error_dict['message'][50:] == "CurrentState is not WaitingProofs, cannot proveRead", error_msg
     else:
         raise Exception(error_msg)
-        
+
     error_msg = "ProveWrite Transaction should fail, state should be WaitingProofs"
     try:
         tx_hash = base_test.mm_testaux.functions.proveWrite(index, 0, bytes("oldValue", 'utf-8'), bytes("newValue", 'utf-8'), fake_proof).transact({'from': provider})
@@ -103,7 +103,7 @@ def test_finish_proof_phase(port):
         assert error_dict['message'][50:] == "CurrentState is not WaitingProofs, cannot finishProofPhase", error_msg
     else:
         raise Exception(error_msg)
-        
+
 def test_finish_replay(port):
     base_test = BaseTest(port)
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
@@ -124,10 +124,10 @@ def test_finish_replay(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'][50:] == "CurrentState is not WaitingReply, cannot finishReplayPhase", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingReplay, cannot finishReplayPhase", error_msg
     else:
         raise Exception(error_msg)
-        
+
     list_of_was_read = []
     list_of_positions = []
     list_of_values = []
@@ -144,7 +144,7 @@ def test_finish_replay(port):
     # create ReadWrites and add it to the history
     tx_hash = base_test.mm_testaux.functions.setHistoryAtIndex(index, list_of_was_read, list_of_positions, list_of_values).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    
+
     error_msg = "FinishReplayPhase Transaction should fail, historyPointer != history.length"
     try:
         tx_hash = base_test.mm_testaux.functions.finishReplayPhase(index).transact({'from': client})
@@ -164,12 +164,12 @@ def test_read_and_write(port):
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
-    
+
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     second_index = mm_logs[0]['args']['_index']
-        
+
     list_of_was_read = []
     list_of_was_not_read = []
     list_of_positions = []
@@ -179,7 +179,7 @@ def test_read_and_write(port):
         list_of_was_not_read.append(False)
         list_of_positions.append(i * 8)
         list_of_values.append(bytes([i]))
-        
+
     # add unaligned position for testing
     list_of_was_read[16] = True
     list_of_was_not_read[16] = False
@@ -208,17 +208,17 @@ def test_read_and_write(port):
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'][50:] == "CurrentState is not WaitingReply, cannot write", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingReplay, cannot write", error_msg
     else:
         raise Exception(error_msg)
-        
+
     error_msg = "Read Transaction should fail, state should be WaitingReplay"
     try:
         tx_hash = base_test.mm_testaux.functions.read(second_index, position).transact({'from': client})
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'][50:] == "CurrentState is not WaitingReply, cannot read", error_msg
+        assert error_dict['message'][50:] == "CurrentState is not WaitingReplay, cannot read", error_msg
     else:
         raise Exception(error_msg)
 
@@ -245,7 +245,7 @@ def test_read_and_write(port):
         assert error_dict['message'][50:] == "Position is not aligned", error_msg
     else:
         raise Exception(error_msg)
-        
+
     error_msg = "Read Transaction should fail, position not aligned"
     try:
         tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client})
@@ -260,7 +260,7 @@ def test_read_and_write(port):
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
-    
+
     tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, bytes("initialHash", 'utf-8')).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
@@ -277,11 +277,11 @@ def test_read_and_write(port):
     # set history pointer to 1
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(second_index, 1).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    
+
     # add incorrect values to was read list
     list_of_was_read[1] = False
     list_of_was_not_read[1] = True
-    
+
     # create ReadWrites and add it to the history
     tx_hash = base_test.mm_testaux.functions.setHistoryAtIndex(index, list_of_was_read, list_of_positions, list_of_values).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
@@ -300,7 +300,7 @@ def test_read_and_write(port):
         assert error_dict['message'][50:] == "PointInHistory was not write", error_msg
     else:
         raise Exception(error_msg)
-        
+
     error_msg = "Read Transaction should fail, wasRead is false"
     try:
         tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client})
@@ -310,7 +310,7 @@ def test_read_and_write(port):
         assert error_dict['message'][50:] == "PointInHistory has not been read", error_msg
     else:
         raise Exception(error_msg)
-        
+
     # set history pointer to 2
     tx_hash = base_test.mm_testaux.functions.setHistoryPointerAtIndex(index, 2).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
@@ -329,7 +329,7 @@ def test_read_and_write(port):
         assert error_dict['message'][50:] == "PointInHistory's position does not match", error_msg
     else:
         raise Exception(error_msg)
-        
+
     error_msg = "Read Transaction should fail, pointInHistory.position != position"
     try:
         tx_hash = base_test.mm_testaux.functions.read(index, position).transact({'from': client})
@@ -339,7 +339,7 @@ def test_read_and_write(port):
         assert error_dict['message'][50:] == "PointInHistory's position does not match", error_msg
     else:
         raise Exception(error_msg)
-        
+
     position = 16
 
     error_msg = "Write Transaction should fail, pointInHistory.position != position"
@@ -364,7 +364,7 @@ def test_instantiator(port):
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
         assert error_dict['message'][50:] == "Provider and client need to differ", error_msg
-        
+
     else:
         raise Exception(error_msg)
-    
+

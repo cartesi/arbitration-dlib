@@ -53,4 +53,25 @@ contract PartitionInterface is Instantiator {
     function stateIsChallengerWon(uint256 _index) public view returns (bool);
     function stateIsClaimerWon(uint256 _index) public view returns (bool);
     function stateIsDivergenceFound(uint256 _index) public view returns (bool);
+
+    function getPartitionGameIndex(uint256 _index) public view returns(uint256);
+
+    function getQuerySize(uint256 _index) public view returns (uint256);
+
+   function getMaxStateDuration(
+        state _state,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public pure returns (uint256);
+
+    function getMaxInstanceDuration(
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public view returns (uint256);
 }

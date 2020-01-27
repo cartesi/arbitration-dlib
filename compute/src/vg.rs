@@ -23,7 +23,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Array6};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Array5};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -51,8 +51,8 @@ pub struct VGCtxParsed(
     Bytes32Field,  // hashBeforeDivergence
     Bytes32Field,  // hashAfterDivergence
     String32Field, // currentState
-    U256Array6,    // uint values: roundDuration
-                   //              finalTime
+    U256Array5,    // uint values: finalTime
+                   //              deadline
                    //              timeOfLastMove
                    //              mmInstance
                    //              partitionInstance
@@ -69,9 +69,8 @@ pub struct VGCtx {
     pub hash_before_divergence: H256,
     pub hash_after_divergence: H256,
     pub current_state: String,
-    pub round_duration: U256,
     pub final_time: U256,
-    pub time_of_last_move: U256,
+    pub deadline: U256,
     pub mm_instance: U256,
     pub partition_instance: U256,
     pub divergence_time: U256,
@@ -88,12 +87,11 @@ impl From<VGCtxParsed> for VGCtx {
             hash_before_divergence: parsed.5.value,
             hash_after_divergence: parsed.6.value,
             current_state: parsed.7.value,
-            round_duration: parsed.8.value[0],
-            final_time: parsed.8.value[1],
-            time_of_last_move: parsed.8.value[2],
-            mm_instance: parsed.8.value[3],
-            partition_instance: parsed.8.value[4],
-            divergence_time: parsed.8.value[5],
+            final_time: parsed.8.value[0],
+            deadline: parsed.8.value[1],
+            mm_instance: parsed.8.value[2],
+            partition_instance: parsed.8.value[3],
+            divergence_time: parsed.8.value[4],
         }
     }
 }
@@ -208,8 +206,7 @@ impl DApp<String> for VG {
                     return win_by_deadline_or_idle(
                         &instance.concern,
                         instance.index,
-                        ctx.time_of_last_move.as_u64(),
-                        ctx.round_duration.as_u64(),
+                        ctx.deadline.as_u64(),
                     );
                 }
                 _ => {

@@ -58,7 +58,7 @@ def test_partition_slice(port):
     log_to_process = tx_receipt['logs'][0]
     partition_logs = base_test.partition_testaux.events.PartitionCreated().processLog(log_to_process)
     index_2 = partition_logs['args']['_index']
-    
+
     tx_hash = base_test.partition_testaux.functions.instantiate(address_1, address_2, initial_hash_seed, final_hash_seed, 50000, 15, 55).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     log_to_process = tx_receipt['logs'][0]
@@ -71,7 +71,7 @@ def test_partition_slice(port):
     tx_hash = base_test.partition_testaux.functions.doSlice(index_1, left_point, right_point).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
-    query_size = base_test.partition_testaux.functions.getQuerySize(index_1).call({'from': address_1})
+    query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index_1).call({'from': address_1})
 
     for i in range(0, query_size):
         query_array = base_test.partition_testaux.functions.getQueryArrayAtIndex(index_1, i).call({'from': address_1})
@@ -82,14 +82,14 @@ def test_partition_slice(port):
         else:
             error_msg = "Queryarray[i] must be = rightPoint"
             assert query_array == right_point, error_msg
-    
+
     left_point = 50
     right_point = 55
 
     tx_hash = base_test.partition_testaux.functions.doSlice(index_2, left_point, right_point).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
-    query_size = base_test.partition_testaux.functions.getQuerySize(index_2).call({'from': address_1})
+    query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index_2).call({'from': address_1})
 
     for i in range(0, query_size):
         query_array = base_test.partition_testaux.functions.getQueryArrayAtIndex(index_2, i).call({'from': address_1})
@@ -100,14 +100,14 @@ def test_partition_slice(port):
         else:
             error_msg = "Queryarray[i] must be = rightPoint"
             assert query_array == right_point, error_msg
-    
+
     left_point = 0
     right_point = 1
 
     tx_hash = base_test.partition_testaux.functions.doSlice(index_2, left_point, right_point).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
-    query_size = base_test.partition_testaux.functions.getQuerySize(index_2).call({'from': address_1})
+    query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index_2).call({'from': address_1})
 
     for i in range(0, query_size):
         query_array = base_test.partition_testaux.functions.getQueryArrayAtIndex(index_2, i).call({'from': address_1})
@@ -118,7 +118,7 @@ def test_partition_slice(port):
         else:
             error_msg = "Queryarray[i] must be = rightPoint"
             assert query_array == right_point, error_msg
-    
+
     # test else path
     left_point = 1
     right_point = 600
@@ -126,14 +126,14 @@ def test_partition_slice(port):
     tx_hash = base_test.partition_testaux.functions.doSlice(index_3, left_point, right_point).transact({'from': address_1})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
 
-    query_size = base_test.partition_testaux.functions.getQuerySize(index_3).call({'from': address_1})
+    query_size = base_test.partition_testaux.functions.getQuerySizeAtIndex(index_3).call({'from': address_1})
     division_length = (int)((right_point - left_point) / (query_size - 1))
 
     for i in range(0, query_size - 1):
         error_msg = "slice else path"
         query_array = base_test.partition_testaux.functions.getQueryArrayAtIndex(index_3, i).call({'from': address_1})
         assert query_array == (left_point + i * division_length), error_msg
-        
+
     # test else path
     left_point = 150
     right_point = 600
