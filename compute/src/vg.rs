@@ -158,6 +158,7 @@ impl DApp<String> for VG {
                     match partition_ctx.current_state.as_ref() {
                         "ClaimerWon" => {
                             // claim victory by partition timeout
+                            info!("Claiming victory by Partition timeout (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -175,6 +176,7 @@ impl DApp<String> for VG {
                         }
                         "DivergenceFound" => {
                             // start the machine run challenge
+                            info!("Starting machine run challenage for VG (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -243,6 +245,7 @@ impl DApp<String> for VG {
                     match partition_ctx.current_state.as_ref() {
                         "ChallengerWon" => {
                             // claim victory by partition timeout
+                            info!("Claiming victory by Partition timeout (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -260,6 +263,7 @@ impl DApp<String> for VG {
                         }
                         "DivergenceFound" => {
                             // start the machine run challenge
+                            info!("Starting machine run challenage for VG (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -314,6 +318,7 @@ impl DApp<String> for VG {
                         }
                         "WaitingReplay" => {
                             // start the machine run challenge
+                            info!("Settling VG (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),

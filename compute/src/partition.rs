@@ -36,7 +36,7 @@ use super::transaction::TransactionRequest;
 use super::{
     Role, SessionRunRequest, SessionRunResult, EMULATOR_METHOD_RUN, EMULATOR_SERVICE_NAME,
 };
-use compute::win_by_deadline_or_idle;
+use super::win_by_deadline_or_idle;
 
 pub struct Partition();
 
@@ -187,6 +187,7 @@ impl DApp<String> for Partition {
                         hashes.push(hash);
                     }
                     // submit the required hashes
+                    info!("Replying Query for Partition (index: {})", instance.index);
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
                         value: U256::from(0),
@@ -288,6 +289,7 @@ impl DApp<String> for Partition {
                             // do we need another partition?
                             if next_time.as_u64() - time.as_u64() > 1 {
                                 // submit the relevant query
+                                info!("Making Query for Partition (index: {})", instance.index);
                                 let request = TransactionRequest {
                                     concern: instance.concern.clone(),
                                     value: U256::from(0),
@@ -309,6 +311,7 @@ impl DApp<String> for Partition {
                                 return Ok(Reaction::Transaction(request));
                             } else {
                                 // submit divergence time
+                                info!("Divergence found for Partition (index: {}, time: {})", instance.index, *time);
                                 let request = TransactionRequest {
                                     concern: instance.concern.clone(),
                                     value: U256::from(0),

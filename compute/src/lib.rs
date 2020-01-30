@@ -44,7 +44,7 @@ extern crate ethabi;
 extern crate ethereum_types;
 extern crate transaction;
 
-pub use compute::{Compute, ComputeCtx, ComputeCtxParsed};
+pub use compute::{Compute, ComputeCtx, ComputeCtxParsed, win_by_deadline_or_idle};
 pub use emulator::{cartesi_base, manager_high};
 pub use emulator_service::{
     AccessOperation, NewSessionRequest, NewSessionResult, SessionGetProofRequest,

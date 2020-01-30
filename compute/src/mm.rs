@@ -139,6 +139,7 @@ impl DApp<MMParams> for MM {
                 let step_log = processed_response.log;
                 // if all proofs have been inserted, finish proof phase
                 if ctx.history_length.as_usize() >= step_log.len() {
+                    info!("Finishing Proof phase for MM (index: {})", instance.index);
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
                         value: U256::from(0),

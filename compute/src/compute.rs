@@ -169,6 +169,7 @@ impl DApp<String> for Compute {
 
                     let hash = processed_response.hashes[1];
 
+                    info!("Submitting claim for Compute (index: {}, hash: {:?})", instance.index, hash);
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
                         value: U256::from(0),
@@ -207,6 +208,7 @@ impl DApp<String> for Compute {
                     match vg_ctx.current_state.as_ref() {
                         "FinishedClaimerWon" => {
                             // claim victory in compute contract
+                            info!("Claiming victory for Compute (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -279,7 +281,7 @@ impl DApp<String> for Compute {
                         };
                         return Ok(Reaction::Transaction(request));
                     } else {
-                        warn!(
+                        info!(
                             "Disputing final hash {:?} != {} for {}",
                             hash, ctx.claimed_final_hash, id
                         );
@@ -322,6 +324,7 @@ impl DApp<String> for Compute {
 
                     match vg_ctx.current_state.as_ref() {
                         "FinishedChallengerWon" => {
+                            info!("Claiming victory for Compute (index: {})", instance.index);
                             // claim victory in compute contract
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
@@ -405,6 +408,7 @@ pub fn win_by_deadline_or_idle(
 
     // if other party missed the deadline
     if current_time > time_of_last_move + round_duration {
+        info!("Claiming victory by time (index: {})", index);
         let request = TransactionRequest {
             concern: concern.clone(),
             value: U256::from(0),
