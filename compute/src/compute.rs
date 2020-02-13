@@ -387,6 +387,7 @@ impl DApp<String> for Compute {
             name: "Compute".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("Compute".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };

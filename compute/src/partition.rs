@@ -353,7 +353,7 @@ impl DApp<String> for Partition {
 
     fn get_pretty_instance(
         instance: &state::Instance,
-        _archive: &Archive,
+        archive: &Archive,
         _machine_id: &String,
     ) -> Result<state::Instance> {
         // get context (state) of the partition instance
@@ -375,6 +375,7 @@ impl DApp<String> for Partition {
             name: "Partition".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("Partition".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };

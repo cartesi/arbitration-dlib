@@ -399,6 +399,7 @@ impl DApp<String> for VG {
             name: "VG".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("VG".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };

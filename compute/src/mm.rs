@@ -222,7 +222,7 @@ impl DApp<MMParams> for MM {
 
     fn get_pretty_instance(
         instance: &state::Instance,
-        _archive: &Archive,
+        archive: &Archive,
         _params: &MMParams,
     ) -> Result<state::Instance> {
         // get context (state) of the mm instance
@@ -243,6 +243,7 @@ impl DApp<MMParams> for MM {
             name: "MM".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("MM".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };
