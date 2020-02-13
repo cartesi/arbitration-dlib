@@ -159,7 +159,7 @@ impl DApp<String> for Compute {
                             request.into(),
                         )?
                         .map_err(move |_e| {
-                            Error::from(ErrorKind::ArchiveInvalidError(
+                            Error::from(ErrorKind::ResponseInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 archive_key,
                                 EMULATOR_METHOD_RUN.to_string(),
@@ -260,7 +260,7 @@ impl DApp<String> for Compute {
                             request.into(),
                         )?
                         .map_err(move |_e| {
-                            Error::from(ErrorKind::ArchiveInvalidError(
+                            Error::from(ErrorKind::ResponseInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 archive_key,
                                 EMULATOR_METHOD_RUN.to_string(),
