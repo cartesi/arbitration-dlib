@@ -230,7 +230,6 @@ contract VGInstantiator is Decorated, VGInterface {
                 instance[_index].roundDuration,
                 40, // time to start machine
                 partition.getQuerySize(instance[_index].partitionInstance),
-                partition.getPartitionGameIndex(instance[_index].partitionInstance),
                 instance[_index].finalTime, //maxCycle
                 500 // pico seconds to run insn
         ), "Duration of WaitMemoryProveValues must be over");
@@ -262,7 +261,6 @@ contract VGInstantiator is Decorated, VGInterface {
                 i.roundDuration,
                 40, // time to start machine
                 partition.getQuerySize(i.partitionInstance),
-                partition.getPartitionGameIndex(i.partitionInstance),
                 i.finalTime, //maxCycle
                 500 // pico seconds to run insn
             ), //deadline
@@ -310,9 +308,6 @@ contract VGInstantiator is Decorated, VGInterface {
     /// @param _timeToStartMachine time to build the machine for the first time
     /// @param _partitionSize size of partition, how many instructions the
     //          will run to reach the necessary hash
-    /// @param _partitionGameIndex number of interactions that already happened
-    //          in the partition interaction
-
     /// @param _maxCycle is the maximum amount of steps a machine can perform
     //          before being forced into becoming halted
     function getMaxStateDuration(
@@ -320,13 +315,12 @@ contract VGInstantiator is Decorated, VGInterface {
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
-        uint256 _partitionGameIndex,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn) public view returns (uint256)
     {
         // TODO: the 1 should probably be roundDuration
         if (_state == state.WaitPartition) {
-            return partition.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _partitionGameIndex, _maxCycle, _picoSecondsToRunInsn);
+            return partition.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _maxCycle, _picoSecondsToRunInsn);
         }
         if (_state == state.WaitMemoryProveValues) {
             return mm.getMaxInstanceDuration(_roundDuration, _timeToStartMachine);
@@ -347,7 +341,6 @@ contract VGInstantiator is Decorated, VGInterface {
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
-        uint256 _partitionGameIndex,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn) public view returns (uint256)
     {
@@ -356,7 +349,6 @@ contract VGInstantiator is Decorated, VGInterface {
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
-            _partitionGameIndex,
             _maxCycle,
             _picoSecondsToRunInsn
         );
@@ -366,7 +358,6 @@ contract VGInstantiator is Decorated, VGInterface {
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
-            _partitionGameIndex,
             _maxCycle,
             _picoSecondsToRunInsn
         );

@@ -206,7 +206,6 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
                instance[_index].roundDuration,
                40, // time to start machine
                1, // vg is not instantiated, so it doesnt matter
-               1, // vg is not instantiated, so it doesnt matter
                instance[_index].finalTime,
                500) // pico seconds to run instruction
            );
@@ -235,7 +234,6 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
-        uint256 _partitionGameIndex,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn
     ) public view returns (uint256)
@@ -252,7 +250,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
 
         if (_state == state.WaitingChallenge) {
             // time to run a verification game + time to react
-            return vg.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _partitionGameIndex, _maxCycle, _picoSecondsToRunInsn) + _roundDuration;
+            return vg.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _maxCycle, _picoSecondsToRunInsn) + _roundDuration;
         }
 
         if (_state == state.ClaimerWon || _state == state.ChallengerWon || _state == state.ClaimerMissedDeadline || _state == state.ConsensusResult) {
@@ -264,7 +262,6 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
-        uint256 _partitionGameIndex,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn
     ) public view returns (uint256)
@@ -274,7 +271,6 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
-            _partitionGameIndex,
             _maxCycle,
             _picoSecondsToRunInsn
         );
@@ -284,7 +280,6 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
-            _partitionGameIndex,
             _maxCycle,
             _picoSecondsToRunInsn
         );
@@ -294,7 +289,6 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
-            _partitionGameIndex,
             _maxCycle,
             _picoSecondsToRunInsn
         );
@@ -377,7 +371,6 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
                 i.roundDuration,
                 40, // time to start machine
                 partitionSize,
-                partitionGameIndex,
                 i.finalTime,
                 500 // pico seconds to run insn
             ),
