@@ -261,7 +261,12 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn) public pure returns (uint256)
     {
+        // TO-DO: when we have DUMP then we can remove the partitionSize - 1 multiplier
         uint256 currentPartitionSize = _maxCycle / (_partitionSize ** _partitionGameIndex);
+
+        if (_partitionGameIndex != 0) {
+            currentPartitionSize = currentPartitionSize * (_partitionSize - 1);
+        }
 
         if (_state == state.WaitingQuery) {
             return _timeToStartMachine + ((currentPartitionSize * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
@@ -314,7 +319,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
             _picoSecondsToRunInsn
         );
 
-        // TO-DO: check this. The 2 should be 1 / (1 - 1/querySize)
+        // TO-DO: When we have DUMP this should be 2 should be 1 / (1 - 1/querySize)
         // also has to add the round duration for each state transition
         return (uint256(2) * waitingQueryDuration) + (uint256(2) * waitingHashesDuration) + (_roundDuration * log2OverTwo(_maxCycle));
     }
