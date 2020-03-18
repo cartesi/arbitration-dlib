@@ -286,16 +286,12 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     /// @param _timeToStartMachine time to build the machine for the first time
     /// @param _partitionSize size of partition, how many instructions the
     //          will run to reach the necessary hash
-    /// @param _partitionGameIndex number of interactions that already happened
-    //          in the partition interaction
-
     /// @param _maxCycle number of instructions until the machine is forcibly halted
     /// @param _picoSecondsToRunInsn time the offchain will take to run one instruction
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
-        uint256 _partitionGameIndex,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn) public view returns (uint256)
     {
@@ -304,7 +300,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
-            _partitionGameIndex,
+            0, //_partitionGameIndex "worst case" is zero
             _maxCycle,
             _picoSecondsToRunInsn
         );
@@ -314,7 +310,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
-            _partitionGameIndex,
+            0, //_partitionGameIndex "worst case" is zero
             _maxCycle,
             _picoSecondsToRunInsn
         );
