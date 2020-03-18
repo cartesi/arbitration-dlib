@@ -301,7 +301,7 @@ contract MMInstantiator is MMInterface, Decorated {
     function getMaxStateDuration(
         state _state,
         uint256 _roundDuration,
-        uint256 _timeToStartMachine) public view returns (uint256)
+        uint256 _timeToStartMachine) private view returns (uint256)
     {
         if (_state == state.WaitingProofs) {
             // proving siblings is assumed to be free

@@ -70,15 +70,13 @@ contract VGInterface is Instantiator {
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
-        uint256 _partitionGameIndex,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) public view returns (uint256);
+        uint256 _picoSecondsToRunInsn) private view returns (uint256);
 
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
-        uint256 _partitionGameIndex,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn) public view returns (uint256);
 }

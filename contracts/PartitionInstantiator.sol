@@ -259,7 +259,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         uint256 _partitionSize,
         uint256 _partitionGameIndex,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) public pure returns (uint256)
+        uint256 _picoSecondsToRunInsn) private pure returns (uint256)
     {
         // TO-DO: when we have DUMP then we can remove the partitionSize - 1 multiplier
         uint256 currentPartitionSize = _maxCycle / (_partitionSize ** _partitionGameIndex);

@@ -236,7 +236,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         uint256 _partitionSize,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn
-    ) public view returns (uint256)
+    ) private view returns (uint256)
     {
         if (_state == state.WaitingClaim) {
             // time to run entire machine + time to react

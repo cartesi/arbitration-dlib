@@ -316,7 +316,7 @@ contract VGInstantiator is Decorated, VGInterface {
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) public view returns (uint256)
+        uint256 _picoSecondsToRunInsn) private view returns (uint256)
     {
         // TODO: the 1 should probably be roundDuration
         if (_state == state.WaitPartition) {

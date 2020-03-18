@@ -93,7 +93,7 @@ contract SimpleMemoryInstantiator is MMInterface {
     return(bytes32(0));
   }
 
-  function getMaxStateDuration(state, uint256, uint256) public view returns (uint256) {
+  function getMaxStateDuration(state, uint256, uint256) private view returns (uint256) {
     return 0;
   }
 
