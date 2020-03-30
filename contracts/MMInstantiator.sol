@@ -169,10 +169,10 @@ contract MMInstantiator is MMInterface, Decorated {
     /// @param _position of the desired memory
     function read(uint256 _index, uint64 _position) public
         onlyInstantiated(_index)
-        onlyBy(instance[_index].client)
         increasesNonce(_index)
         returns (bytes8)
     {
+        require(instance[_index].client == tx.origin, "Transaction has to be originated by the client");
         require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReplay, cannot read");
         require((_position & 7) == 0, "Position is not aligned");
         uint pointer = instance[_index].historyPointer;
@@ -191,9 +191,9 @@ contract MMInstantiator is MMInterface, Decorated {
     /// @param _value to be written
     function write(uint256 _index, uint64 _position, bytes8 _value) public
         onlyInstantiated(_index)
-        onlyBy(instance[_index].client)
         increasesNonce(_index)
     {
+        require(instance[_index].client == tx.origin, "Transaction has to be originated by the client");
         require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReplay, cannot write");
         require((_position & 7) == 0, "Position is not aligned");
         uint pointer = instance[_index].historyPointer;
@@ -209,9 +209,9 @@ contract MMInstantiator is MMInterface, Decorated {
     /// @notice Stop write (or read) phase
     function finishReplayPhase(uint256 _index) public
         onlyInstantiated(_index)
-        onlyBy(instance[_index].client)
         increasesNonce(_index)
     {
+        require(instance[_index].client == tx.origin, "Transaction has to be originated by the client");
         require(instance[_index].currentState == state.WaitingReplay, "CurrentState is not WaitingReplay, cannot finishReplayPhase");
         require(instance[_index].historyPointer == instance[_index].history.length, "History pointer does not match length");
         delete(instance[_index].history);
