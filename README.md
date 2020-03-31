@@ -187,11 +187,11 @@ Install dependencies
 
 Compile contracts with
 
-    ./node_modules/.bin/truffle compile
+    npm run build
 
 Having a node listening to 8545, you can deploy using
 
-    ./node_modules/.bin/truffle deploy
+    npm run deploy
 
 
 ### Run tests
