@@ -185,6 +185,7 @@ impl DApp<String> for Partition {
                     // submit the required hashes
                     info!("Replying Query for Partition (index: {})", instance.index);
                     let request = TransactionRequest {
+                        contract_name: None, // Name not needed, is concern
                         concern: instance.concern.clone(),
                         value: U256::from(0),
                         function: "replyQuery".into(),
@@ -287,6 +288,7 @@ impl DApp<String> for Partition {
                                 // submit the relevant query
                                 info!("Making Query for Partition (index: {})", instance.index);
                                 let request = TransactionRequest {
+                                    contract_name: None, // Name not needed, is concern
                                     concern: instance.concern.clone(),
                                     value: U256::from(0),
                                     function: "makeQuery".into(),
@@ -309,6 +311,7 @@ impl DApp<String> for Partition {
                                 // submit divergence time
                                 info!("Divergence found for Partition (index: {}, time: {})", instance.index, *time);
                                 let request = TransactionRequest {
+                                    contract_name: None, // Name not needed, is concern
                                     concern: instance.concern.clone(),
                                     value: U256::from(0),
                                     function: "presentDivergence".into(),

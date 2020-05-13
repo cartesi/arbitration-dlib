@@ -141,6 +141,7 @@ impl DApp<MMParams> for MM {
                 if ctx.history_length.as_usize() >= step_log.len() {
                     info!("Finishing Proof phase for MM (index: {})", instance.index);
                     let request = TransactionRequest {
+                        contract_name: None, // Name not needed, is concern
                         concern: instance.concern.clone(),
                         value: U256::from(0),
                         function: "finishProofPhase".into(),
@@ -171,6 +172,7 @@ impl DApp<MMParams> for MM {
                 match access.operation {
                     AccessOperation::Read => {
                         let request = TransactionRequest {
+                            contract_name: None, // Name not needed, is concern
                             concern: instance.concern.clone(),
                             value: U256::from(0),
                             function: "proveRead".into(),
@@ -192,6 +194,7 @@ impl DApp<MMParams> for MM {
                     }
                     AccessOperation::Write => {
                         let request = TransactionRequest {
+                            contract_name: None, // Name not needed, is concern
                             concern: instance.concern.clone(),
                             value: U256::from(0),
                             function: "proveWrite".into(),

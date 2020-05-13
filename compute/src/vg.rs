@@ -158,6 +158,7 @@ impl DApp<String> for VG {
                             // claim victory by partition timeout
                             info!("Claiming victory by Partition timeout (index: {})", instance.index);
                             let request = TransactionRequest {
+                                contract_name: None, // Name not needed, is concern
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
                                 function: "winByPartitionTimeout".into(),
@@ -176,6 +177,7 @@ impl DApp<String> for VG {
                             // start the machine run challenge
                             info!("Starting machine run challenage for VG (index: {})", instance.index);
                             let request = TransactionRequest {
+                                contract_name: None, // Name not needed, is concern
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
                                 function: "startMachineRunChallenge".into(),
@@ -244,6 +246,7 @@ impl DApp<String> for VG {
                             // claim victory by partition timeout
                             info!("Claiming victory by Partition timeout (index: {})", instance.index);
                             let request = TransactionRequest {
+                                contract_name: None, // Name not needed, is concern
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
                                 function: "winByPartitionTimeout".into(),
@@ -262,6 +265,7 @@ impl DApp<String> for VG {
                             // start the machine run challenge
                             info!("Starting machine run challenage for VG (index: {})", instance.index);
                             let request = TransactionRequest {
+                                contract_name: None, // Name not needed, is concern
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
                                 function: "startMachineRunChallenge".into(),
@@ -317,6 +321,7 @@ impl DApp<String> for VG {
                             // start the machine run challenge
                             info!("Settling VG (index: {})", instance.index);
                             let request = TransactionRequest {
+                                contract_name: None, // Name not needed, is concern
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
                                 function: "settleVerificationGame".into(),

@@ -167,6 +167,7 @@ impl DApp<String> for Compute {
 
                     info!("Submitting claim for Compute (index: {}, hash: {:?})", instance.index, hash);
                     let request = TransactionRequest {
+                        contract_name: None, // Name not needed, is concern
                         concern: instance.concern.clone(),
                         value: U256::from(0),
                         function: "submitClaim".into(),
@@ -206,6 +207,7 @@ impl DApp<String> for Compute {
                             // claim victory in compute contract
                             info!("Claiming victory for Compute (index: {})", instance.index);
                             let request = TransactionRequest {
+                                contract_name: None, // Name not needed, is concern
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
                                 function: "winByVG".into(),
@@ -268,6 +270,7 @@ impl DApp<String> for Compute {
                     if hash == ctx.claimed_final_hash {
                         info!("Confirming final hash {:?} for {}", hash, id);
                         let request = TransactionRequest {
+                            contract_name: None, // Name not needed, is concern
                             concern: instance.concern.clone(),
                             value: U256::from(0),
                             function: "confirm".into(),
@@ -282,6 +285,7 @@ impl DApp<String> for Compute {
                             hash, ctx.claimed_final_hash, id
                         );
                         let request = TransactionRequest {
+                            contract_name: None, // Name not needed, is concern
                             concern: instance.concern.clone(),
                             value: U256::from(0),
                             function: "challenge".into(),
@@ -322,6 +326,7 @@ impl DApp<String> for Compute {
                             info!("Claiming victory for Compute (index: {})", instance.index);
                             // claim victory in compute contract
                             let request = TransactionRequest {
+                                contract_name: None, // Name not needed, is concern
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
                                 function: "winByVG".into(),
@@ -405,6 +410,7 @@ pub fn win_by_deadline_or_idle(
     if current_time > deadline {
         info!("Claiming victory by time (index: {})", index);
         let request = TransactionRequest {
+            contract_name: None, // Name not needed, is concern
             concern: concern.clone(),
             value: U256::from(0),
             function: "claimVictoryByTime".into(),
