@@ -100,6 +100,14 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         vg = VGInterface(_vgInstantiatorAddress);
     }
 
+    /// @notice Instantiates a compute instance.
+    /// @param _challenger address of the challenger.
+    /// @param _claimer address of the claimer.
+    /// @param _roundDuration duration of the round (security param)
+    /// @param _machineAddress address of the machine that will run the instruction
+    /// @param _initialHash hash in which both claimer and challenger agree on
+    /// @param _finalTime max cycle of the machine for that computation
+    /// @return VG index.
     function instantiate(
         address _challenger,
         address _claimer,
@@ -132,6 +140,9 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         return currentIndex++;
     }
 
+    /// @notice Claimer claims the hash of the result of a computation
+    /// @param _index Index of instance that the claimer is interacting with
+    /// @param _claimedFinalHash hash of the machine after computation is completed.
     function submitClaim(uint256 _index, bytes32 _claimedFinalHash) public
         onlyInstantiated(_index)
         onlyBy(instance[_index].claimer)
@@ -144,6 +155,8 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         emit ClaimSubmitted(_index, _claimedFinalHash);
     }
 
+    /// @notice Challenger accepts claim.
+    /// @param _index Index of compute instance that the challenger is confirming the claim.
     function confirm(uint256 _index) public
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
@@ -155,6 +168,8 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         emit ResultConfirmed(_index);
     }
 
+    /// @notice Challenger disputes the claim, starting a verification game.
+    /// @param _index Index of compute instance which challenger is starting the VG.
     function challenge(uint256 _index) public
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
@@ -174,9 +189,10 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         emit ChallengeStarted(_index);
     }
 
-  /// @notice In case one of the parties wins the verification game,
-  /// then he or she can call this function to claim victory in
-  /// this contract as well.
+    /// @notice In case one of the parties wins the verification game,
+    /// then he or she can call this function to claim victory in
+    /// this contract as well.
+    /// @param _index Index of compute instance which challenger is starting the VG.
     function winByVG(uint256 _index) public
         onlyInstantiated(_index)
         increasesNonce(_index)
@@ -229,6 +245,15 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         revert("Fail to ClaimVictoryByTime in current condition");
     }
 
+    /// @notice Get the worst case scenario duration for a specific state
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    /// @param _partitionSize size of partition, how many instructions the
+    //          will run to reach the necessary hash
+    /// @param _maxCycle is the maximum amount of steps a machine can perform
+    //          before being forced into becoming halted
+    /// @param _picoSecondsToRunInsn time the offchain will take to run one instruction
     function getMaxStateDuration(
         state _state,
         uint256 _roundDuration,
@@ -258,6 +283,14 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         }
     }
 
+    /// @notice Get the worst case scenario duration for an instance of this contract
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    /// @param _partitionSize size of partition, how many instructions the
+    //          will run to reach the necessary hash
+    /// @param _maxCycle number of instructions until the machine is forcibly halted
+    /// @param _picoSecondsToRunInsn time the offchain will take to run one instruction
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
