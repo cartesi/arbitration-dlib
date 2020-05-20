@@ -102,6 +102,15 @@ contract VGInstantiator is Decorated, VGInterface {
         mm = MMInterface(_mmInstantiatorAddress);
     }
 
+    /// @notice Instantiate a vg instance.
+    /// @param _challenger address of the challenger.
+    /// @param _claimer address of the claimer.
+    /// @param _roundDuration duration of the round (security param)
+    /// @param _machineAddress address of the machine that will run the instruction
+    /// @param _initialHash hash in which both claimer and challenger agree on
+    /// @param _claimerFinalHash final hash claimed by claimer
+    /// @param _finalTime max cycle of the machine for that computation
+    /// @return VG index.
     function instantiate(
         address _challenger,
         address _claimer,
