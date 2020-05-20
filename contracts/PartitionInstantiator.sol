@@ -86,6 +86,15 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         bytes32 _hashRigthAfterDivergenceTime
     );
 
+    /// @notice Instantiate a partition instance.
+    /// @param _challenger address of the challenger.
+    /// @param _claimer address of the claimer.
+    /// @param _initialHash hash in which both claimer and challenger agree on
+    /// @param _claimerFinalHash final hash claimed by claimer
+    /// @param _finalTime max cycle of the machine for that computation
+    /// @param _querySize size of postedHashes and postedTimes
+    /// @param _roundDuration duration of the round (security param)
+    /// @return Reveal index.
     function instantiate(
         address _challenger,
         address _claimer,
@@ -424,12 +433,12 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         returns (uint)
     { return instance[_index].queryArray[i]; }
 
-    function getPartitionGameIndex(uint256 _index) public view 
+    function getPartitionGameIndex(uint256 _index) public view
         onlyInstantiated(_index)
         returns (uint256)
     {return instance[_index].partitionGameIndex; }
 
-    function getQuerySize(uint256 _index) public view 
+    function getQuerySize(uint256 _index) public view
         onlyInstantiated(_index)
         returns (uint256)
     {return instance[_index].querySize; }
