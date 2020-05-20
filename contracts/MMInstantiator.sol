@@ -85,6 +85,11 @@ contract MMInstantiator is MMInterface, Decorated {
     event FinishedProofs(uint256 _index);
     event FinishedReplay(uint256 _index);
 
+    /// @notice Instantiate a memory manager instance.
+    /// @param _provider address that will provide memory values/proofs.
+    /// @param _client address that will consume memory values/proofs.
+    /// @param _initialHash hash before divergence, in which both client and provider agree.
+    /// @return MemoryManager index.
     function instantiate(address _provider, address _client, bytes32 _initialHash) public returns (uint256) {
         require(_provider != _client, "Provider and client need to differ");
         MMCtx storage currentInstance = instance[currentIndex];
