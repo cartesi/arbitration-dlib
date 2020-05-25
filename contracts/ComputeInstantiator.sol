@@ -107,7 +107,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     /// @param _machineAddress address of the machine that will run the instruction
     /// @param _initialHash hash in which both claimer and challenger agree on
     /// @param _finalTime max cycle of the machine for that computation
-    /// @return VG index.
+    /// @return Compute index.
     function instantiate(
         address _challenger,
         address _claimer,

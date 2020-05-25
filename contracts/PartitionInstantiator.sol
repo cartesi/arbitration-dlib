@@ -94,7 +94,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     /// @param _finalTime max cycle of the machine for that computation
     /// @param _querySize size of postedHashes and postedTimes
     /// @param _roundDuration duration of the round (security param)
-    /// @return Reveal index.
+    /// @return Partition index.
     function instantiate(
         address _challenger,
         address _claimer,
