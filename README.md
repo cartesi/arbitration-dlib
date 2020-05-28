@@ -196,7 +196,7 @@ Having a node listening to 8545, you can deploy using
 
 ### Run tests
 Migrate contracts and prepare testing files
-    ./prepare_python_tests.sh
+    ./deploy_development.sh
 
 Run tests
     ./run_python_tests.sh

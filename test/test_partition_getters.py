@@ -28,8 +28,8 @@ from web3 import Web3
 from test_main import BaseTest
 
 @pytest.fixture(autouse=True)
-def run_between_tests(port):
-    base_test = BaseTest(port)
+def run_between_tests():
+    base_test = BaseTest()
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -41,8 +41,8 @@ def run_between_tests(port):
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_divergence_time(port):
-    base_test = BaseTest(port)
+def test_divergence_time():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash
@@ -65,8 +65,8 @@ def test_divergence_time(port):
     ret_new_divergence_time = base_test.partition_testaux.functions.divergenceTime(index).call({'from': provider})
     assert ret_new_divergence_time == new_divergence_time, error_msg
     
-def test_time_submitted(port):
-    base_test = BaseTest(port)
+def test_time_submitted():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash
@@ -89,8 +89,8 @@ def test_time_submitted(port):
     ret = base_test.partition_testaux.functions.timeSubmitted(index, key).call({'from': provider})
     assert ret, error_msg
     
-def test_time_hash(port):
-    base_test = BaseTest(port)
+def test_time_hash():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash
@@ -114,8 +114,8 @@ def test_time_hash(port):
     ret_new_time_hash = base_test.partition_testaux.functions.timeHash(index, key).call({'from': provider})
     assert ret_new_time_hash[0:2] == new_time_hash, error_msg
     
-def test_query_array(port):
-    base_test = BaseTest(port)
+def test_query_array():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     # arbitrary seeds to simulate initial and final hash

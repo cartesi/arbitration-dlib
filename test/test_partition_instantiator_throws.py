@@ -28,8 +28,8 @@ from web3 import Web3
 from test_main import BaseTest, PartitionState
 
 @pytest.fixture(autouse=True)
-def run_between_tests(port):
-    base_test = BaseTest(port)
+def run_between_tests():
+    base_test = BaseTest()
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -41,8 +41,8 @@ def run_between_tests(port):
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_reply_query_throws(port):
-    base_test = BaseTest(port)
+def test_reply_query_throws():
+    base_test = BaseTest()
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -114,8 +114,8 @@ def test_reply_query_throws(port):
     else:
         raise Exception(error_msg)
 
-def test_make_query_throws(port):
-    base_test = BaseTest(port)
+def test_make_query_throws():
+    base_test = BaseTest()
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -166,8 +166,8 @@ def test_make_query_throws(port):
     else:
         raise Exception(error_msg)
 
-def test_present_divergence_throws(port):
-    base_test = BaseTest(port)
+def test_present_divergence_throws():
+    base_test = BaseTest()
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -219,8 +219,8 @@ def test_present_divergence_throws(port):
     else:
         raise Exception(error_msg)
 
-def test_modifier(port):
-    base_test = BaseTest(port)
+def test_modifier():
+    base_test = BaseTest()
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash_seed = bytes("initialHash", 'utf-8')
@@ -262,8 +262,8 @@ def test_modifier(port):
     else:
         raise Exception(error_msg)
         
-def test_instantiator(port):
-    base_test = BaseTest(port)
+def test_instantiator():
+    base_test = BaseTest()
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     initial_hash_seed = bytes("initialHash", 'utf-8')

@@ -28,8 +28,8 @@ from web3 import Web3
 from test_main import BaseTest, PartitionState
 
 @pytest.fixture(autouse=True)
-def run_between_tests(port):
-    base_test = BaseTest(port)
+def run_between_tests():
+    base_test = BaseTest()
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -41,8 +41,8 @@ def run_between_tests(port):
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_partition_claim_victory_by_time(port):
-    base_test = BaseTest(port)
+def test_partition_claim_victory_by_time():
+    base_test = BaseTest()
     fake_address = Web3.toChecksumAddress("0000000000000000000000000000000000000001")
     address_1 = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     address_2 = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
@@ -107,8 +107,8 @@ def test_partition_claim_victory_by_time(port):
             ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
             assert ret[5][0:10].decode('utf-8') == "ClaimerWon", error_msg
 
-def test_partition_claimer_timeout(port):
-    base_test = BaseTest(port)
+def test_partition_claimer_timeout():
+    base_test = BaseTest()
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
@@ -150,8 +150,8 @@ def test_partition_claimer_timeout(port):
     error_msg = "Should receive ChallengeEnded event"
     assert ret_index == index, error_msg
 
-def test_partition_challenger_timeout(port):
-    base_test = BaseTest(port)
+def test_partition_challenger_timeout():
+    base_test = BaseTest()
     challenger = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     claimer = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     query_size = 3

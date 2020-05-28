@@ -27,8 +27,8 @@ from web3 import Web3
 from test_main import BaseTest, MMState
 
 @pytest.fixture(autouse=True)
-def run_between_tests(port):
-    base_test = BaseTest(port)
+def run_between_tests():
+    base_test = BaseTest()
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -40,8 +40,8 @@ def run_between_tests(port):
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_getters(port):
-    base_test = BaseTest(port)
+def test_getters():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash = bytes("initialHash", 'utf-8')
@@ -72,8 +72,8 @@ def test_getters(port):
     ret_new_hash = base_test.mm_testaux.functions.newHash(index).call({'from': provider})
     assert ret_new_hash[0:7] == new_hash, error_msg
     
-def test_state_getters(port):
-    base_test = BaseTest(port)
+def test_state_getters():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash = bytes("initialHash", 'utf-8')

@@ -28,8 +28,8 @@ from web3 import Web3
 from test_main import BaseTest, MMState
 
 @pytest.fixture(autouse=True)
-def run_between_tests(port):
-    base_test = BaseTest(port)
+def run_between_tests():
+    base_test = BaseTest()
     # Code that will run before your test, for example:
     headers = {'content-type': 'application/json'}
     payload = {"method": "evm_snapshot", "params": [], "jsonrpc": "2.0", "id": 0}
@@ -41,8 +41,8 @@ def run_between_tests(port):
     payload = {"method": "evm_revert", "params": [snapshot_id], "jsonrpc": "2.0", "id": 0}
     response = requests.post(base_test.endpoint, data=json.dumps(payload), headers=headers).json()
 
-def test_proveread_and_provewrite(port):
-    base_test = BaseTest(port)
+def test_proveread_and_provewrite():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
@@ -80,8 +80,8 @@ def test_proveread_and_provewrite(port):
     else:
         raise Exception(error_msg)
 
-def test_finish_proof_phase(port):
-    base_test = BaseTest(port)
+def test_finish_proof_phase():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
@@ -104,8 +104,8 @@ def test_finish_proof_phase(port):
     else:
         raise Exception(error_msg)
 
-def test_finish_replay(port):
-    base_test = BaseTest(port)
+def test_finish_replay():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
@@ -155,8 +155,8 @@ def test_finish_replay(port):
     else:
         raise Exception(error_msg)
 
-def test_read_and_write(port):
-    base_test = BaseTest(port)
+def test_read_and_write():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
 
@@ -352,8 +352,8 @@ def test_read_and_write(port):
     else:
         raise Exception(error_msg)
 
-def test_instantiator(port):
-    base_test = BaseTest(port)
+def test_instantiator():
+    base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
     client = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
 

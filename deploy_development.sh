@@ -7,4 +7,4 @@ set -e
 # remove build directory to do a clean build
 rm ./build/ -rf
 truffle compile
-truffle migrate --network unittests --reset
+truffle migrate --network development --reset
