@@ -54,7 +54,7 @@ class VGState(Enum):
 
 class BaseTest:
 
-    def __init__(self, port):
+    def __init__(self):
 
         assert w3.isConnected(), "Couldn't connect to node"
 
