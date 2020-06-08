@@ -206,7 +206,10 @@ impl DApp<String> for Partition {
                             Token::Array(
                                 hashes
                                     .into_iter()
-                                    .map(|h| -> _ { Token::FixedBytes(h.clone().to_vec()) })
+                                    .map(|h| -> _ { Token::FixedBytes(h
+                                        .clone()
+                                        .to_fixed_bytes()
+                                        .to_vec()) })
                                     .collect(),
                             ),
                         ],
