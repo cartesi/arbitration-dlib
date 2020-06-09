@@ -339,16 +339,16 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
                 bool[] memory _submittedArray,
                 bytes32[] memory _hashArray,
                 bytes32 _currentState,
-                uint[4] memory _uintValues)
+                uint[] memory _uintValues)
     {
         PartitionCtx memory i = instance[_index];
 
-        uint[4] memory uintValues = [
-            i.finalTime,
-            i.querySize,
-            i.timeOfLastMove + getMaxStateDuration(i.currentState, i.roundDuration, 40, i.querySize, i.partitionGameIndex, i.finalTime, 500), //deadline (40 seconds to build machine, 500 pico seconds per insn
-            i.divergenceTime
-        ];
+        uint[] memory uintValues = new uint[](4);
+        uintValues[0] = i.finalTime;
+        uintValues[1] = i.querySize;
+        uintValues[2] = i.timeOfLastMove + getMaxStateDuration(i.currentState, i.roundDuration, 40, i.querySize, i.partitionGameIndex, i.finalTime, 500); //deadline (40 seconds to build machine, 500 pico seconds per insn
+        uintValues[3] = i.divergenceTime;
+        
 
         bool[] memory submittedArray = new bool[](MAX_QUERY_SIZE);
         bytes32[] memory hashArray = new bytes32[](MAX_QUERY_SIZE);

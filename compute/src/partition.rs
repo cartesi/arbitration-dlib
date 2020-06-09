@@ -25,7 +25,7 @@
 
 use super::build_session_run_key;
 use super::dispatcher::{
-    AddressField, BoolArray, Bytes32Array, String32Field, U256Array, U256Array4,
+    AddressField, BoolArray, Bytes32Array, String32Field, U256Array,
 };
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
@@ -52,7 +52,7 @@ pub struct PartitionCtxParsed(
     pub BoolArray,     // submittedArray
     pub Bytes32Array,  // hashArray
     pub String32Field, // currentState
-    pub U256Array4,    // uint values: finalTime
+    pub U256Array,    // uint values: finalTime
                        // querySize
                        // deadline
                        // divergenceTime

@@ -23,7 +23,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Array5};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Array};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -51,7 +51,7 @@ pub struct VGCtxParsed(
     Bytes32Field,  // hashBeforeDivergence
     Bytes32Field,  // hashAfterDivergence
     String32Field, // currentState
-    U256Array5,    // uint values: finalTime
+    U256Array,    // uint values: finalTime
                    //              deadline
                    //              timeOfLastMove
                    //              mmInstance

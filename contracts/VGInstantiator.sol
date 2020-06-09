@@ -259,24 +259,23 @@ contract VGInstantiator is Decorated, VGInterface {
                 bytes32 _hashBeforeDivergence,
                 bytes32 _hashAfterDivergence,
                 bytes32 _currentState,
-                uint[5] memory _uintValues)
+                uint[] memory _uintValues)
     {
         VGCtx memory i = instance[_index];
 
-        uint[5] memory uintValues = [
-            i.finalTime,
-            i.timeOfLastMove + getMaxStateDuration(
+        uint[] memory uintValues = new uint[](5);
+        uintValues[0] = i.finalTime;
+        uintValues[0] = i.timeOfLastMove + getMaxStateDuration(
                 i.currentState,
                 i.roundDuration,
                 40, // time to start machine
                 partition.getQuerySize(i.partitionInstance),
                 i.finalTime, //maxCycle
                 500 // pico seconds to run insn
-            ), //deadline
-            i.mmInstance,
-            i.partitionInstance,
-            i.divergenceTime
-        ];
+            ); //deadline
+        uintValues[0] = i.mmInstance;
+        uintValues[0] = i.partitionInstance;
+        uintValues[0] = i.divergenceTime;
 
         // we have to duplicate the code for getCurrentState because of
         // "stack too deep"
