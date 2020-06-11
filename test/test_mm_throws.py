@@ -297,7 +297,7 @@ def test_read_and_write():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'][50:] == "PointInHistory was not write", error_msg
+        assert error_dict['message'][50:] == "PointInHistory was not write type", error_msg
     else:
         raise Exception(error_msg)
 
@@ -307,7 +307,7 @@ def test_read_and_write():
         tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     except ValueError as e:
         error_dict = ast.literal_eval(str(e))
-        assert error_dict['message'][50:] == "PointInHistory has not been read", error_msg
+        assert error_dict['message'][50:] == "PointInHistory was not read type", error_msg
     else:
         raise Exception(error_msg)
 

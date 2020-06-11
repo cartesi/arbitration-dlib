@@ -182,7 +182,7 @@ contract MMInstantiator is MMInterface, Decorated {
         require((_position & 7) == 0, "Position is not aligned");
         uint pointer = instance[_index].historyPointer;
         ReadWrite storage  pointInHistory = instance[_index].history[pointer];
-        require(pointInHistory.wasRead, "PointInHistory has not been read");
+        require(pointInHistory.wasRead, "PointInHistory was not read type");
         require(pointInHistory.position == _position, "PointInHistory's position does not match");
         bytes8 value = pointInHistory.value;
         delete(instance[_index].history[pointer]);
@@ -203,7 +203,7 @@ contract MMInstantiator is MMInterface, Decorated {
         require((_position & 7) == 0, "Position is not aligned");
         uint pointer = instance[_index].historyPointer;
         ReadWrite storage pointInHistory = instance[_index].history[pointer];
-        require(!pointInHistory.wasRead, "PointInHistory was not write");
+        require(!pointInHistory.wasRead, "PointInHistory was not write type");
         require(pointInHistory.position == _position, "PointInHistory's position does not match");
         require(pointInHistory.value == _value, "PointInHistory's value does not match");
         delete(instance[_index].history[pointer]);
