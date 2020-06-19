@@ -26,8 +26,8 @@ fn main() {
         out_dir: "src",
         includes: &["../grpc-interfaces"],
         input: &[
-            "../grpc-interfaces/cartesi-base.proto",
-            "../grpc-interfaces/manager-high.proto",
+            "../grpc-interfaces/cartesi-machine.proto",
+            "../grpc-interfaces/machine-manager.proto",
         ],
         rust_protobuf: true, // generate protobuf messages, not just services
         ..Default::default()

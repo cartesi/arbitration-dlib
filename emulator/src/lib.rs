@@ -22,6 +22,7 @@
 extern crate grpc;
 extern crate protobuf;
 
-pub mod cartesi_base;
-pub mod manager_high;
-pub mod manager_high_grpc;
+pub mod machine_manager;
+pub mod machine_manager_grpc;
+pub mod cartesi_machine;
+pub mod cartesi_machine_grpc;

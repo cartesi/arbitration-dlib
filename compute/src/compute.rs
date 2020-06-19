@@ -33,10 +33,9 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{
-    Role, SessionRunRequest, SessionRunResult, EMULATOR_METHOD_RUN, EMULATOR_SERVICE_NAME, VG,
-};
-use vg::{VGCtx, VGCtxParsed};
+use super::{Role, get_run_result};
+use vg::{VG, VGCtx, VGCtxParsed};
+use emulator_service::SessionRunRequest;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -147,23 +146,14 @@ impl DApp<String> for Compute {
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let processed_response: SessionRunResult = archive
-                        .get_response(
-                            EMULATOR_SERVICE_NAME.to_string(),
-                            archive_key.clone(),
-                            EMULATOR_METHOD_RUN.to_string(),
-                            request.into(),
-                        )?
-                        .map_err(move |_e| {
-                            Error::from(ErrorKind::ResponseInvalidError(
-                                EMULATOR_SERVICE_NAME.to_string(),
-                                archive_key,
-                                EMULATOR_METHOD_RUN.to_string(),
-                            ))
-                        })?
-                        .into();
+                    let processed_result = get_run_result(
+                        archive,
+                        "Compute".to_string(),
+                        archive_key,
+                        request.into(),
+                    )?;
 
-                    let hash = processed_response.hashes[1];
+                    let hash = processed_result.hashes[1];
 
                     info!("Submitting claim for Compute (index: {}, hash: {:?})", instance.index, hash);
                     let request = TransactionRequest {
@@ -250,23 +240,14 @@ impl DApp<String> for Compute {
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let processed_response: SessionRunResult = archive
-                        .get_response(
-                            EMULATOR_SERVICE_NAME.to_string(),
-                            archive_key.clone(),
-                            EMULATOR_METHOD_RUN.to_string(),
-                            request.into(),
-                        )?
-                        .map_err(move |_e| {
-                            Error::from(ErrorKind::ResponseInvalidError(
-                                EMULATOR_SERVICE_NAME.to_string(),
-                                archive_key,
-                                EMULATOR_METHOD_RUN.to_string(),
-                            ))
-                        })?
-                        .into();
+                    let processed_result = get_run_result(
+                        archive,
+                        "Compute".to_string(),
+                        archive_key,
+                        request.into(),
+                    )?;
 
-                    let hash = processed_response.hashes[1];
+                    let hash = processed_result.hashes[1];
                     if hash == ctx.claimed_final_hash {
                         info!("Confirming final hash {:?} for {}", hash, id);
                         let request = TransactionRequest {

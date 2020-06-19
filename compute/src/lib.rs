@@ -45,13 +45,13 @@ extern crate ethereum_types;
 extern crate transaction;
 
 pub use compute::{Compute, ComputeCtx, ComputeCtxParsed, win_by_deadline_or_idle};
-pub use emulator::{cartesi_base, manager_high};
+pub use emulator::{cartesi_machine, machine_manager};
 pub use emulator_service::{
-    AccessOperation, NewSessionRequest, NewSessionResult, SessionGetProofRequest,
-    SessionGetProofResult, SessionReadMemoryRequest, SessionReadMemoryResult, SessionRunRequest,
-    SessionRunResult, SessionStepRequest, SessionStepResult, EMULATOR_METHOD_NEW,
+    AccessOperation, NewSessionRequest, NewSessionResponse, SessionGetProofRequest,
+    SessionGetProofResponse, SessionReadMemoryRequest, SessionReadMemoryResponse, SessionRunRequest,
+    SessionRunResponse, SessionStepRequest, SessionStepResponse, EMULATOR_METHOD_NEW,
     EMULATOR_METHOD_PROOF, EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
-    EMULATOR_SERVICE_NAME,
+    EMULATOR_SERVICE_NAME, SessionRunResponseOneOf, SessionRunResult,
 };
 pub use mm::MM;
 pub use partition::Partition;
@@ -84,4 +84,39 @@ pub fn build_session_read_key(id: String, time: u64, address: u64, length: u64) 
 
 pub fn build_session_proof_key(id: String, time: u64, address: u64, log2_size: u64) -> String {
     return format!("{}_proof_{}_{}_{}", id, time, address, log2_size);
+}
+
+pub fn get_run_result(
+    archive: &dispatcher::Archive,
+    contract: String,
+    key: String,
+    request: Vec<u8>
+) -> error::Result<SessionRunResult> {
+    let processed_response: SessionRunResponse = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            key.clone(),
+            EMULATOR_METHOD_RUN.to_string(),
+            request.clone()
+        )?
+        .into();
+    
+    match processed_response.one_of {
+        SessionRunResponseOneOf::RunResult(s) => {
+            Ok(s)
+        },
+        SessionRunResponseOneOf::RunProgress(p) => {
+            error!("Fail to get machine run result, progress: {}", p.progress);
+            Err(error::Error::from(error::ErrorKind::ServiceNeedsRetry(
+                EMULATOR_SERVICE_NAME.to_string(),
+                key,
+                EMULATOR_METHOD_RUN.to_string(),
+                request,
+                contract,
+                1,
+                p.progress,
+                "machine stil running".to_string()
+            )))
+        },
+    }
 }

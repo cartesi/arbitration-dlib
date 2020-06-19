@@ -33,10 +33,9 @@ use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
-use super::{
-    Role, SessionRunRequest, SessionRunResult, EMULATOR_METHOD_RUN, EMULATOR_SERVICE_NAME,
-};
+use super::{Role, get_run_result,};
 use super::win_by_deadline_or_idle;
+use emulator_service::SessionRunRequest;
 
 pub struct Partition();
 
@@ -154,21 +153,12 @@ impl DApp<String> for Partition {
                     let archive_key = build_session_run_key(id.clone(), sample_points.clone());
 
                     // have we sampled the times?
-                    let processed_response: SessionRunResult = archive
-                        .get_response(
-                            EMULATOR_SERVICE_NAME.to_string(),
-                            archive_key.clone(),
-                            EMULATOR_METHOD_RUN.to_string(),
-                            request.into(),
-                        )?
-                        .map_err(move |_e| {
-                            Error::from(ErrorKind::ResponseInvalidError(
-                                EMULATOR_SERVICE_NAME.to_string(),
-                                archive_key,
-                                EMULATOR_METHOD_RUN.to_string(),
-                            ))
-                        })?
-                        .into();
+                    let processed_result = get_run_result(
+                        archive,
+                        "Partition".to_string(),
+                        archive_key,
+                        request.into(),
+                    )?;
 
                     let mut hashes = Vec::new();
 
@@ -179,7 +169,7 @@ impl DApp<String> for Partition {
                                 "could not find element in query array",
                             )),
                         ))?;
-                        let hash = processed_response.hashes.get(i).unwrap();
+                        let hash = processed_result.hashes.get(i).unwrap();
                         hashes.push(hash);
                     }
                     // submit the required hashes
@@ -244,21 +234,12 @@ impl DApp<String> for Partition {
                     let archive_key = build_session_run_key(id.clone(), sample_points.clone());
 
                     // have we sampled the times?
-                    let processed_response: SessionRunResult = archive
-                        .get_response(
-                            EMULATOR_SERVICE_NAME.to_string(),
-                            archive_key.clone(),
-                            EMULATOR_METHOD_RUN.to_string(),
-                            request.into(),
-                        )?
-                        .map_err(move |_e| {
-                            Error::from(ErrorKind::ResponseInvalidError(
-                                EMULATOR_SERVICE_NAME.to_string(),
-                                archive_key,
-                                EMULATOR_METHOD_RUN.to_string(),
-                            ))
-                        })?
-                        .into();
+                    let processed_result = get_run_result(
+                        archive,
+                        "Partition".to_string(),
+                        archive_key,
+                        request.into(),
+                    )?;
 
                     for i in 0..(ctx.query_size.as_usize() - 1) {
                         // get the i'th time in query array
@@ -283,7 +264,7 @@ impl DApp<String> for Partition {
                             )),
                         ))?;
                         // have we sampled that specific time?
-                        let hash = processed_response.hashes.get(i + 1).unwrap();
+                        let hash = processed_result.hashes.get(i + 1).unwrap();
 
                         if hash != *claimed_hash {
                             // do we need another partition?

@@ -28,35 +28,35 @@
 
 use super::ethereum_types::H256;
 use super::grpc::marshall::Marshaller;
-use super::{cartesi_base, manager_high};
+use super::{cartesi_machine, machine_manager};
 
 pub const EMULATOR_SERVICE_NAME: &'static str = "emulator";
-pub const EMULATOR_METHOD_NEW: &'static str = "/CartesiManagerHigh.MachineManagerHigh/NewSession";
-pub const EMULATOR_METHOD_RUN: &'static str = "/CartesiManagerHigh.MachineManagerHigh/SessionRun";
-pub const EMULATOR_METHOD_STEP: &'static str = "/CartesiManagerHigh.MachineManagerHigh/SessionStep";
+pub const EMULATOR_METHOD_NEW: &'static str = "/CartesiMachineManager.MachineManager/NewSession";
+pub const EMULATOR_METHOD_RUN: &'static str = "/CartesiMachineManager.MachineManager/SessionRun";
+pub const EMULATOR_METHOD_STEP: &'static str = "/CartesiMachineManager.MachineManager/SessionStep";
 pub const EMULATOR_METHOD_READ: &'static str =
-    "/CartesiManagerHigh.MachineManagerHigh/SessionReadMemory";
+    "/CartesiMachineManager.MachineManager/SessionReadMemory";
 pub const EMULATOR_METHOD_WRITE: &'static str =
-    "/CartesiManagerHigh.MachineManagerHigh/SessionWriteMemory";
+    "/CartesiMachineManager.MachineManager/SessionWriteMemory";
 pub const EMULATOR_METHOD_PROOF: &'static str =
-    "/CartesiManagerHigh.MachineManagerHigh/SessionGetProof";
+    "/CartesiMachineManager.MachineManager/SessionGetProof";
 
 /// Representation of a request for new session
 #[derive(Debug, Clone)]
 pub struct NewSessionRequest {
-    pub machine: cartesi_base::MachineRequest,
+    pub machine: cartesi_machine::MachineRequest,
     pub session_id: String,
 }
 
-impl From<manager_high::NewSessionRequest> for NewSessionRequest {
-    fn from(result: manager_high::NewSessionRequest) -> Self {
+impl From<machine_manager::NewSessionRequest> for NewSessionRequest {
+    fn from(request: machine_manager::NewSessionRequest) -> Self {
         NewSessionRequest {
-            machine: result
+            machine: request
                 .machine
                 .into_option()
                 .expect("machine not found")
                 .into(),
-            session_id: result.session_id,
+            session_id: request.session_id,
         }
     }
 }
@@ -68,25 +68,70 @@ pub struct SessionRunRequest {
     pub times: Vec<u64>,
 }
 
-impl From<manager_high::SessionRunRequest> for SessionRunRequest {
-    fn from(result: manager_high::SessionRunRequest) -> Self {
+impl From<machine_manager::SessionRunRequest> for SessionRunRequest {
+    fn from(request: machine_manager::SessionRunRequest) -> Self {
         SessionRunRequest {
-            session_id: result.session_id,
-            times: result.final_cycles,
+            session_id: request.session_id,
+            times: request.final_cycles,
         }
     }
 }
 
-/// Representation of the result of running the machine
+/// Representation of the response of running the machine
+#[derive(Debug, Clone)]
+pub struct SessionRunResponse {
+    pub one_of: SessionRunResponseOneOf,
+}
+
+#[derive(Debug, Clone)]
+pub enum SessionRunResponseOneOf {
+    RunProgress(SessionRunProgress),
+    RunResult(SessionRunResult),
+}
+
+#[derive(Debug, Clone)]
+pub struct SessionRunProgress {
+    pub progress: u64,
+    pub application_progress: u64,
+    pub updated_at: u64,
+    pub cycle: u64,
+}
+
 #[derive(Debug, Clone)]
 pub struct SessionRunResult {
     pub hashes: Vec<H256>,
 }
 
-impl From<manager_high::SessionRunResult> for SessionRunResult {
-    fn from(result: manager_high::SessionRunResult) -> Self {
+impl From<machine_manager::SessionRunResponse_oneof_run_oneof> for SessionRunResponseOneOf {
+    fn from(one_of: machine_manager::SessionRunResponse_oneof_run_oneof) -> Self {
+        match one_of {
+            machine_manager::SessionRunResponse_oneof_run_oneof::progress(s)
+            => {
+                SessionRunResponseOneOf::RunProgress(s.into())
+            },
+            machine_manager::SessionRunResponse_oneof_run_oneof::result(p)
+            => {
+                SessionRunResponseOneOf::RunResult(p.into())
+            },
+        }
+    }
+}
+
+impl From<machine_manager::SessionRunProgress> for SessionRunProgress {
+    fn from(run_progress: machine_manager::SessionRunProgress) -> Self {
+        SessionRunProgress {
+            progress: run_progress.progress,
+            application_progress: run_progress.application_progress,
+            updated_at: run_progress.updated_at,
+            cycle: run_progress.cycle,
+        }
+    }
+}
+
+impl From<machine_manager::SessionRunResult> for SessionRunResult {
+    fn from(run_result: machine_manager::SessionRunResult) -> Self {
         SessionRunResult {
-            hashes: result
+            hashes: run_result
                 .hashes
                 .into_vec()
                 .into_iter()
@@ -96,16 +141,27 @@ impl From<manager_high::SessionRunResult> for SessionRunResult {
     }
 }
 
-/// Representation of the result of creating a new machine
+impl From<machine_manager::SessionRunResponse> for SessionRunResponse {
+    fn from(response: machine_manager::SessionRunResponse) -> Self {
+        SessionRunResponse {
+            one_of: response
+                .run_oneof
+                .unwrap()
+                .into(),
+        }
+    }
+}
+
+/// Representation of the response of creating a new machine
 #[derive(Debug, Clone)]
-pub struct NewSessionResult {
+pub struct NewSessionResponse {
     pub hash: H256,
 }
 
-impl From<cartesi_base::Hash> for NewSessionResult {
-    fn from(result: cartesi_base::Hash) -> Self {
-        NewSessionResult {
-            hash: H256::from_slice(&result.content),
+impl From<cartesi_machine::Hash> for NewSessionResponse {
+    fn from(response: cartesi_machine::Hash) -> Self {
+        NewSessionResponse {
+            hash: H256::from_slice(&response.content),
         }
     }
 }
@@ -117,11 +173,11 @@ pub enum AccessOperation {
     Write,
 }
 
-impl From<cartesi_base::AccessOperation> for AccessOperation {
-    fn from(op: cartesi_base::AccessOperation) -> Self {
+impl From<cartesi_machine::AccessOperation> for AccessOperation {
+    fn from(op: cartesi_machine::AccessOperation) -> Self {
         match op {
-            cartesi_base::AccessOperation::READ => AccessOperation::Read,
-            cartesi_base::AccessOperation::WRITE => AccessOperation::Write,
+            cartesi_machine::AccessOperation::READ => AccessOperation::Read,
+            cartesi_machine::AccessOperation::WRITE => AccessOperation::Write,
         }
     }
 }
@@ -137,8 +193,8 @@ pub struct Proof {
     pub root_hash: H256,
 }
 
-impl From<cartesi_base::Proof> for Proof {
-    fn from(proof: cartesi_base::Proof) -> Self {
+impl From<cartesi_machine::Proof> for Proof {
+    fn from(proof: cartesi_machine::Proof) -> Self {
         Proof {
             address: proof.address,
             log2_size: proof.log2_size,
@@ -186,8 +242,8 @@ fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
     }
 }
 
-impl From<cartesi_base::Access> for Access {
-    fn from(access: cartesi_base::Access) -> Self {
+impl From<cartesi_machine::Access> for Access {
+    fn from(access: cartesi_machine::Access) -> Self {
         let proof: Proof = access.proof.into_option().expect("proof not found").into();
         Access {
             operation: access.operation.into(),
@@ -220,25 +276,25 @@ pub struct SessionStepRequest {
     pub time: u64,
 }
 
-impl From<manager_high::SessionStepRequest> for SessionStepRequest {
-    fn from(result: manager_high::SessionStepRequest) -> Self {
+impl From<machine_manager::SessionStepRequest> for SessionStepRequest {
+    fn from(request: machine_manager::SessionStepRequest) -> Self {
         SessionStepRequest {
-            session_id: result.session_id,
-            time: result.initial_cycle,
+            session_id: request.session_id,
+            time: request.initial_cycle,
         }
     }
 }
 
-/// A representation of the result of a logged machine step
+/// A representation of the response of a logged machine step
 #[derive(Debug, Clone)]
-pub struct SessionStepResult {
+pub struct SessionStepResponse {
     pub log: Vec<Access>,
 }
 
-impl From<manager_high::SessionStepResult> for SessionStepResult {
-    fn from(result: manager_high::SessionStepResult) -> Self {
-        SessionStepResult {
-            log: result
+impl From<machine_manager::SessionStepResponse> for SessionStepResponse {
+    fn from(response: machine_manager::SessionStepResponse) -> Self {
+        SessionStepResponse {
+            log: response
                 .log
                 .into_option()
                 .expect("log not found")
@@ -256,15 +312,15 @@ impl From<manager_high::SessionStepResult> for SessionStepResult {
 pub struct SessionReadMemoryRequest {
     pub session_id: String,
     pub time: u64,
-    pub position: cartesi_base::ReadMemoryRequest,
+    pub position: cartesi_machine::ReadMemoryRequest,
 }
 
-impl From<manager_high::SessionReadMemoryRequest> for SessionReadMemoryRequest {
-    fn from(result: manager_high::SessionReadMemoryRequest) -> Self {
+impl From<machine_manager::SessionReadMemoryRequest> for SessionReadMemoryRequest {
+    fn from(request: machine_manager::SessionReadMemoryRequest) -> Self {
         SessionReadMemoryRequest {
-            session_id: result.session_id,
-            time: result.cycle,
-            position: result
+            session_id: request.session_id,
+            time: request.cycle,
+            position: request
                 .position
                 .into_option()
                 .expect("position not found")
@@ -273,28 +329,28 @@ impl From<manager_high::SessionReadMemoryRequest> for SessionReadMemoryRequest {
     }
 }
 
-/// A result from the read memory procedure
+/// A response from the read memory procedure
 #[derive(Debug, Clone)]
 pub struct ReadMemoryResponse {
     pub data: Vec<u8>,
 }
 
-impl From<cartesi_base::ReadMemoryResponse> for ReadMemoryResponse {
-    fn from(read: cartesi_base::ReadMemoryResponse) -> Self {
+impl From<cartesi_machine::ReadMemoryResponse> for ReadMemoryResponse {
+    fn from(read: cartesi_machine::ReadMemoryResponse) -> Self {
         ReadMemoryResponse { data: read.data }
     }
 }
 
 /// Representation of a response for read the memory
 #[derive(Debug, Clone)]
-pub struct SessionReadMemoryResult {
+pub struct SessionReadMemoryResponse {
     pub read_content: ReadMemoryResponse,
 }
 
-impl From<manager_high::SessionReadMemoryResult> for SessionReadMemoryResult {
-    fn from(result: manager_high::SessionReadMemoryResult) -> Self {
-        SessionReadMemoryResult {
-            read_content: result
+impl From<machine_manager::SessionReadMemoryResponse> for SessionReadMemoryResponse {
+    fn from(response: machine_manager::SessionReadMemoryResponse) -> Self {
+        SessionReadMemoryResponse {
+            read_content: response
                 .read_content
                 .into_option()
                 .expect("read_content not found")
@@ -308,15 +364,15 @@ impl From<manager_high::SessionReadMemoryResult> for SessionReadMemoryResult {
 pub struct SessionGetProofRequest {
     pub session_id: String,
     pub time: u64,
-    pub target: cartesi_base::GetProofRequest,
+    pub target: cartesi_machine::GetProofRequest,
 }
 
-impl From<manager_high::SessionGetProofRequest> for SessionGetProofRequest {
-    fn from(result: manager_high::SessionGetProofRequest) -> Self {
+impl From<machine_manager::SessionGetProofRequest> for SessionGetProofRequest {
+    fn from(request: machine_manager::SessionGetProofRequest) -> Self {
         SessionGetProofRequest {
-            session_id: result.session_id,
-            time: result.cycle,
-            target: result
+            session_id: request.session_id,
+            time: request.cycle,
+            target: request
                 .target
                 .into_option()
                 .expect("target not found")
@@ -327,21 +383,21 @@ impl From<manager_high::SessionGetProofRequest> for SessionGetProofRequest {
 
 /// Representation of a response for read the memory
 #[derive(Debug, Clone)]
-pub struct SessionGetProofResult {
+pub struct SessionGetProofResponse {
     pub proof: Proof,
 }
 
-impl From<cartesi_base::Proof> for SessionGetProofResult {
-    fn from(proof: cartesi_base::Proof) -> Self {
-        SessionGetProofResult {
+impl From<cartesi_machine::Proof> for SessionGetProofResponse {
+    fn from(proof: cartesi_machine::Proof) -> Self {
+        SessionGetProofResponse {
             proof: proof.into(),
         }
     }
 }
 
-impl From<Vec<u8>> for SessionRunResult {
+impl From<Vec<u8>> for SessionRunResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::SessionRunResult> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionRunResponse> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -350,9 +406,9 @@ impl From<Vec<u8>> for SessionRunResult {
     }
 }
 
-impl From<Vec<u8>> for SessionStepResult {
+impl From<Vec<u8>> for SessionStepResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::SessionStepResult> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionStepResponse> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -361,9 +417,9 @@ impl From<Vec<u8>> for SessionStepResult {
     }
 }
 
-impl From<Vec<u8>> for NewSessionResult {
+impl From<Vec<u8>> for NewSessionResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<cartesi_base::Hash> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<cartesi_machine::Hash> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -372,9 +428,9 @@ impl From<Vec<u8>> for NewSessionResult {
     }
 }
 
-impl From<Vec<u8>> for SessionReadMemoryResult {
+impl From<Vec<u8>> for SessionReadMemoryResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::SessionReadMemoryResult> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionReadMemoryResponse> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -383,9 +439,9 @@ impl From<Vec<u8>> for SessionReadMemoryResult {
     }
 }
 
-impl From<Vec<u8>> for SessionGetProofResult {
+impl From<Vec<u8>> for SessionGetProofResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<cartesi_base::Proof> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<cartesi_machine::Proof> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -396,7 +452,7 @@ impl From<Vec<u8>> for SessionGetProofResult {
 
 impl From<Vec<u8>> for NewSessionRequest {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::NewSessionRequest> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::NewSessionRequest> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -407,10 +463,10 @@ impl From<Vec<u8>> for NewSessionRequest {
 
 impl From<SessionRunRequest> for Vec<u8> {
     fn from(request: SessionRunRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::SessionRunRequest> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionRunRequest> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
 
-        let mut req = manager_high::SessionRunRequest::new();
+        let mut req = machine_manager::SessionRunRequest::new();
         req.set_session_id(request.session_id);
         req.set_final_cycles(request.times);
 
@@ -420,10 +476,10 @@ impl From<SessionRunRequest> for Vec<u8> {
 
 impl From<SessionStepRequest> for Vec<u8> {
     fn from(request: SessionStepRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::SessionStepRequest> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionStepRequest> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
 
-        let mut req = manager_high::SessionStepRequest::new();
+        let mut req = machine_manager::SessionStepRequest::new();
         req.set_session_id(request.session_id);
         req.set_initial_cycle(request.time);
 
@@ -433,10 +489,10 @@ impl From<SessionStepRequest> for Vec<u8> {
 
 impl From<NewSessionRequest> for Vec<u8> {
     fn from(request: NewSessionRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::NewSessionRequest> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::NewSessionRequest> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
 
-        let mut req = manager_high::NewSessionRequest::new();
+        let mut req = machine_manager::NewSessionRequest::new();
         req.set_session_id(request.session_id);
         req.set_machine(request.machine);
 
@@ -446,10 +502,10 @@ impl From<NewSessionRequest> for Vec<u8> {
 
 impl From<SessionReadMemoryRequest> for Vec<u8> {
     fn from(request: SessionReadMemoryRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::SessionReadMemoryRequest> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionReadMemoryRequest> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
 
-        let mut req = manager_high::SessionReadMemoryRequest::new();
+        let mut req = machine_manager::SessionReadMemoryRequest::new();
         req.set_session_id(request.session_id);
         req.set_cycle(request.time);
         req.set_position(request.position);
@@ -460,10 +516,10 @@ impl From<SessionReadMemoryRequest> for Vec<u8> {
 
 impl From<SessionGetProofRequest> for Vec<u8> {
     fn from(request: SessionGetProofRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<manager_high::SessionGetProofRequest> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionGetProofRequest> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
 
-        let mut req = manager_high::SessionGetProofRequest::new();
+        let mut req = machine_manager::SessionGetProofRequest::new();
         req.set_session_id(request.session_id);
         req.set_cycle(request.time);
         req.set_target(request.target);

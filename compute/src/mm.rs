@@ -32,7 +32,7 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
 use super::{
-    AccessOperation, SessionStepRequest, SessionStepResult, EMULATOR_METHOD_STEP,
+    AccessOperation, SessionStepRequest, SessionStepResponse, EMULATOR_METHOD_STEP,
     EMULATOR_SERVICE_NAME,
 };
 
@@ -120,20 +120,13 @@ impl DApp<MMParams> for MM {
                     build_session_step_key(id.clone(), params.divergence_time.to_string());
 
                 // have we sampled the divergence time?
-                let processed_response: SessionStepResult = archive
+                let processed_response: SessionStepResponse = archive
                     .get_response(
                         EMULATOR_SERVICE_NAME.to_string(),
                         archive_key.clone(),
                         EMULATOR_METHOD_STEP.to_string(),
                         request.into(),
                     )?
-                    .map_err(move |_e| {
-                        Error::from(ErrorKind::ResponseInvalidError(
-                            EMULATOR_SERVICE_NAME.to_string(),
-                            archive_key,
-                            EMULATOR_METHOD_STEP.to_string(),
-                        ))
-                    })?
                     .into();
 
                 let step_log = processed_response.log;
