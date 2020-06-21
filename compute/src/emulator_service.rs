@@ -48,33 +48,11 @@ pub struct NewSessionRequest {
     pub session_id: String,
 }
 
-impl From<machine_manager::NewSessionRequest> for NewSessionRequest {
-    fn from(request: machine_manager::NewSessionRequest) -> Self {
-        NewSessionRequest {
-            machine: request
-                .machine
-                .into_option()
-                .expect("machine not found")
-                .into(),
-            session_id: request.session_id,
-        }
-    }
-}
-
 /// Representation of a request for running the machine
 #[derive(Debug, Clone)]
 pub struct SessionRunRequest {
     pub session_id: String,
     pub times: Vec<u64>,
-}
-
-impl From<machine_manager::SessionRunRequest> for SessionRunRequest {
-    fn from(request: machine_manager::SessionRunRequest) -> Self {
-        SessionRunRequest {
-            session_id: request.session_id,
-            times: request.final_cycles,
-        }
-    }
 }
 
 /// Representation of the response of running the machine
@@ -276,15 +254,6 @@ pub struct SessionStepRequest {
     pub time: u64,
 }
 
-impl From<machine_manager::SessionStepRequest> for SessionStepRequest {
-    fn from(request: machine_manager::SessionStepRequest) -> Self {
-        SessionStepRequest {
-            session_id: request.session_id,
-            time: request.initial_cycle,
-        }
-    }
-}
-
 /// A representation of the response of a logged machine step
 #[derive(Debug, Clone)]
 pub struct SessionStepResponse {
@@ -313,20 +282,6 @@ pub struct SessionReadMemoryRequest {
     pub session_id: String,
     pub time: u64,
     pub position: cartesi_machine::ReadMemoryRequest,
-}
-
-impl From<machine_manager::SessionReadMemoryRequest> for SessionReadMemoryRequest {
-    fn from(request: machine_manager::SessionReadMemoryRequest) -> Self {
-        SessionReadMemoryRequest {
-            session_id: request.session_id,
-            time: request.cycle,
-            position: request
-                .position
-                .into_option()
-                .expect("position not found")
-                .into(),
-        }
-    }
 }
 
 /// A response from the read memory procedure
@@ -365,20 +320,6 @@ pub struct SessionGetProofRequest {
     pub session_id: String,
     pub time: u64,
     pub target: cartesi_machine::GetProofRequest,
-}
-
-impl From<machine_manager::SessionGetProofRequest> for SessionGetProofRequest {
-    fn from(request: machine_manager::SessionGetProofRequest) -> Self {
-        SessionGetProofRequest {
-            session_id: request.session_id,
-            time: request.cycle,
-            target: request
-                .target
-                .into_option()
-                .expect("target not found")
-                .into(),
-        }
-    }
 }
 
 /// Representation of a response for read the memory
@@ -442,17 +383,6 @@ impl From<Vec<u8>> for SessionReadMemoryResponse {
 impl From<Vec<u8>> for SessionGetProofResponse {
     fn from(response: Vec<u8>) -> Self {
         let marshaller: Box<dyn Marshaller<cartesi_machine::Proof> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
-        marshaller
-            .read(bytes::Bytes::from(response))
-            .unwrap()
-            .into()
-    }
-}
-
-impl From<Vec<u8>> for NewSessionRequest {
-    fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::NewSessionRequest> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
