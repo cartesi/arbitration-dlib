@@ -314,6 +314,14 @@ impl From<machine_manager::SessionReadMemoryResponse> for SessionReadMemoryRespo
     }
 }
 
+/// Representation of a request for write the memory
+#[derive(Debug, Clone)]
+pub struct SessionWriteMemoryRequest {
+    pub session_id: String,
+    pub time: u64,
+    pub position: cartesi_machine::WriteMemoryRequest,
+}
+
 /// Representation of a request for get proof
 #[derive(Debug, Clone)]
 pub struct SessionGetProofRequest {
@@ -436,6 +444,20 @@ impl From<SessionReadMemoryRequest> for Vec<u8> {
             Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionReadMemoryRequest::new();
+        req.set_session_id(request.session_id);
+        req.set_cycle(request.time);
+        req.set_position(request.position);
+
+        marshaller.write(&req).unwrap()
+    }
+}
+
+impl From<SessionWriteMemoryRequest> for Vec<u8> {
+    fn from(request: SessionWriteMemoryRequest) -> Self {
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionWriteMemoryRequest> + Sync + Send> =
+            Box::new(grpc::protobuf::MarshallerProtobuf);
+
+        let mut req = machine_manager::SessionWriteMemoryRequest::new();
         req.set_session_id(request.session_id);
         req.set_cycle(request.time);
         req.set_position(request.position);

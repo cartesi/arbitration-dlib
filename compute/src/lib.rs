@@ -48,10 +48,12 @@ pub use compute::{Compute, ComputeCtx, ComputeCtxParsed, win_by_deadline_or_idle
 pub use emulator::{cartesi_machine, machine_manager};
 pub use emulator_service::{
     AccessOperation, NewSessionRequest, NewSessionResponse, SessionGetProofRequest,
-    SessionGetProofResponse, SessionReadMemoryRequest, SessionReadMemoryResponse, SessionRunRequest,
-    SessionRunResponse, SessionStepRequest, SessionStepResponse, EMULATOR_METHOD_NEW,
-    EMULATOR_METHOD_PROOF, EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
-    EMULATOR_SERVICE_NAME, SessionRunResponseOneOf, SessionRunResult,
+    SessionGetProofResponse, SessionReadMemoryRequest, SessionReadMemoryResponse,
+    SessionRunRequest, SessionRunResponse, SessionStepRequest, SessionStepResponse,
+    SessionRunResponseOneOf, SessionRunResult, SessionWriteMemoryRequest,
+    EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_WRITE,
+    EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
+    EMULATOR_SERVICE_NAME, 
 };
 pub use mm::MM;
 pub use partition::Partition;
@@ -80,6 +82,10 @@ pub fn build_session_step_key(id: String, divergence_time: String) -> String {
 
 pub fn build_session_read_key(id: String, time: u64, address: u64, length: u64) -> String {
     return format!("{}_read_{}_{}_{}", id, time, address, length);
+}
+
+pub fn build_session_write_key(id: String, time: u64, address: u64, data: Vec<u8>) -> String {
+    return format!("{}_write_{}_{}_{:?}", id, time, address, data);
 }
 
 pub fn build_session_proof_key(id: String, time: u64, address: u64, log2_size: u64) -> String {
