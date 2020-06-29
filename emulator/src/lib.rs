@@ -26,3 +26,4 @@ pub mod machine_manager;
 pub mod machine_manager_grpc;
 pub mod cartesi_machine;
 pub mod cartesi_machine_grpc;
+pub mod versioning;

@@ -26,6 +26,7 @@ fn main() {
         out_dir: "src",
         includes: &["../grpc-interfaces"],
         input: &[
+            "../grpc-interfaces/versioning.proto",
             "../grpc-interfaces/cartesi-machine.proto",
             "../grpc-interfaces/machine-manager.proto",
         ],

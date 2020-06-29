@@ -113,7 +113,7 @@ impl From<machine_manager::SessionRunResult> for SessionRunResult {
                 .hashes
                 .into_vec()
                 .into_iter()
-                .map(|hash| H256::from_slice(&hash.content))
+                .map(|hash| H256::from_slice(&hash.data))
                 .collect(),
         }
     }
@@ -139,7 +139,7 @@ pub struct NewSessionResponse {
 impl From<cartesi_machine::Hash> for NewSessionResponse {
     fn from(response: cartesi_machine::Hash) -> Self {
         NewSessionResponse {
-            hash: H256::from_slice(&response.content),
+            hash: H256::from_slice(&response.data),
         }
     }
 }
@@ -181,20 +181,20 @@ impl From<cartesi_machine::Proof> for Proof {
                     .target_hash
                     .into_option()
                     .expect("target hash not found")
-                    .content,
+                    .data,
             ),
             sibling_hashes: proof
                 .sibling_hashes
                 .into_vec()
                 .into_iter()
-                .map(|hash| H256::from_slice(&hash.content))
+                .map(|hash| H256::from_slice(&hash.data))
                 .collect(),
             root_hash: H256::from_slice(
                 &proof
                     .root_hash
                     .into_option()
                     .expect("root hash not found")
-                    .content,
+                    .data,
             ),
         }
     }
@@ -231,7 +231,7 @@ impl From<cartesi_machine::Access> for Access {
                     .read
                     .into_option()
                     .expect("read access not found")
-                    .content,
+                    .data,
             )
             .expect("read value has the wrong size"),
             value_written: to_bytes(
@@ -239,7 +239,7 @@ impl From<cartesi_machine::Access> for Access {
                     .written
                     .into_option()
                     .expect("write access not found")
-                    .content,
+                    .data,
             )
             .expect("write value has the wrong size"),
             proof: proof,
