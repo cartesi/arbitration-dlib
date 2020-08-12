@@ -46,6 +46,7 @@ pub const EMULATOR_METHOD_PROOF: &'static str =
 pub struct NewSessionRequest {
     pub machine: cartesi_machine::MachineRequest,
     pub session_id: String,
+    pub force: bool,
 }
 
 /// Representation of a request for running the machine
@@ -433,6 +434,7 @@ impl From<NewSessionRequest> for Vec<u8> {
         let mut req = machine_manager::NewSessionRequest::new();
         req.set_session_id(request.session_id);
         req.set_machine(request.machine);
+        req.set_force(request.force);
 
         marshaller.write(&req).unwrap()
     }
