@@ -4,14 +4,14 @@
   "description": "Arbitration DLib",
   "scripts": {
     "info": "npm-scripts-info",
-    "prepare": "truffle compile",
-    "deploy": "truffle migrate",
-    "deploy:ropsten": "truffle migrate --network ropsten",
-    "deploy:kovan": "truffle migrate --network kovan",
-    "deploy:rinkeby": "truffle migrate --network rinkeby",
-    "deploy:matic_testnet": "truffle migrate --network matic_testnet",
+    "prepare": "buidler compile",
+    "deploy": "buidler deploy",
+    "deploy:ropsten": "buidler deploy --network ropsten",
+    "deploy:kovan": "buidler deploy --network kovan",
+    "deploy:rinkeby": "buidler deploy --network rinkeby",
+    "deploy:matic_testnet": "buidler deploy --network matic_testnet",
     "deploy:all": "run-s deploy:ropsten deploy:kovan deploy:rinkeby deploy:matic_testnet",
-    "test": "mocha"
+    "test": "buidler test"
   },
   "scripts-info": {
     "info": "Display information about the package scripts",
@@ -20,13 +20,29 @@
     "test": "Unit test the project"
   },
   "dependencies": {
-    "@cartesi/util": "^0.2.1"
+    "@cartesi/util": "^0.2.1",
+    "ethers": "^5.0.7"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^1.0.40",
+    "@nodefactory/buidler-typechain": "^0.2.0",
+    "@nomiclabs/buidler": "^1.4.2",
+    "@nomiclabs/buidler-ethers": "^2.0.0",
+    "@nomiclabs/buidler-waffle": "^2.0.0",
+    "@typechain/ethers-v5": "^0.0.3",
+    "@types/chai": "^4.2.12",
+    "@types/mocha": "^8.0.0",
+    "@types/node": "^14.0.27",
+    "buidler-deploy": "^0.5.6",
+    "chai": "^4.2.0",
+    "ethereum-waffle": "^3.0.2",
     "npm-run-all": "^4.1.5",
     "npm-scripts-info": "^0.3.9",
-    "truffle": "^5.1.37"
+    "rimraf": "^3.0.2",
+    "ts-generator": "^0.0.8",
+    "ts-node": "^8.10.2",
+    "typechain": "^2.0.0",
+    "typescript": "^3.9.7"
   },
   "repository": {
     "type": "git",
