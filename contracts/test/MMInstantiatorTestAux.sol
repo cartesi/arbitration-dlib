@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,27 +20,25 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 import "../MMInstantiator.sol";
 
-
 contract MMInstantiatorTestAux is MMInstantiator {
-
-    function setState(uint index, state toState) public {
+    function setState(uint256 index, state toState) public {
         instance[index].currentState = toState;
     }
 
-    function setHistoryPointerAtIndex(uint index, uint pointer) public {
+    function setHistoryPointerAtIndex(uint256 index, uint256 pointer) public {
         instance[index].historyPointer = pointer;
     }
 
     function setHistoryAtIndex(
-        uint index,
+        uint256 index,
         bool[] memory listOfWasRead,
         uint64[] memory listOfPositions,
-        bytes8[] memory listOfValues) public
-    {
-        for (uint i = 0; i < listOfWasRead.length; i++) {
+        bytes8[] memory listOfValues
+    ) public {
+        for (uint256 i = 0; i < listOfWasRead.length; i++) {
             ReadWrite memory dummyReadWrite;
             dummyReadWrite.wasRead = listOfWasRead[i];
             dummyReadWrite.position = listOfPositions[i];
@@ -49,13 +48,13 @@ contract MMInstantiatorTestAux is MMInstantiator {
         }
     }
 
-    function setNewHashAtIndex(uint index, bytes32 newHash) public {
+    function setNewHashAtIndex(uint256 index, bytes32 newHash) public {
         instance[index].newHash = newHash;
     }
 
     //Wrapper because ThrowProxy contract do not work with return values
     //https://github.com/trufflesuite/truffle/issues/1001
-    function readWrapper(uint index, uint64 position) public {
+    function readWrapper(uint256 index, uint64 position) public {
         read(index, position);
     }
 }

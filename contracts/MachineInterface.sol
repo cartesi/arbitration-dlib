@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -20,16 +21,14 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 
-/// @title Subleq interface contract
-pragma solidity ^0.5.0;
+/// @title MachineInterface interface contract
+pragma solidity ^0.7.0;
 
 
-contract MachineInterface {
+interface MachineInterface {
     event StepGiven(uint8 exitCode);
 
-    //function endStep(address, uint256, uint8) internal returns (uint8);
+    function step(uint256) external returns (uint8);
 
-    function step(uint256) public returns (uint8);
-
-    function getMemoryInteractor() public view returns (address);
+    function getMemoryInteractor() external view returns (address);
 }

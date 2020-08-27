@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,31 +20,44 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 /// @title Interface for memory manager instantiator
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "@cartesi/util/contracts/Instantiator.sol";
 
+interface MMInterface is Instantiator {
+    enum state {WaitingProofs, WaitingReplay, FinishedReplay}
 
-contract MMInterface is Instantiator {
-    enum state {
-        WaitingProofs,
-        WaitingReplay,
-        FinishedReplay
-    }
+    function getCurrentState(uint256 _index) external view returns (bytes32);
 
-    function getCurrentState(uint256 _index) public view
-        returns (bytes32);
+    function instantiate(
+        address _provider,
+        address _client,
+        bytes32 _initialHash
+    ) external returns (uint256);
 
-    function instantiate(address _provider, address _client, bytes32 _initialHash) public returns (uint256);
-    function read(uint256 _index, uint64 _position) public returns (bytes8);
-    function write(uint256 _index, uint64 _position, bytes8 _value) public;
-    function newHash(uint256 _index) public view returns (bytes32);
-    function finishProofPhase(uint256 _index) public;
-    function finishReplayPhase(uint256 _index) public;
-    function stateIsWaitingProofs(uint256 _index) public view returns (bool);
-    function stateIsWaitingReplay(uint256 _index) public view returns (bool);
-    function stateIsFinishedReplay(uint256 _index) public view returns (bool);
-    function getMaxInstanceDuration(uint256 _roundDuration, uint256 _timeToStartMachine) public view returns (uint256);
+    function read(uint256 _index, uint64 _position) external returns (bytes8);
+
+    function write(
+        uint256 _index,
+        uint64 _position,
+        bytes8 _value
+    ) external;
+
+    function newHash(uint256 _index) external view returns (bytes32);
+
+    function finishProofPhase(uint256 _index) external;
+
+    function finishReplayPhase(uint256 _index) external;
+
+    function stateIsWaitingProofs(uint256 _index) external view returns (bool);
+
+    function stateIsWaitingReplay(uint256 _index) external view returns (bool);
+
+    function stateIsFinishedReplay(uint256 _index) external view returns (bool);
+
+    function getMaxInstanceDuration(
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine
+    ) external view returns (uint256);
 }

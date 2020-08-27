@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,14 +20,12 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 /// @title Interface for compute instantiator
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "@cartesi/util/contracts/Instantiator.sol";
 
-
-contract ComputeInterface is Instantiator {
+interface ComputeInterface is Instantiator {
     enum state {
         WaitingClaim,
         WaitingConfirmation,
@@ -36,7 +35,8 @@ contract ComputeInterface is Instantiator {
         ClaimerWon,
         ConsensusResult
     }
-    function getCurrentState(uint256 _index) public view returns (bytes32);
+
+    function getCurrentState(uint256 _index) external view returns (bytes32);
 
     function instantiate(
         address _challenger,
@@ -44,12 +44,16 @@ contract ComputeInterface is Instantiator {
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
-        uint256 _finalTime) public returns (uint256);
+        uint256 _finalTime
+    ) external returns (uint256);
 
-    function submitClaim(uint256 _index, bytes32 _claimedFinalHash) public;
-    function confirm(uint256 _index) public;
-    function challenge(uint256 _index) public;
-    function winByVG(uint256 _index) public;
-    function claimVictoryByTime(uint256 _index) public;
-    function isConcerned(uint256 _index, address _user) public view returns (bool);
+    function submitClaim(uint256 _index, bytes32 _claimedFinalHash) external;
+
+    function confirm(uint256 _index) external;
+
+    function challenge(uint256 _index) external;
+
+    function winByVG(uint256 _index) external;
+
+    function claimVictoryByTime(uint256 _index) external;
 }

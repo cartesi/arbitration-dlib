@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -21,7 +22,7 @@
 
 
 /// @title Subleq machine contract
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "./MachineInterface.sol";
 import "./MMInterface.sol";
@@ -29,18 +30,17 @@ import "./MMInterface.sol";
 
 contract Hasher is MachineInterface {
 
-    event StepGiven(uint8 exitCode);
     event Debug(bytes32 message, uint64 word);
 
     address mmAddress;
 
-    constructor(address _mmAddress) public {
+    constructor(address _mmAddress) {
         mmAddress = _mmAddress;
     }
 
     /// @notice Performs one step of the hasher machine on memory
     /// @return false indicates a halted machine or invalid instruction
-    function step(uint256 _mmIndex) public returns (uint8) {
+    function step(uint256 _mmIndex) public override returns (uint8) {
         // hasher machine simply adds to the memory initial hash :)
         MMInterface mm = MMInterface(mmAddress);
         uint64 valuePosition = 0x0000000000000000;
@@ -54,7 +54,7 @@ contract Hasher is MachineInterface {
         return address(this);
     }
 
-    function getMemoryInteractor() public view returns (address) {
+    function getMemoryInteractor() public override view returns (address) {
         return(address(this));
     }
 

@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -21,7 +22,7 @@
 
 
 /// @title Subleq machine contract
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "../MachineInterface.sol";
 import "../MMInterface.sol";
@@ -29,7 +30,6 @@ import "../MMInterface.sol";
 
 contract Subleq is MachineInterface {
 
-    event StepGiven(uint8 exitCode);
     event Debug(bytes32 message, uint64 word);
 
     address mmAddress;
@@ -56,13 +56,13 @@ contract Subleq is MachineInterface {
     uint64 inputMaxSize;
     uint64 outputMaxSize;
 
-    constructor(address _mmAddress) public {
+    constructor(address _mmAddress) {
         mmAddress = _mmAddress;
     }
 
     /// @notice Performs one step of the subleq machine on memory
     /// @return false indicates a halted machine or invalid instruction
-    function step(uint256 _mmIndex) public returns (uint8) {
+    function step(uint256 _mmIndex) public override returns (uint8) {
         // Architecture
         // +----------------+----------------+----------------+----------------+
         // | ram            | pc ic oc hs    | input          | output         |
@@ -190,7 +190,7 @@ contract Subleq is MachineInterface {
         return address(this);
     }
 
-    function getMemoryInteractor() public view returns (address) {
+    function getMemoryInteractor() public view override returns (address) {
         return(address(this));
     }
 

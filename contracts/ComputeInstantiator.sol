@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -21,14 +22,15 @@
 
 
 /// @title An instantiator of compute
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
+import "@cartesi/util/contracts/InstantiatorImpl.sol";
 import "@cartesi/util/contracts/Decorated.sol";
 import "./ComputeInterface.sol";
 import "./VGInterface.sol";
 
 
-contract ComputeInstantiator is ComputeInterface, Decorated {
+contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
     // after instantiation, the claimer will submit the final hash
     // then the challenger can either accept of challenge.
     // in the latter case a verification game will be instantiated
@@ -96,7 +98,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     event ChallengeStarted(uint256 _index);
     event ComputeFinished(uint256 _index, uint8 _state);
 
-    constructor(address _vgInstantiatorAddress) public {
+    constructor(address _vgInstantiatorAddress) {
         vg = VGInterface(_vgInstantiatorAddress);
     }
 
@@ -114,7 +116,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
-        uint256 _finalTime) public returns (uint256)
+        uint256 _finalTime) public override returns (uint256)
     {
         require(_challenger != _claimer, "Challenger and Claimer need to differ");
         ComputeCtx storage currentInstance = instance[currentIndex];
@@ -125,7 +127,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         currentInstance.initialHash = _initialHash;
         currentInstance.finalTime = _finalTime;
         currentInstance.currentState = state.WaitingClaim;
-        currentInstance.timeOfLastMove = now;
+        currentInstance.timeOfLastMove = block.timestamp;
 
         emit ComputeCreated(
             currentIndex,
@@ -143,7 +145,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     /// @notice Claimer claims the hash of the result of a computation
     /// @param _index Index of instance that the claimer is interacting with
     /// @param _claimedFinalHash hash of the machine after computation is completed.
-    function submitClaim(uint256 _index, bytes32 _claimedFinalHash) public
+    function submitClaim(uint256 _index, bytes32 _claimedFinalHash) public override
         onlyInstantiated(_index)
         onlyBy(instance[_index].claimer)
         increasesNonce(_index)
@@ -157,7 +159,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
 
     /// @notice Challenger accepts claim.
     /// @param _index Index of compute instance that the challenger is confirming the claim.
-    function confirm(uint256 _index) public
+    function confirm(uint256 _index) public override
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
         increasesNonce(_index)
@@ -170,7 +172,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
 
     /// @notice Challenger disputes the claim, starting a verification game.
     /// @param _index Index of compute instance which challenger is starting the VG.
-    function challenge(uint256 _index) public
+    function challenge(uint256 _index) public override
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
         increasesNonce(_index)
@@ -193,7 +195,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     /// then he or she can call this function to claim victory in
     /// this contract as well.
     /// @param _index Index of compute instance which challenger is starting the VG.
-    function winByVG(uint256 _index) public
+    function winByVG(uint256 _index) public override
         onlyInstantiated(_index)
         increasesNonce(_index)
     {
@@ -213,11 +215,11 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
     }
 
     /// @notice Claim victory for opponent timeout.
-    function claimVictoryByTime(uint256 _index) public
+    function claimVictoryByTime(uint256 _index) public override
         onlyInstantiated(_index)
         increasesNonce(_index)
     {
-       bool afterDeadline = (now > instance[_index].timeOfLastMove + getMaxStateDuration(
+       bool afterDeadline = (block.timestamp > instance[_index].timeOfLastMove + getMaxStateDuration(
                instance[_index].currentState,
                instance[_index].roundDuration,
                40, // time to start machine
@@ -329,12 +331,12 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         return waitingClaim + waitingConfirmation + waitingChallenge;
     }
 
-    function isConcerned(uint256 _index, address _user) public view returns (bool) {
+    function isConcerned(uint256 _index, address _user) public override view returns (bool) {
         return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
     }
 
     function getSubInstances(uint256 _index, address)
-        public view returns (address[] memory _addresses,
+        public override view returns (address[] memory _addresses,
                             uint256[] memory _indices)
     {
         address[] memory a;
@@ -415,7 +417,7 @@ contract ComputeInstantiator is ComputeInterface, Decorated {
         );
     }
 
-    function getCurrentState(uint256 _index) public view
+    function getCurrentState(uint256 _index) public override view
         onlyInstantiated(_index)
         returns (bytes32)
     {

@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,9 +20,8 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 // @title Verification game instantiator
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "@cartesi/util/contracts/Decorated.sol";
 import "@cartesi/util/contracts/Instantiator.sol";
@@ -29,8 +29,7 @@ import "./PartitionInterface.sol";
 import "./MMInterface.sol";
 import "./MachineInterface.sol";
 
-
-contract VGInterface is Instantiator {
+interface VGInterface is Instantiator {
     enum state {
         WaitPartition,
         WaitMemoryProveValues,
@@ -41,34 +40,55 @@ contract VGInterface is Instantiator {
     function instantiate(
         address _challenger,
         address _claimer,
-        uint _roundDuration,
+        uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
-        uint _finalTime) public returns (uint256);
+        uint256 _finalTime
+    ) external returns (uint256);
 
-    function getCurrentState(uint256 _index) public view returns (bytes32);
-    function stateIsFinishedClaimerWon(uint256 _index) public view returns (bool);
-    function stateIsFinishedChallengerWon(uint256 _index) public view returns (bool);
-    function winByPartitionTimeout(uint256 _index) public;
-    function startMachineRunChallenge(uint256 _index) public;
-    function settleVerificationGame(uint256 _index) public;
-    function claimVictoryByTime(uint256 _index) public;
+    function getCurrentState(uint256 _index) external view returns (bytes32);
+
+    function stateIsFinishedClaimerWon(uint256 _index)
+        external
+        view
+        returns (bool);
+
+    function stateIsFinishedChallengerWon(uint256 _index)
+        external
+        view
+        returns (bool);
+
+    function winByPartitionTimeout(uint256 _index) external;
+
+    function startMachineRunChallenge(uint256 _index) external;
+
+    function settleVerificationGame(uint256 _index) external;
+
+    function claimVictoryByTime(uint256 _index) external;
+
     //function stateIsWaitPartition(uint256 _index) public view returns (bool);
     //function stateIsWaitMemoryProveValues(uint256 _index) public view
     //  returns (bool);
-    function clearInstance(uint256 _index) internal;
-    function challengerWins(uint256 _index) private;
-    function claimerWins(uint256 _index) private;
+    //function clearInstance(uint256 _index) internal;
+    //function challengerWins(uint256 _index) private;
+    //function claimerWins(uint256 _index) private;
 
-    function getPartitionQuerySize(uint256 _index) public view returns (uint256);
+    function getPartitionQuerySize(uint256 _index)
+        external
+        view
+        returns (uint256);
 
-    function getPartitionGameIndex(uint256 _index) public view returns (uint256);
+    function getPartitionGameIndex(uint256 _index)
+        external
+        view
+        returns (uint256);
 
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) public view returns (uint256);
+        uint256 _picoSecondsToRunInsn
+    ) external view returns (uint256);
 }

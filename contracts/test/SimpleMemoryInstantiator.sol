@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,95 +20,113 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 /// @title Partition contract
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
+import "@cartesi/util/contracts/InstantiatorImpl.sol";
 import "../MMInterface.sol";
 
-contract SimpleMemoryInstantiator is MMInterface {
-  uint256 private currentIndex = 0;
+contract SimpleMemoryInstantiator is InstantiatorImpl, MMInterface {
+    struct SimpleMemoryCtx {
+        mapping(uint64 => bytes8) value; // value present at address
+    }
 
-  struct SimpleMemoryCtx {
-    mapping(uint64 => bytes8) value; // value present at address
-  }
+    mapping(uint256 => SimpleMemoryCtx) private instance;
 
-  mapping(uint256 => SimpleMemoryCtx) private instance;
+    function instantiate(
+        address,
+        address,
+        bytes32
+    ) public override returns (uint256) {
+        active[currentIndex] = true;
+        return (currentIndex++);
+    }
 
-  function instantiate(address, address, bytes32) public returns (uint256)
-  {
-    active[currentIndex] = true;
-    return(currentIndex++);
-  }
+    /// @notice reads a slot in memory
+    /// @param _address of the desired memory
+    function read(uint256 _index, uint64 _address)
+        public
+        override
+        view
+        returns (bytes8)
+    {
+        require((_address & 7) == 0);
+        return instance[_index].value[_address];
+    }
 
-  /// @notice reads a slot in memory
-  /// @param _address of the desired memory
-  function read(uint256 _index, uint64 _address) public
-    returns (bytes8)
-  {
-    require((_address & 7) == 0);
-    return instance[_index].value[_address];
-  }
+    /// @notice writes on a slot of memory during read and write phase
+    /// @param _address of the write
+    /// @param _value to be written
+    function write(
+        uint256 _index,
+        uint64 _address,
+        bytes8 _value
+    ) public override {
+        require((_address & 7) == 0);
+        instance[_index].value[_address] = _value;
+    }
 
-  /// @notice writes on a slot of memory during read and write phase
-  /// @param _address of the write
-  /// @param _value to be written
-  function write(uint256 _index, uint64 _address, bytes8 _value) public
-  {
-    require((_address & 7) == 0);
-    instance[_index].value[_address] = _value;
-  }
+    function newHash(uint256) public override pure returns (bytes32) {
+        require(false);
+    }
 
-  function newHash(uint256) public view returns (bytes32)
-  { require(false); }
+    function finishProofPhase(uint256) public override {}
 
-  function finishProofPhase(uint256) public {}
+    function finishReplayPhase(uint256) public override {}
 
-  function finishReplayPhase(uint256) public {}
+    function stateIsWaitingProofs(uint256) public override pure returns (bool) {
+        require(false);
+        return (true);
+    }
 
-  function stateIsWaitingProofs(uint256) public view returns (bool)
-  { require(false);
-    return(true);
-  }
+    function stateIsWaitingReplay(uint256) public override pure returns (bool) {
+        require(false);
+        return (true);
+    }
 
-  function stateIsWaitingReplay(uint256) public view returns (bool)
-  {
-    require(false);
-    return(true);
-  }
+    function stateIsFinishedReplay(uint256)
+        public
+        override
+        pure
+        returns (bool)
+    {
+        require(false);
+        return (true);
+    }
 
-  function stateIsFinishedReplay(uint256) public view returns (bool)
-  {
-    require(false);
-    return(true);
-  }
+    function isConcerned(uint256, address) public override pure returns (bool) {
+        return (true);
+    }
 
-  function isConcerned(uint256, address) public view returns (bool)
-  {
-    return(true);
-  }
+    function getCurrentState(uint256) public override pure returns (bytes32) {
+        return (bytes32(0));
+    }
 
-  function getCurrentState(uint256) public view
-    returns (bytes32)
-  {
-    return(bytes32(0));
-  }
+    function getMaxStateDuration(
+        state,
+        uint256,
+        uint256
+    ) private pure returns (uint256) {
+        return 0;
+    }
 
-  function getMaxStateDuration(state, uint256, uint256) private view returns (uint256) {
-    return 0;
-  }
+    function getMaxInstanceDuration(uint256, uint256)
+        public
+        override
+        pure
+        returns (uint256)
+    {
+        return 0;
+    }
 
-  function getMaxInstanceDuration(uint256, uint256) public view returns (uint256) {
-    return 0;
-  }
-
-  function getSubInstances(uint256, address)
-    public view returns (address[] memory _addresses,
-                        uint256[] memory _indices)
-  {
-    address[] memory a = new address[](0);
-    uint256[] memory b = new uint256[](0);
-    return(a, b);
-  }
-
+    function getSubInstances(uint256, address)
+        public
+        override
+        pure
+        returns (address[] memory _addresses, uint256[] memory _indices)
+    {
+        address[] memory a = new address[](0);
+        uint256[] memory b = new uint256[](0);
+        return (a, b);
+    }
 }

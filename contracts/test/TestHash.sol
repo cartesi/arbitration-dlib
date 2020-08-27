@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,17 +20,13 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
-pragma solidity ^0.5.0;
-
+pragma solidity ^0.7.0;
 
 contract TestHash {
-
     event OutB32(bytes32 _out);
     event OutUint64(uint64 _out);
 
     function testing(bytes8, uint64) public {
-
         uint64 a = uint64(0x0000000000000001);
         uint64 b = uint64(0x0100000000000000);
 

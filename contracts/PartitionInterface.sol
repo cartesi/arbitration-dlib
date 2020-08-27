@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,14 +20,12 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 /// @title Abstract interface for partition instantiator
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "@cartesi/util/contracts/Instantiator.sol";
 
-
-contract PartitionInterface is Instantiator {
+interface PartitionInterface is Instantiator {
     enum state {
         WaitingQuery,
         WaitingHashes,
@@ -35,33 +34,50 @@ contract PartitionInterface is Instantiator {
         DivergenceFound
     }
 
-    function getCurrentState(uint256 _index) public view returns (bytes32);
+    function getCurrentState(uint256 _index) external view returns (bytes32);
 
     function instantiate(
         address _challenger,
         address _claimer,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
-        uint _finalTime,
-        uint _querySize,
-        uint _roundDuration) public returns (uint256);
+        uint256 _finalTime,
+        uint256 _querySize,
+        uint256 _roundDuration
+    ) external returns (uint256);
 
-    function timeHash(uint256 _index, uint key) public view returns (bytes32);
-    function divergenceTime(uint256 _index) public view returns (uint);
-    function stateIsWaitingQuery(uint256 _index) public view returns (bool);
-    function stateIsWaitingHashes(uint256 _index) public view returns (bool);
-    function stateIsChallengerWon(uint256 _index) public view returns (bool);
-    function stateIsClaimerWon(uint256 _index) public view returns (bool);
-    function stateIsDivergenceFound(uint256 _index) public view returns (bool);
+    function timeHash(uint256 _index, uint256 key)
+        external
+        view
+        returns (bytes32);
 
-    function getPartitionGameIndex(uint256 _index) public view returns(uint256);
+    function divergenceTime(uint256 _index) external view returns (uint256);
 
-    function getQuerySize(uint256 _index) public view returns (uint256);
+    function stateIsWaitingQuery(uint256 _index) external view returns (bool);
+
+    function stateIsWaitingHashes(uint256 _index) external view returns (bool);
+
+    function stateIsChallengerWon(uint256 _index) external view returns (bool);
+
+    function stateIsClaimerWon(uint256 _index) external view returns (bool);
+
+    function stateIsDivergenceFound(uint256 _index)
+        external
+        view
+        returns (bool);
+
+    function getPartitionGameIndex(uint256 _index)
+        external
+        view
+        returns (uint256);
+
+    function getQuerySize(uint256 _index) external view returns (uint256);
 
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) public view returns (uint256);
+        uint256 _picoSecondsToRunInsn
+    ) external view returns (uint256);
 }

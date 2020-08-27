@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -19,32 +20,34 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 /// @title Partition instantiator
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
+import "@cartesi/util/contracts/InstantiatorImpl.sol";
 import "@cartesi/util/contracts/Decorated.sol";
 import "./PartitionInterface.sol";
 
-
-contract PartitionInstantiator is PartitionInterface, Decorated {
-
-    uint constant MAX_QUERY_SIZE = 20;
+contract PartitionInstantiator is
+    InstantiatorImpl,
+    Decorated,
+    PartitionInterface
+{
+    uint256 constant MAX_QUERY_SIZE = 20;
 
     // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
     struct PartitionCtx {
         address challenger;
         address claimer;
-        uint finalTime; // hashes provided between 0 and finalTime (inclusive)
-        mapping(uint => bool) timeSubmitted; // marks a time as submitted
-        mapping(uint => bytes32) timeHash; // hashes are signed by claimer
-        uint querySize;
-        uint[] queryArray;
-        uint timeOfLastMove;
-        uint roundDuration;
-        uint partitionGameIndex; // number of interactions that already happened in the partition interaction
+        uint256 finalTime; // hashes provided between 0 and finalTime (inclusive)
+        mapping(uint256 => bool) timeSubmitted; // marks a time as submitted
+        mapping(uint256 => bytes32) timeHash; // hashes are signed by claimer
+        uint256 querySize;
+        uint256[] queryArray;
+        uint256 timeOfLastMove;
+        uint256 roundDuration;
+        uint256 partitionGameIndex; // number of interactions that already happened in the partition interaction
         state currentState;
-        uint divergenceTime;
+        uint256 divergenceTime;
     }
 
     //Swap internal/private when done with testing
@@ -81,7 +84,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     event ChallengeEnded(uint256 _index, uint8 _state);
     event DivergenceFound(
         uint256 _index,
-        uint _timeOfDivergence,
+        uint256 _timeOfDivergence,
         bytes32 _hashAtDivergenceTime,
         bytes32 _hashRigthAfterDivergenceTime
     );
@@ -100,15 +103,24 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         address _claimer,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
-        uint _finalTime,
-        uint _querySize,
-        uint _roundDuration) public returns (uint256)
-    {
-        require(_challenger != _claimer, "Challenger and claimer have the same address");
+        uint256 _finalTime,
+        uint256 _querySize,
+        uint256 _roundDuration
+    ) public override returns (uint256) {
+        require(
+            _challenger != _claimer,
+            "Challenger and claimer have the same address"
+        );
         require(_finalTime > 0, "Final Time has to be bigger than zero");
         require(_querySize > 2, "Query Size must be bigger than 2");
-        require(_querySize < MAX_QUERY_SIZE, "Query Size must be less than max");
-        require(_roundDuration > 50, "Round Duration has to be greater than 50 seconds");
+        require(
+            _querySize < MAX_QUERY_SIZE,
+            "Query Size must be less than max"
+        );
+        require(
+            _roundDuration > 50,
+            "Round Duration has to be greater than 50 seconds"
+        );
         instance[currentIndex].challenger = _challenger;
         instance[currentIndex].claimer = _claimer;
         instance[currentIndex].finalTime = _finalTime;
@@ -118,11 +130,13 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         instance[currentIndex].timeHash[_finalTime] = _claimerFinalHash;
         instance[currentIndex].querySize = _querySize;
         // Creates queryArray with the correct size
-        instance[currentIndex].queryArray = new uint[] (instance[currentIndex].querySize);
+        instance[currentIndex].queryArray = new uint256[](
+            instance[currentIndex].querySize
+        );
         // slice the interval, placing the separators in queryArray
         slice(currentIndex, 0, instance[currentIndex].finalTime);
         instance[currentIndex].roundDuration = _roundDuration;
-        instance[currentIndex].timeOfLastMove = now;
+        instance[currentIndex].timeOfLastMove = block.timestamp;
         instance[currentIndex].currentState = state.WaitingHashes;
         emit PartitionCreated(currentIndex);
         emit QueryPosted(currentIndex);
@@ -136,17 +150,34 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     /// been queried.
     /// @param postedHashes An array (of size querySize) with the hashes
     /// corresponding to the queried times
-    function replyQuery(uint256 _index, uint[] memory postedTimes, bytes32[] memory postedHashes) public
+    function replyQuery(
+        uint256 _index,
+        uint256[] memory postedTimes,
+        bytes32[] memory postedHashes
+    )
+        public
         onlyInstantiated(_index)
         onlyBy(instance[_index].claimer)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.WaitingHashes, "CurrentState is not WaitingHashes, cannot replyQuery");
-        require(postedTimes.length == instance[_index].querySize, "postedTimes.length != querySize");
-        require(postedHashes.length == instance[_index].querySize, "postedHashes.length != querySize");
-        for (uint i = 0; i < instance[_index].querySize; i++) {
-        // make sure the claimer knows the current query
-            require(postedTimes[i] == instance[_index].queryArray[i], "postedTimes[i] != queryArray[i]");
+        require(
+            instance[_index].currentState == state.WaitingHashes,
+            "CurrentState is not WaitingHashes, cannot replyQuery"
+        );
+        require(
+            postedTimes.length == instance[_index].querySize,
+            "postedTimes.length != querySize"
+        );
+        require(
+            postedHashes.length == instance[_index].querySize,
+            "postedHashes.length != querySize"
+        );
+        for (uint256 i = 0; i < instance[_index].querySize; i++) {
+            // make sure the claimer knows the current query
+            require(
+                postedTimes[i] == instance[_index].queryArray[i],
+                "postedTimes[i] != queryArray[i]"
+            );
             // cannot rewrite previous answer
             if (!instance[_index].timeSubmitted[postedTimes[i]]) {
                 instance[_index].timeSubmitted[postedTimes[i]] = true;
@@ -154,7 +185,7 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
             }
         }
         instance[_index].currentState = state.WaitingQuery;
-        instance[_index].timeOfLastMove = now;
+        instance[_index].timeOfLastMove = block.timestamp;
         instance[_index].partitionGameIndex++;
         emit HashesPosted(_index);
     }
@@ -168,55 +199,74 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     /// split. Should be a disagreement point.
     function makeQuery(
         uint256 _index,
-        uint queryPiece,
-        uint leftPoint,
-        uint rightPoint) public
+        uint256 queryPiece,
+        uint256 leftPoint,
+        uint256 rightPoint
+    )
+        public
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.WaitingQuery, "CurrentState is not WaitingQuery, cannot makeQuery");
-        require(queryPiece < instance[_index].querySize - 1, "queryPiece is bigger than querySize - 1");
+        require(
+            instance[_index].currentState == state.WaitingQuery,
+            "CurrentState is not WaitingQuery, cannot makeQuery"
+        );
+        require(
+            queryPiece < instance[_index].querySize - 1,
+            "queryPiece is bigger than querySize - 1"
+        );
         // make sure the challenger knows the previous query
-        require(leftPoint == instance[_index].queryArray[queryPiece], "leftPoint != queryArray[queryPiece]");
-        require(rightPoint == instance[_index].queryArray[queryPiece + 1], "rightPoint != queryArray[queryPiece]");
+        require(
+            leftPoint == instance[_index].queryArray[queryPiece],
+            "leftPoint != queryArray[queryPiece]"
+        );
+        require(
+            rightPoint == instance[_index].queryArray[queryPiece + 1],
+            "rightPoint != queryArray[queryPiece]"
+        );
         // no unitary queries. in unitary case, present divergence instead.
         // by avoiding unitary queries one forces the contest to end
-        require(rightPoint - leftPoint > 1,"Interval is less than one");
+        require(rightPoint - leftPoint > 1, "Interval is less than one");
         slice(_index, leftPoint, rightPoint);
         instance[_index].currentState = state.WaitingHashes;
-        instance[_index].timeOfLastMove = now;
+        instance[_index].timeOfLastMove = block.timestamp;
         emit QueryPosted(_index);
     }
 
     /// @notice Claim victory for opponent timeout.
-    function claimVictoryByTime(uint256 _index) public
+    function claimVictoryByTime(uint256 _index)
+        public
         onlyInstantiated(_index)
         increasesNonce(_index)
     {
-        bool afterDeadline = (now > instance[_index].timeOfLastMove + getMaxStateDuration(
-            instance[_index].currentState,
-            instance[_index].roundDuration,
-            40, // time to build machine for the first time
-            instance[_index].querySize,
-            instance[_index].partitionGameIndex,
-            instance[_index].finalTime,
-            500 // 500 pico seconds per instruction
-        ));
+        bool afterDeadline = (block.timestamp >
+            instance[_index].timeOfLastMove +
+                getMaxStateDuration(
+                    instance[_index].currentState,
+                    instance[_index].roundDuration,
+                    40, // time to build machine for the first time
+                    instance[_index].querySize,
+                    instance[_index].partitionGameIndex,
+                    instance[_index].finalTime,
+                    500 // 500 pico seconds per instruction
+                ));
 
-        if ((msg.sender == instance[_index].challenger) &&
+        if (
+            (msg.sender == instance[_index].challenger) &&
             (instance[_index].currentState == state.WaitingHashes) &&
-            afterDeadline)
-        {
+            afterDeadline
+        ) {
             instance[_index].currentState = state.ChallengerWon;
             deactivate(_index);
             emit ChallengeEnded(_index, uint8(instance[_index].currentState));
             return;
         }
-        if ((msg.sender == instance[_index].claimer) &&
+        if (
+            (msg.sender == instance[_index].claimer) &&
             (instance[_index].currentState == state.WaitingQuery) &&
-            afterDeadline)
-        {
+            afterDeadline
+        ) {
             instance[_index].currentState = state.ClaimerWon;
             deactivate(_index);
             emit ChallengeEnded(_index, uint8(instance[_index].currentState));
@@ -230,14 +280,24 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     /// @param _divergenceTime The time when the divergence happended. It
     /// should be a point of aggreement, while _divergenceTime + 1 should be a
     /// point of disagreement (both queried).
-    function presentDivergence(uint256 _index, uint _divergenceTime) public
+    function presentDivergence(uint256 _index, uint256 _divergenceTime)
+        public
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
         increasesNonce(_index)
     {
-        require(_divergenceTime < instance[_index].finalTime, "divergence time has to be less than finalTime");
-        require(instance[_index].timeSubmitted[_divergenceTime], "divergenceTime has to have been submitted");
-        require(instance[_index].timeSubmitted[_divergenceTime + 1], "divergenceTime + 1 has to have been submitted");
+        require(
+            _divergenceTime < instance[_index].finalTime,
+            "divergence time has to be less than finalTime"
+        );
+        require(
+            instance[_index].timeSubmitted[_divergenceTime],
+            "divergenceTime has to have been submitted"
+        );
+        require(
+            instance[_index].timeSubmitted[_divergenceTime + 1],
+            "divergenceTime + 1 has to have been submitted"
+        );
 
         instance[_index].divergenceTime = _divergenceTime;
         instance[_index].currentState = state.DivergenceFound;
@@ -268,22 +328,33 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         uint256 _partitionSize,
         uint256 _partitionGameIndex,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) private pure returns (uint256)
-    {
+        uint256 _picoSecondsToRunInsn
+    ) private pure returns (uint256) {
         // TO-DO: when we have DUMP then we can remove the partitionSize - 1 multiplier
-        uint256 currentPartitionSize = _maxCycle / (_partitionSize ** _partitionGameIndex);
+        uint256 currentPartitionSize = _maxCycle /
+            (_partitionSize**_partitionGameIndex);
 
         if (_partitionGameIndex != 0) {
             currentPartitionSize = currentPartitionSize * (_partitionSize - 1);
         }
 
         if (_state == state.WaitingQuery) {
-            return _timeToStartMachine + ((currentPartitionSize * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+            return
+                _timeToStartMachine +
+                ((currentPartitionSize * _picoSecondsToRunInsn) / 1e12) +
+                _roundDuration;
         }
         if (_state == state.WaitingHashes) {
-            return _timeToStartMachine + ((currentPartitionSize * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+            return
+                _timeToStartMachine +
+                ((currentPartitionSize * _picoSecondsToRunInsn) / 1e12) +
+                _roundDuration;
         }
-        if (_state == state.ClaimerWon || _state == state.ChallengerWon || _state == state.DivergenceFound) {
+        if (
+            _state == state.ClaimerWon ||
+            _state == state.ChallengerWon ||
+            _state == state.DivergenceFound
+        ) {
             return 0; // final state
         }
         require(false, "Unrecognized state");
@@ -302,8 +373,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) public view returns (uint256)
-    {
+        uint256 _picoSecondsToRunInsn
+    ) public override view returns (uint256) {
         uint256 waitingQueryDuration = getMaxStateDuration(
             state.WaitingQuery,
             _roundDuration,
@@ -326,34 +397,50 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
 
         // TO-DO: When we have DUMP this should be 2 should be 1 / (1 - 1/querySize)
         // also has to add the round duration for each state transition
-        return (uint256(2) * waitingQueryDuration) + (uint256(2) * waitingHashesDuration) + (_roundDuration * log2OverTwo(_maxCycle));
+        return
+            (uint256(2) * waitingQueryDuration) +
+            (uint256(2) * waitingHashesDuration) +
+            (_roundDuration * log2OverTwo(_maxCycle));
     }
 
     // Getters methods
 
-    function getState(uint256 _index, address) public view
-        //onlyInstantiated(_index)
-        returns (address _challenger,
-                address _claimer,
-                uint[] memory _queryArray,
-                bool[] memory _submittedArray,
-                bytes32[] memory _hashArray,
-                bytes32 _currentState,
-                uint[] memory _uintValues)
+    function getState(uint256 _index, address)
+        public
+        view
+        returns (
+            //onlyInstantiated(_index)
+            address _challenger,
+            address _claimer,
+            uint256[] memory _queryArray,
+            bool[] memory _submittedArray,
+            bytes32[] memory _hashArray,
+            bytes32 _currentState,
+            uint256[] memory _uintValues
+        )
     {
         PartitionCtx memory i = instance[_index];
 
-        uint[] memory uintValues = new uint[](4);
+        uint256[] memory uintValues = new uint256[](4);
         uintValues[0] = i.finalTime;
         uintValues[1] = i.querySize;
-        uintValues[2] = i.timeOfLastMove + getMaxStateDuration(i.currentState, i.roundDuration, 40, i.querySize, i.partitionGameIndex, i.finalTime, 500); //deadline (40 seconds to build machine, 500 pico seconds per insn
+        uintValues[2] =
+            i.timeOfLastMove +
+            getMaxStateDuration(
+                i.currentState,
+                i.roundDuration,
+                40,
+                i.querySize,
+                i.partitionGameIndex,
+                i.finalTime,
+                500
+            ); //deadline (40 seconds to build machine, 500 pico seconds per insn
         uintValues[3] = i.divergenceTime;
-        
 
         bool[] memory submittedArray = new bool[](MAX_QUERY_SIZE);
         bytes32[] memory hashArray = new bytes32[](MAX_QUERY_SIZE);
 
-        for (uint j = 0; j < i.querySize; j++) {
+        for (uint256 j = 0; j < i.querySize; j++) {
             submittedArray[j] = instance[_index].timeSubmitted[i.queryArray[j]];
             hashArray[j] = instance[_index].timeHash[i.queryArray[j]];
         }
@@ -413,52 +500,91 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         return instance[_index].roundDuration;
     }
     */
-    function divergenceTime(uint256 _index) public view
+    function divergenceTime(uint256 _index)
+        public
+        override
+        view
         onlyInstantiated(_index)
-        returns (uint)
-    { return instance[_index].divergenceTime; }
+        returns (uint256)
+    {
+        return instance[_index].divergenceTime;
+    }
 
-    function timeSubmitted(uint256 _index, uint key) public view
+    function timeSubmitted(uint256 _index, uint256 key)
+        public
+        view
         onlyInstantiated(_index)
         returns (bool)
-    { return instance[_index].timeSubmitted[key]; }
+    {
+        return instance[_index].timeSubmitted[key];
+    }
 
-    function timeHash(uint256 _index, uint key) public view
+    function timeHash(uint256 _index, uint256 key)
+        public
+        override
+        view
         onlyInstantiated(_index)
         returns (bytes32)
-    { return instance[_index].timeHash[key]; }
+    {
+        return instance[_index].timeHash[key];
+    }
 
-    function queryArray(uint256 _index, uint i) public view
-        onlyInstantiated(_index)
-        returns (uint)
-    { return instance[_index].queryArray[i]; }
-
-    function getPartitionGameIndex(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (uint256)
-    {return instance[_index].partitionGameIndex; }
-
-    function getQuerySize(uint256 _index) public view
+    function queryArray(uint256 _index, uint256 i)
+        public
+        view
         onlyInstantiated(_index)
         returns (uint256)
-    {return instance[_index].querySize; }
+    {
+        return instance[_index].queryArray[i];
+    }
 
+    function getPartitionGameIndex(uint256 _index)
+        public
+        override
+        view
+        onlyInstantiated(_index)
+        returns (uint256)
+    {
+        return instance[_index].partitionGameIndex;
+    }
+
+    function getQuerySize(uint256 _index)
+        public
+        override
+        view
+        onlyInstantiated(_index)
+        returns (uint256)
+    {
+        return instance[_index].querySize;
+    }
 
     // state getters
 
-    function isConcerned(uint256 _index, address _user) public view returns (bool) {
-        return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
+    function isConcerned(uint256 _index, address _user)
+        public
+        override
+        view
+        returns (bool)
+    {
+        return ((instance[_index].challenger == _user) ||
+            (instance[_index].claimer == _user));
     }
 
     function getSubInstances(uint256, address)
-        public view returns (address[] memory, uint256[] memory)
+        public
+        override
+        view
+        returns (address[] memory, uint256[] memory)
     {
         address[] memory a = new address[](0);
         uint256[] memory i = new uint256[](0);
         return (a, i);
     }
 
-    function getCurrentState(uint256 _index) public view
+    function getCurrentState(uint256 _index)
+        public
+        override
+        view
         onlyInstantiated(_index)
         returns (bytes32)
     {
@@ -481,38 +607,70 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     }
 
     // remove these functions and change tests accordingly
-    function stateIsWaitingQuery(uint256 _index) public view
+    function stateIsWaitingQuery(uint256 _index)
+        public
+        override
+        view
         onlyInstantiated(_index)
         returns (bool)
-    { return instance[_index].currentState == state.WaitingQuery; }
+    {
+        return instance[_index].currentState == state.WaitingQuery;
+    }
 
-    function stateIsWaitingHashes(uint256 _index) public view
+    function stateIsWaitingHashes(uint256 _index)
+        public
+        override
+        view
         onlyInstantiated(_index)
         returns (bool)
-    { return instance[_index].currentState == state.WaitingHashes; }
+    {
+        return instance[_index].currentState == state.WaitingHashes;
+    }
 
-    function stateIsChallengerWon(uint256 _index) public view
+    function stateIsChallengerWon(uint256 _index)
+        public
+        override
+        view
         onlyInstantiated(_index)
         returns (bool)
-    { return instance[_index].currentState == state.ChallengerWon; }
+    {
+        return instance[_index].currentState == state.ChallengerWon;
+    }
 
-    function stateIsClaimerWon(uint256 _index) public view
+    function stateIsClaimerWon(uint256 _index)
+        public
+        override
+        view
         onlyInstantiated(_index)
         returns (bool)
-    { return instance[_index].currentState == state.ClaimerWon; }
+    {
+        return instance[_index].currentState == state.ClaimerWon;
+    }
 
-    function stateIsDivergenceFound(uint256 _index) public view
+    function stateIsDivergenceFound(uint256 _index)
+        public
+        override
+        view
         onlyInstantiated(_index)
         returns (bool)
-    { return instance[_index].currentState == state.DivergenceFound; }
+    {
+        return instance[_index].currentState == state.DivergenceFound;
+    }
 
     // split an interval using (querySize) points (placed in queryArray)
     // leftPoint rightPoint are always the first and last points in queryArray.
-    function slice(uint256 _index, uint leftPoint, uint rightPoint) internal {
-        require(rightPoint > leftPoint, "rightPoint has to be bigger than leftPoint");
-        uint i;
-        uint intervalLength = rightPoint - leftPoint;
-        uint queryLastIndex = instance[_index].querySize - 1;
+    function slice(
+        uint256 _index,
+        uint256 leftPoint,
+        uint256 rightPoint
+    ) internal {
+        require(
+            rightPoint > leftPoint,
+            "rightPoint has to be bigger than leftPoint"
+        );
+        uint256 i;
+        uint256 intervalLength = rightPoint - leftPoint;
+        uint256 queryLastIndex = instance[_index].querySize - 1;
         // if intervalLength is not big enough to allow us jump sizes larger then
         // one, we go step by step
         if (intervalLength < 2 * queryLastIndex) {
@@ -524,10 +682,10 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
                 }
             }
         } else {
-        // otherwise: intervalLength = (querySize - 1) * divisionLength + j
-        // with divisionLength >= 1 and j in {0, ..., querySize - 2}. in this
-        // case the size of maximum slice drops to a proportion of intervalLength
-            uint divisionLength = intervalLength / queryLastIndex;
+            // otherwise: intervalLength = (querySize - 1) * divisionLength + j
+            // with divisionLength >= 1 and j in {0, ..., querySize - 2}. in this
+            // case the size of maximum slice drops to a proportion of intervalLength
+            uint256 divisionLength = intervalLength / queryLastIndex;
             for (i = 0; i < queryLastIndex; i++) {
                 instance[_index].queryArray[i] = leftPoint + i * divisionLength;
             }
@@ -536,8 +694,8 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
     }
 
     //TODO: It is supposed to be log10 * C, because we're using a partition of 10
-    function log2OverTwo(uint x) public pure returns (uint y){
-        uint leading = 256;
+    function log2OverTwo(uint256 x) public pure returns (uint256 y) {
+        uint256 leading = 256;
 
         while (x != 0) {
             x = x >> 1;
@@ -546,5 +704,4 @@ contract PartitionInstantiator is PartitionInterface, Decorated {
         // plus one to do an approx ceiling
         return (255 - leading) / 2;
     }
-
 }

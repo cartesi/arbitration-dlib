@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Cartesi Pte. Ltd.
 
+// SPDX-License-Identifier: GPL-3.0-only
 // This program is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
 // Foundation, either version 3 of the License, or (at your option) any later
@@ -21,17 +22,17 @@
 
 
 // @title Verification game instantiator
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.0;
 
 import "@cartesi/util/contracts/Decorated.sol";
-import "@cartesi/util/contracts/Instantiator.sol";
+import "@cartesi/util/contracts/InstantiatorImpl.sol";
 import "./VGInterface.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
 import "./MachineInterface.sol";
 
 
-contract VGInstantiator is Decorated, VGInterface {
+contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
     //  using SafeMath for uint;
 
     PartitionInterface private partition;
@@ -97,7 +98,7 @@ contract VGInstantiator is Decorated, VGInterface {
     event VGFinished(state _finalState);
 
     constructor(address _partitionInstantiatorAddress,
-                address _mmInstantiatorAddress) public {
+                address _mmInstantiatorAddress) {
         partition = PartitionInterface(_partitionInstantiatorAddress);
         mm = MMInterface(_mmInstantiatorAddress);
     }
@@ -118,7 +119,7 @@ contract VGInstantiator is Decorated, VGInterface {
         address _machineAddress,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
-        uint _finalTime) public returns (uint256)
+        uint _finalTime) public override returns (uint256)
     {
         require(_finalTime > 0, "Final time must be greater than zero");
         instance[currentIndex].challenger = _challenger;
@@ -128,7 +129,7 @@ contract VGInstantiator is Decorated, VGInterface {
         instance[currentIndex].initialHash = _initialHash;
         instance[currentIndex].claimerFinalHash = _claimerFinalHash;
         instance[currentIndex].finalTime = _finalTime;
-        instance[currentIndex].timeOfLastMove = now;
+        instance[currentIndex].timeOfLastMove = block.timestamp;
         instance[currentIndex].partitionInstance = partition.instantiate(
             _challenger,
             _claimer,
@@ -160,7 +161,7 @@ contract VGInstantiator is Decorated, VGInterface {
     /// the hireCPU contract as well.
 
     // TO-DO: should this stop existing? We can make claimVictory by timeout generic
-    function winByPartitionTimeout(uint256 _index) public
+    function winByPartitionTimeout(uint256 _index) public override
         onlyInstantiated(_index)
     {
         require(instance[_index].currentState == state.WaitPartition, "State should be WaitPartition");
@@ -182,7 +183,7 @@ contract VGInstantiator is Decorated, VGInterface {
     /// This function call solely instantiate a memory manager, so the
     /// provider must fill the appropriate addresses that will be read by the
     /// machine.
-    function startMachineRunChallenge(uint256 _index) public
+    function startMachineRunChallenge(uint256 _index) public override
         onlyInstantiated(_index)
         increasesNonce(_index)
     {
@@ -201,7 +202,7 @@ contract VGInstantiator is Decorated, VGInterface {
         );
         // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!
         delete instance[_index].partitionInstance;
-        instance[_index].timeOfLastMove = now;
+        instance[_index].timeOfLastMove = block.timestamp;
         instance[_index].currentState = state.WaitMemoryProveValues;
         emit PartitionDivergenceFound(_index, instance[_index].mmInstance);
     }
@@ -210,7 +211,7 @@ contract VGInstantiator is Decorated, VGInterface {
     /// the provider calls this function to instantiate the machine and perform
     /// one step on it. The machine will write to memory now. Later, the
     /// provider will be expected to update the memory hash accordingly.
-    function settleVerificationGame(uint256 _index) public
+    function settleVerificationGame(uint256 _index) public override
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
     {
@@ -225,7 +226,7 @@ contract VGInstantiator is Decorated, VGInterface {
 
     /// @notice Claimer can claim victory if challenger has lost the deadline
     /// for some of the steps in the protocol.
-    function claimVictoryByTime(uint256 _index) public
+    function claimVictoryByTime(uint256 _index) public override
         onlyInstantiated(_index)
         onlyBy(instance[_index].claimer)
     {
@@ -234,7 +235,7 @@ contract VGInstantiator is Decorated, VGInterface {
         // DeclarationError: Function type can not be used in this context.
         // TO-DO: change the hardcode numbers
         require(
-            now > instance[_index].timeOfLastMove + getMaxStateDuration(
+            block.timestamp > instance[_index].timeOfLastMove + getMaxStateDuration(
                 instance[_index].currentState,
                 instance[_index].roundDuration,
                 40, // time to start machine
@@ -306,7 +307,7 @@ contract VGInstantiator is Decorated, VGInterface {
         );
     }
 
-    function isConcerned(uint256 _index, address _user) public view returns (bool) {
+    function isConcerned(uint256 _index, address _user) public override view returns (bool) {
         return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
     }
 
@@ -350,7 +351,7 @@ contract VGInstantiator is Decorated, VGInterface {
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) public view returns (uint256)
+        uint256 _picoSecondsToRunInsn) public override view returns (uint256)
     {
         uint256 waitPartitionDuration = getMaxStateDuration(
             state.WaitPartition,
@@ -374,7 +375,7 @@ contract VGInstantiator is Decorated, VGInterface {
     }
 
     function getSubInstances(uint256 _index, address)
-        public view returns (address[] memory _addresses,
+        public override view returns (address[] memory _addresses,
                             uint256[] memory _indices)
     {
         address[] memory a;
@@ -398,7 +399,7 @@ contract VGInstantiator is Decorated, VGInterface {
         return (a, i);
     }
 
-    function getCurrentState(uint256 _index) public view
+    function getCurrentState(uint256 _index) public override view
         onlyInstantiated(_index)
         returns (bytes32)
     {
@@ -428,12 +429,12 @@ contract VGInstantiator is Decorated, VGInterface {
     /*   returns (bool) */
     /* { return instance[_index].currentState == state.WaitMemoryProveValues; } */
 
-    function stateIsFinishedClaimerWon(uint256 _index) public view
+    function stateIsFinishedClaimerWon(uint256 _index) public override view
         onlyInstantiated(_index)
         returns (bool)
     { return instance[_index].currentState == state.FinishedClaimerWon; }
 
-    function stateIsFinishedChallengerWon(uint256 _index) public view
+    function stateIsFinishedChallengerWon(uint256 _index) public override view
         onlyInstantiated(_index)
         returns (bool)
     { return instance[_index].currentState == state.FinishedChallengerWon; }
@@ -473,11 +474,11 @@ contract VGInstantiator is Decorated, VGInterface {
         emit VGFinished(instance[_index].currentState);
     }
 
-    function getPartitionQuerySize(uint256 _index) public view returns (uint256) {
+    function getPartitionQuerySize(uint256 _index) public override view returns (uint256) {
         return partition.getQuerySize(instance[_index].partitionInstance);
     }
 
-    function getPartitionGameIndex(uint256 _index) public view returns (uint256) {
+    function getPartitionGameIndex(uint256 _index) public override view returns (uint256) {
         return partition.getPartitionGameIndex(instance[_index].partitionInstance);
     }
 
