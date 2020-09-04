@@ -95,6 +95,20 @@ impl From<machine_manager::SessionRunResponse_oneof_run_oneof> for SessionRunRes
         }
     }
 }
+impl From<SessionRunResponseOneOf> for machine_manager::SessionRunResponse_oneof_run_oneof{
+    fn from(one_of: SessionRunResponseOneOf) -> Self {
+        match one_of {
+            SessionRunResponseOneOf::RunProgress(s)
+            => {
+                machine_manager::SessionRunResponse_oneof_run_oneof::progress(s.into())
+            },
+            SessionRunResponseOneOf::RunResult(p)
+            => {
+                machine_manager::SessionRunResponse_oneof_run_oneof::result(p.into())
+            },
+        }
+    }
+}
 
 impl From<machine_manager::SessionRunProgress> for SessionRunProgress {
     fn from(run_progress: machine_manager::SessionRunProgress) -> Self {
@@ -104,6 +118,33 @@ impl From<machine_manager::SessionRunProgress> for SessionRunProgress {
             updated_at: run_progress.updated_at,
             cycle: run_progress.cycle,
         }
+    }
+}
+
+impl From<SessionRunProgress> for machine_manager::SessionRunProgress {
+    fn from(run_progress: SessionRunProgress) -> Self {
+        let mut m = machine_manager::SessionRunProgress::new();
+        m.progress = run_progress.progress;
+        m.application_progress = run_progress.application_progress;
+        m.updated_at = run_progress.updated_at;
+        m.cycle = run_progress.cycle;
+        return m;
+    }
+}
+
+impl From<SessionRunResult> for machine_manager::SessionRunResult {
+    fn from(run_result: SessionRunResult) -> Self {
+        let mut r = machine_manager::SessionRunResult::new();
+        r.hashes = run_result
+            .hashes
+            .into_iter()
+            .map(|hash| {
+                let mut h = emulator::cartesi_machine::Hash::new();
+                h.data = hash.as_bytes().into();
+                return h;
+            })
+            .collect();
+        return r;
     }
 }
 
@@ -355,6 +396,26 @@ impl From<Vec<u8>> for SessionRunResponse {
             .into()
     }
 }
+
+impl From<SessionRunResponse> for machine_manager::SessionRunResponse {
+    fn from(response: SessionRunResponse) -> Self {
+        let mut s = machine_manager::SessionRunResponse::new();
+        let a: machine_manager::SessionRunResponse_oneof_run_oneof = response
+                .one_of
+                .into();
+        s.run_oneof = a.into();
+        return s;
+    }
+}
+
+impl From<SessionRunResponse> for Vec<u8> {
+    fn from(response: SessionRunResponse) -> Self {
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionRunResponse> + Sync + Send> =
+            Box::new(grpc::protobuf::MarshallerProtobuf);
+        marshaller.write(&response.into()).unwrap()
+    }
+}
+
 
 impl From<Vec<u8>> for SessionStepResponse {
     fn from(response: Vec<u8>) -> Self {
