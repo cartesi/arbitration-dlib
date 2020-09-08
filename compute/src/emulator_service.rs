@@ -30,6 +30,7 @@ use super::ethereum_types::H256;
 use super::grpc::marshall::Marshaller;
 use super::{cartesi_machine, machine_manager};
 
+
 pub const EMULATOR_SERVICE_NAME: &'static str = "emulator";
 pub const EMULATOR_METHOD_NEW: &'static str = "/CartesiMachineManager.MachineManager/NewSession";
 pub const EMULATOR_METHOD_RUN: &'static str = "/CartesiMachineManager.MachineManager/SessionRun";
@@ -202,6 +203,14 @@ impl From<cartesi_machine::AccessOperation> for AccessOperation {
     }
 }
 
+impl From<AccessOperation> for cartesi_machine::AccessOperation{
+    fn from(op: AccessOperation) -> Self { 
+        match op {
+            AccessOperation::Read => cartesi_machine::AccessOperation::READ,
+            AccessOperation::Write => cartesi_machine::AccessOperation::WRITE,
+        }
+    }
+}
 /// A proof that a certain subtree has the contents represented by
 /// `target_hash`.
 #[derive(Debug, Clone)]
@@ -242,6 +251,31 @@ impl From<cartesi_machine::Proof> for Proof {
     }
 }
 
+impl From<Proof> for cartesi_machine::Proof{
+    fn from(proof: Proof) -> Self {
+        let mut p = cartesi_machine::Proof::new();
+        p.address = proof.address;
+        p.log2_size = proof.log2_size;
+        let mut h = emulator::cartesi_machine::Hash::new();
+        h.data = proof.target_hash.as_bytes().into();
+        p.target_hash = protobuf::SingularPtrField::some(h);
+
+        let mut h = emulator::cartesi_machine::Hash::new();
+        h.data = proof.root_hash.as_bytes().into();
+        p.root_hash = protobuf::SingularPtrField::some(h);
+
+        p.sibling_hashes = proof.sibling_hashes
+            .into_iter()
+            .map(|hash| {
+                let mut h = emulator::cartesi_machine::Hash::new();
+                h.data = hash.as_bytes().into();
+                return h;
+            })
+            .collect();
+        return p;
+    } 
+}
+
 /// An access to be logged during the step procedure
 #[derive(Debug, Clone)]
 pub struct Access {
@@ -260,6 +294,10 @@ fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
             input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],
         ])
     }
+}
+
+fn from_bytes(input: [u8; 8]) -> Vec<u8> {
+    vec![input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],]
 }
 
 impl From<cartesi_machine::Access> for Access {
@@ -289,6 +327,24 @@ impl From<cartesi_machine::Access> for Access {
     }
 }
 
+impl From<Access> for cartesi_machine::Access {
+    fn from(access: Access) -> Self {
+        let mut a = cartesi_machine::Access::new();
+        a.operation = access.operation.into();
+        
+        let mut read_word = cartesi_machine::Word::new();
+        read_word.data = from_bytes(access.value_read);
+        a.read = protobuf::SingularPtrField::some(read_word);
+
+        let mut written_word = cartesi_machine::Word::new();
+        written_word.data = from_bytes(access.value_written);
+        a.written = protobuf::SingularPtrField::some(written_word);
+
+        a.proof = protobuf::SingularPtrField::some(access.proof.into());
+        return a;
+    }
+}
+
 /// A representation of a request for a logged machine step
 #[derive(Debug, Clone)]
 pub struct SessionStepRequest {
@@ -315,6 +371,19 @@ impl From<machine_manager::SessionStepResponse> for SessionStepResponse {
                 .map(|hash| hash.into())
                 .collect(),
         }
+    }
+}
+
+impl From<SessionStepResponse> for machine_manager::SessionStepResponse {
+    fn from(response: SessionStepResponse) -> Self {
+        let mut m = machine_manager::SessionStepResponse::new();
+        let mut l = cartesi_machine::AccessLog::new();
+        l.accesses = response.log
+            .into_iter()
+            .map(|hash| hash.into())
+            .collect();
+        m.log = protobuf::SingularPtrField::some(l);
+        return m;
     }
 }
 
@@ -425,6 +494,14 @@ impl From<Vec<u8>> for SessionStepResponse {
             .read(bytes::Bytes::from(response))
             .unwrap()
             .into()
+    }
+}
+
+impl From<SessionStepResponse> for Vec<u8> {
+    fn from(response: SessionStepResponse) -> Self {
+        let marshaller: Box<dyn Marshaller<machine_manager::SessionStepResponse> + Sync + Send> =
+            Box::new(grpc::protobuf::MarshallerProtobuf);
+        marshaller.write(&response.into()).unwrap()
     }
 }
 
