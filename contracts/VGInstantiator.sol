@@ -265,7 +265,7 @@ contract VGInstantiator is Decorated, VGInterface {
 
         uint[] memory uintValues = new uint[](5);
         uintValues[0] = i.finalTime;
-        uintValues[0] = i.timeOfLastMove + getMaxStateDuration(
+        uintValues[1] = i.timeOfLastMove + getMaxStateDuration(
                 i.currentState,
                 i.roundDuration,
                 40, // time to start machine
@@ -273,9 +273,9 @@ contract VGInstantiator is Decorated, VGInterface {
                 i.finalTime, //maxCycle
                 500 // pico seconds to run insn
             ); //deadline
-        uintValues[0] = i.mmInstance;
-        uintValues[0] = i.partitionInstance;
-        uintValues[0] = i.divergenceTime;
+        uintValues[2] = i.mmInstance;
+        uintValues[3] = i.partitionInstance;
+        uintValues[4] = i.divergenceTime;
 
         // we have to duplicate the code for getCurrentState because of
         // "stack too deep"
