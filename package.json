@@ -20,30 +20,30 @@
     "test": "Unit test the project"
   },
   "dependencies": {
-    "@cartesi/util": "^0.2.1",
-    "ethers": "^5.0.7"
+    "@cartesi/util": "^0.4.0",
+    "ethers": "5.0.8"
   },
   "devDependencies": {
     "@nodefactory/buidler-typechain": "^0.2.0",
-    "@nomiclabs/buidler": "^1.4.2",
+    "@nomiclabs/buidler": "^1.4.5",
     "@nomiclabs/buidler-ethers": "^2.0.0",
-    "@nomiclabs/buidler-waffle": "^2.0.0",
+    "@nomiclabs/buidler-waffle": "^2.1.0",
     "@truffle/hdwallet-provider": "^1.0.40",
-    "@typechain/ethers-v5": "^0.0.3",
+    "@typechain/ethers-v5": "^1.0.0",
     "@types/chai": "^4.2.12",
-    "@types/mocha": "^8.0.0",
-    "@types/node": "^14.0.27",
-    "buidler-deploy": "^0.5.6",
+    "@types/mocha": "^8.0.3",
+    "@types/node": "^14.6.4",
+    "buidler-deploy": "0.6.0-beta.16",
     "chai": "^4.2.0",
-    "ethereum-waffle": "^3.0.2",
+    "ethereum-waffle": "^3.1.0",
     "npm-run-all": "^4.1.5",
     "npm-scripts-info": "^0.3.9",
     "rimraf": "^3.0.2",
-    "solc": "^0.7.1",
+    "solc": "0.7.1",
     "ts-generator": "^0.0.8",
-    "ts-node": "^8.10.2",
+    "ts-node": "^9.0.0",
     "typechain": "^2.0.0",
-    "typescript": "^3.9.7"
+    "typescript": "^4.0.2"
   },
   "repository": {
     "type": "git",
