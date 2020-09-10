@@ -69,7 +69,12 @@ const config: BuidlerConfig = {
             url: "https://testnetv3.matic.network",
             chainId: 15001,
             accounts: mnemonic ? { mnemonic } : undefined
-        }
+        },
+        bsc_testnet: {
+            url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+            chainId: 97,
+            accounts: mnemonic ? { mnemonic } : undefined
+        }        
     },
     solc: {
         version: "0.7.1",
