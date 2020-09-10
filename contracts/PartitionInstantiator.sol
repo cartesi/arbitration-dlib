@@ -419,7 +419,7 @@ contract PartitionInstantiator is
             uint256[] memory _uintValues
         )
     {
-        PartitionCtx memory i = instance[_index];
+        PartitionCtx storage i = instance[_index];
 
         uint256[] memory uintValues = new uint256[](4);
         uintValues[0] = i.finalTime;
