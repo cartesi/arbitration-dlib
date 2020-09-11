@@ -1,34 +1,44 @@
 {
   "name": "@cartesi/arbitration",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Arbitration DLib",
   "scripts": {
     "info": "npm-scripts-info",
-    "prepare": "buidler compile",
-    "deploy": "buidler deploy",
+    "prepare": "buidler compile && buidler typechain",
+    "test": "buidler test",
+    "clean": "rimraf artifacts && rimraf cache && rimraf deployments && rimraf src/types/*",
+    "deploy": "run-s deploy:development",
+    "deploy:testnet": "run-s deploy:ropsten deploy:rinkeby deploy:matic_testnet deploy:bsc_testnet",
+    "deploy:development": "buidler deploy --network localhost",
     "deploy:ropsten": "buidler deploy --network ropsten",
     "deploy:kovan": "buidler deploy --network kovan",
     "deploy:rinkeby": "buidler deploy --network rinkeby",
     "deploy:matic_testnet": "buidler deploy --network matic_testnet",
-    "deploy:all": "run-s deploy:ropsten deploy:kovan deploy:rinkeby deploy:matic_testnet",
-    "test": "buidler test"
+    "deploy:bsc_testnet": "buidler deploy --network bsc_testnet",
+    "prepack": "run-s clean prepare deploy:testnet",
+    "start": "buidler node"
   },
   "scripts-info": {
-    "info": "Display information about the package scripts",
-    "prepare": "Compile all solidity code using truffle",
-    "deploy": "Deploy contracts to all networks using truffle",
-    "test": "Unit test the project"
+    "info": "Displays information about the scripts.",
+    "test": "Run unit tests",
+    "clean": "Clean build artifacts, including contracts deployment information",
+    "deploy": "Deploy contracts to local ganache. Requires ganache running on localhost:8545",
+    "deploy:testnet": "Deploy contracts to all supported testnets. Requires two environment variables: PROJECT_ID and MNEMONIC.",
+    "deploy:development": "Deploy contracts to local ganache. Requires ganache running on localhost:8545",
+    "deploy:ropsten": "Deploy contracts to ropsten. Requires two environment variables: PROJECT_ID and MNEMONIC.",
+    "deploy:kovan": "Deploy contracts to kovan. Requires two environment variables: PROJECT_ID and MNEMONIC.",
+    "deploy:rinkeby": "Deploy contracts to rinkeby. Requires two environment variables: PROJECT_ID and MNEMONIC.",
+    "deploy:matic_testnet": "Deploy contracts to matic_testnet.",
+    "deploy:bsc_testnet": "Deploy contracts to bsc_testnet."
   },
   "dependencies": {
-    "@cartesi/util": "^0.4.0",
-    "ethers": "5.0.8"
+    "@cartesi/util": "^0.4.0"
   },
   "devDependencies": {
     "@nodefactory/buidler-typechain": "^0.2.0",
     "@nomiclabs/buidler": "^1.4.5",
     "@nomiclabs/buidler-ethers": "^2.0.0",
     "@nomiclabs/buidler-waffle": "^2.1.0",
-    "@truffle/hdwallet-provider": "^1.0.40",
     "@typechain/ethers-v5": "^1.0.0",
     "@types/chai": "^4.2.12",
     "@types/mocha": "^8.0.3",
@@ -53,10 +63,9 @@
     "cartesi"
   ],
   "files": [
+    "artifacts",
     "contracts",
-    "migrations",
-    "build",
-    "truffle-config.js"
+    "deployments"
   ],
   "author": "Danilo Tuler <danilo@cartesi.io>",
   "license": "GPL-3.0-only"
