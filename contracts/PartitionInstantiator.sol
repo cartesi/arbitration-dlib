@@ -374,7 +374,7 @@ contract PartitionInstantiator is
         uint256 _partitionSize,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn
-    ) public override view returns (uint256) {
+    ) public override pure returns (uint256) {
         uint256 waitingQueryDuration = getMaxStateDuration(
             state.WaitingQuery,
             _roundDuration,
@@ -573,7 +573,7 @@ contract PartitionInstantiator is
     function getSubInstances(uint256, address)
         public
         override
-        view
+        pure
         returns (address[] memory, uint256[] memory)
     {
         address[] memory a = new address[](0);

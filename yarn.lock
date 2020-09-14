@@ -2,14 +2,14 @@
 # yarn lockfile v1
 
 
-"@cartesi/util@^0.4.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@cartesi/util/-/util-0.3.0.tgz#691a258e2e4acece78d766291bc224bf1fb15c92"
-  integrity sha512-W/gy+Vt3cGZrB83TTHB1zfAAd95IWa+5qnETehI26bjZU6kUlC6eIRLTijvjyDM+Abv6Sme03ISiR4RTD+dN6w==
+"@cartesi/util@^0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@cartesi/util/-/util-0.4.1.tgz#8a84e7dd1e0c5e0b6ddef86272be62cfbff911a1"
+  integrity sha512-Qiug6cMEdv3+JnZ0SFVnZGRNbcUVJ0SdsE1P3DK3+cIsSACrWwIgIrmqft7tqrGoGZ2qawfpoQB5Ox5U2vSG9Q==
   dependencies:
-    "@openzeppelin/contracts" "^3.0.1"
-    bignumber.js "^9.0.0"
-    npm-scripts-info "^0.3.9"
+    "@openzeppelin/contracts" "3.2.0-solc-0.7"
+    ethers "5.0.8"
+    solc "0.7.1"
 
 "@ensdomains/ens@^0.4.4":
   version "0.4.5"
@@ -505,10 +505,10 @@
     safe-buffer "^5.1.1"
     util.promisify "^1.0.0"
 
-"@openzeppelin/contracts@^3.0.1":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.2.0.tgz#3e6b3a7662d8ed64271ade96ef42655db983fd9d"
-  integrity sha512-bUOmkSoPkjnUyMiKo6RYnb0VHBk5D9KKDAgNLzF41aqAM3TeE0yGdFF5dVRcV60pZdJLlyFT/jjXIZCWyyEzAQ==
+"@openzeppelin/contracts@3.2.0-solc-0.7":
+  version "3.2.0-solc-0.7"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.2.0-solc-0.7.tgz#507d3a04ab65d19449b3b9659b3b8b75014afbbf"
+  integrity sha512-E9cb+9o1TOecuIix9hzGz+NVIfLCUiQXkDH4lmgUdGOTQLV2o9c8M13U1naahtmjkffTBAjLNDSCy46b2jeDpA==
 
 "@resolver-engine/core@^0.3.3":
   version "0.3.3"
@@ -1796,7 +1796,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-bignumber.js@*, bignumber.js@^9.0.0:
+bignumber.js@*:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.0.tgz#805880f84a329b5eac6e7cb6f8274b6d82bdf075"
   integrity sha512-t/OYhhJ2SD+YGBQcjY8GzzDHEk9f3nerxjtfa6tlMXfe7frs/WozhvCNoGvpM0P3bNf3Gq5ZRMlGr5f3r4/N8A==
@@ -2067,10 +2067,10 @@ buffer@^5.0.5, buffer@^5.2.1, buffer@^5.6.0:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
 
-buidler-deploy@0.6.0-beta.16:
-  version "0.6.0-beta.16"
-  resolved "https://registry.yarnpkg.com/buidler-deploy/-/buidler-deploy-0.6.0-beta.16.tgz#36b51f3e782c256510b9205b91f84188ee440272"
-  integrity sha512-av71JFINiliNLivUe5pnfSlpynhJ3Mt1zPbnjgyjYe2XLny2zJ0IhahTxXgLZWRrVvyFk+CwDzXsU6Fz0oAldw==
+buidler-deploy@0.6.0-beta.21:
+  version "0.6.0-beta.21"
+  resolved "https://registry.yarnpkg.com/buidler-deploy/-/buidler-deploy-0.6.0-beta.21.tgz#28eca31e85ecf82d5e860be85e2f525f59e1c9df"
+  integrity sha512-XBuOYn6F7ltfkOxTdBM/LCVQDav45VIl6MzfOSS8JM/pE8U559DzHpTL2/dd1lni4VtsuC8agBP9NrEExVM//w==
   dependencies:
     "@ethersproject/abi" "^5.0.2"
     "@ethersproject/abstract-signer" "^5.0.2"
@@ -3609,6 +3609,42 @@ ethers@4.0.0-beta.3:
     setimmediate "1.0.4"
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
+
+ethers@5.0.8:
+  version "5.0.8"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.0.8.tgz#c13d0fdf5e66db8085e2036d3309ed2f8a17ed89"
+  integrity sha512-of/rPgJ7E3yyBADUv5A7Gtkd7EB8ta/T9NS5CCG9tj9cifnXcI3KIdYQ7d8AS+9vm38pR1g6S5I+Q/mRnlQZlg==
+  dependencies:
+    "@ethersproject/abi" "^5.0.0"
+    "@ethersproject/abstract-provider" "^5.0.0"
+    "@ethersproject/abstract-signer" "^5.0.0"
+    "@ethersproject/address" "^5.0.0"
+    "@ethersproject/base64" "^5.0.0"
+    "@ethersproject/basex" "^5.0.0"
+    "@ethersproject/bignumber" "^5.0.0"
+    "@ethersproject/bytes" "^5.0.0"
+    "@ethersproject/constants" "^5.0.0"
+    "@ethersproject/contracts" "^5.0.0"
+    "@ethersproject/hash" "^5.0.0"
+    "@ethersproject/hdnode" "^5.0.0"
+    "@ethersproject/json-wallets" "^5.0.0"
+    "@ethersproject/keccak256" "^5.0.0"
+    "@ethersproject/logger" "^5.0.0"
+    "@ethersproject/networks" "^5.0.0"
+    "@ethersproject/pbkdf2" "^5.0.0"
+    "@ethersproject/properties" "^5.0.0"
+    "@ethersproject/providers" "^5.0.0"
+    "@ethersproject/random" "^5.0.0"
+    "@ethersproject/rlp" "^5.0.0"
+    "@ethersproject/sha2" "^5.0.0"
+    "@ethersproject/signing-key" "^5.0.0"
+    "@ethersproject/solidity" "^5.0.0"
+    "@ethersproject/strings" "^5.0.0"
+    "@ethersproject/transactions" "^5.0.0"
+    "@ethersproject/units" "^5.0.0"
+    "@ethersproject/wallet" "^5.0.0"
+    "@ethersproject/web" "^5.0.0"
+    "@ethersproject/wordlists" "^5.0.0"
 
 ethers@^5.0.0, ethers@^5.0.1, ethers@^5.0.2:
   version "5.0.7"
