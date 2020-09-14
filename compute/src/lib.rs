@@ -126,3 +126,55 @@ pub fn get_run_result(
         },
     }
 }
+
+
+#[cfg(test)]
+pub mod tests {
+    extern crate hex;
+    use ethereum_types::{ H160, U256 };
+
+    pub const MACHINEID: &str = "Machine000";
+    pub const CLAIMERADDR: &str = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    pub const CHALLENGERADDR: &str = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    pub const CONTRACTADDR: &str = "0xcccccccccccccccccccccccccccccccccccccccc";
+    pub const UNKNOWNADDR: &str = "0xdddddddddddddddddddddddddddddddddddddddd";
+    pub const MACHINEADDR: &str = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+    pub const HASH1: &str = "0x0000000000000000000000000000000000000000000000000000000000000010";
+    pub const HASH2: &str = "0x0000000000000000000000000000000000000000000000000000000000000020";
+    pub const HASH3: &str = "0x0000000000000000000000000000000000000000000000000000000000000030";
+    pub const UNKNOWNSTATE: &str = "Unknown State";
+    pub fn encode(state: &str) -> String {
+        format!("0x{}", hex::encode(state))
+    }
+    pub fn hash_from_string<T: serde::de::DeserializeOwned>(hash: &str) -> T {
+        serde_json::from_str::<T>(format!("\"{}\"", hash).as_str()).unwrap()
+    }
+
+    pub fn build_service_status() -> state::ServiceStatus {
+        state::ServiceStatus {
+            service_name: "".into(),
+            service_method: "".into(),
+            status: 0,
+            description: "".into(),
+            progress: 0,
+        }
+    }
+
+    pub fn build_concern(user: &str) -> configuration::Concern {
+        configuration::Concern {
+            contract_address: hash_from_string::<H160>(CONTRACTADDR),
+            user_address: hash_from_string::<H160>(user),
+        }
+    }
+    pub fn build_state(concern: configuration::Concern, json_data: Option<String>) -> state::Instance {
+        let _json_data = json_data.unwrap_or(String::from(""));
+        state::Instance {
+            name: "".to_string(),
+            concern,
+            index: U256::from(0),
+            service_status: build_service_status(),
+            json_data: _json_data,
+            sub_instances: vec![],
+        }
+    }
+}

@@ -23,3 +23,4 @@ dispatcher = { path = "../dispatcher/dispatcher" }
 grpc = { git = "https://github.com/cartesi/grpc-rust", branch = "make_marshall_public" }
 protobuf = "2"
 bytes = "0.4.12"
+hex = "0.4.2"

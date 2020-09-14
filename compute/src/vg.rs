@@ -423,26 +423,27 @@ impl DApp<String> for VG {
 }
 #[cfg(test)]
 mod tests {
-
     use super::*;
-    use ethereum_types::H160;
-
     use mm;
     use partition;
+    use tests::{
+        build_concern, build_service_status, build_state, encode, CHALLENGERADDR, CLAIMERADDR,
+        MACHINEADDR, MACHINEID, UNKNOWNSTATE,
+    };
 
     fn build_vg_state_json_data(current_state: &str, deadline: Option<&str>) -> String {
         let _deadline = deadline.unwrap_or("0x0");
         let data = serde_json::json!([
         {"name": "challenger",
-        "value": "0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818",
+        "value": CHALLENGERADDR,
         "type": "address"},
 
         {"name": "claimer",
-        "value": "0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23942020",
+        "value": CLAIMERADDR,
         "type": "address"},
 
         {"name": "machine",
-        "value": "0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23940000",
+        "value": MACHINEADDR,
         "type": "address"},
 
         {"name": "initial_hash",
@@ -471,97 +472,48 @@ mod tests {
         return String::from(serde_json::to_string(&data).unwrap());
     }
 
-    fn build_service_status() -> state::ServiceStatus {
-        state::ServiceStatus {
-            service_name: "".into(),
-            service_method: "".into(),
-            status: 0,
-            description: "".into(),
-            progress: 0,
-        }
-    }
-
-    fn hash_from_string<'de, T: serde::Deserialize<'de>>(hash: &'de str) -> T {
-        serde_json::from_str::<T>(hash).unwrap()
-    }
-
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-    #[test]
-    #[should_panic(expected = "Unknown current state Hello World!")]
+    #[should_panic(expected = "Unknown current state Unknown State")]
     fn it_should_be_idle() {
-        let current_state = "0x46696e69736865644368616c6c656e676572576f6e"; // FinishedChallengerWon,
-        let machine_id = String::from("Machine000");
+        let current_state = encode("FinishedChallengerWon");
         let archive = Archive::new().unwrap();
-        let sub_instances: Vec<Box<state::Instance>> = vec![];
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23942020\"",
-            ),
-        };
-        let default_status = build_service_status();
+        let concern = build_concern(CLAIMERADDR);
 
-        let mut state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_vg_state_json_data(current_state, None),
-            sub_instances,
-        };
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+
         {
             // ChallengerWon
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
         {
             // ClaimerWon
-            let current_state = "0x46696e6973686564436c61696d6572576f6e"; // FinishedClaimerWon
-            state_instance.json_data = build_vg_state_json_data(current_state, None);
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let current_state = encode("FinishedClaimerWon"); // FinishedClaimerWon
+            state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
         {
-            // Hello World! // it should not work so it will panic
-            let current_state = "0x48656c6c6f20576f726c6421"; // Hello World!
-            state_instance.json_data = build_vg_state_json_data(current_state, None);
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            // UNKNOWNSTATE // it should not work so it will panic
+            let current_state = encode(UNKNOWNSTATE);
+            state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
     }
 
     #[test]
     fn it_should_call_win_by_deadline_as_claimer() {
-        let current_state = "0x576169744d656d6f727950726f766556616c756573"; // WaitMemoryProveValues,
-        let machine_id = String::from("Machine000");
+        let current_state = encode("WaitMemoryProveValues");
         let archive = Archive::new().unwrap();
-        let sub_instances: Vec<Box<state::Instance>> = vec![];
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23942020\"", //claimer
-            ),
-        };
-        let default_status = build_service_status();
+        let concern = build_concern(CLAIMERADDR);
 
-        let mut state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_vg_state_json_data(current_state, None),
-            sub_instances,
-        };
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
         {
             // ChallengerWon
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             let mut reaction = result.unwrap();
             assert!(matches!(
                 &reaction,
@@ -578,54 +530,34 @@ mod tests {
             // Idle
             let deadline = "0x1fffffffffffff";
             state_instance.json_data =
-                build_vg_state_json_data(current_state, Option::from(deadline));
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+                build_vg_state_json_data(current_state.as_str(), Option::from(deadline));
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
     }
 
     #[test]
-    #[should_panic(expected = "Unknown current state Hello World!")]
+    #[should_panic(expected = "Unknown current state Unknown State")]
     fn it_should_call_wait_partition_as_claimer() {
-        let current_state = "0x57616974506172746974696f6e"; // WaitPartition
-        let current_state_partition = "0x436c61696d6572576f6e"; // ClaimerWon
-        let machine_id = String::from("Machine000");
+        let current_state = encode("WaitPartition");
+        let current_state_partition = encode("ClaimerWon");
         let archive = Archive::new().unwrap();
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23942020\"", //claimer
-            ),
-        };
-        let default_status = build_service_status();
-        let mut partition_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status.clone(),
-            json_data: partition::tests::build_state_json_data(
-                current_state_partition,
-                None,
-                None,
-                None,
-                None,
-            ),
-            sub_instances: vec![],
-        };
+        let concern = build_concern(CLAIMERADDR);
+        let mut partition_instance = build_state(concern, None);
+        partition_instance.json_data = partition::tests::build_partition_state_json_data(
+            current_state_partition.as_str(),
+            None,
+            None,
+            None,
+            None,
+        );
 
-        let mut state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_vg_state_json_data(current_state, None),
-            sub_instances: vec![Box::from(partition_instance.clone())],
-        };
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+        state_instance.sub_instances = vec![Box::from(partition_instance.clone())];
         {
             // Claimer won
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             let mut reaction = result.unwrap();
             assert!(matches!(
                 &reaction,
@@ -640,16 +572,16 @@ mod tests {
         }
         {
             // DivergenceFound
-            let current_state_partition = "0x446976657267656e6365466f756e64"; // DivergenceFound
-            partition_instance.json_data = partition::tests::build_state_json_data(
-                current_state_partition,
+            let current_state_partition = encode("DivergenceFound");
+            partition_instance.json_data = partition::tests::build_partition_state_json_data(
+                current_state_partition.as_str(),
                 None,
                 None,
                 None,
                 None,
             );
             state_instance.sub_instances = vec![Box::from(partition_instance.clone())];
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             let mut reaction = result.unwrap();
             assert!(matches!(
                 &reaction,
@@ -664,17 +596,17 @@ mod tests {
         }
         {
             // DivergenceFound
-            let current_state_partition = "0x48656c6c6f20576f726c6421"; // Hello World!
-            partition_instance.json_data = partition::tests::build_state_json_data(
-                current_state_partition,
+            let current_state_partition = encode(UNKNOWNSTATE);
+            partition_instance.json_data = partition::tests::build_partition_state_json_data(
+                current_state_partition.as_str(),
                 None,
                 None,
                 None,
                 None,
             );
             state_instance.sub_instances = vec![Box::from(partition_instance.clone())];
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
-            let mut reaction = result.unwrap();
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
+            let mut _reaction = result.unwrap();
             panic!("Should have erroed already");
         }
     }
@@ -682,45 +614,25 @@ mod tests {
     #[test]
     #[should_panic(expected = "Unknown current state Unknown")]
     fn it_should_wait_partition_as_challenger() {
-        let current_state = "0x57616974506172746974696f6e"; // WaitPartition
-        let current_state_partition = "0x446976657267656e6365466f756e64"; // DivergenceFound
-        let machine_id = String::from("Machine000");
+        let current_state = encode("WaitPartition");
+        let current_state_partition = encode("DivergenceFound");
         let archive = Archive::new().unwrap();
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"", //challenger
-            ),
-        };
-        let default_status = build_service_status();
-        let mut partition_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status.clone(),
-            json_data: partition::tests::build_state_json_data(
-                current_state_partition,
-                None,
-                None,
-                None,
-                None,
-            ),
-            sub_instances: vec![],
-        };
+        let concern = build_concern(CHALLENGERADDR);
+        let mut partition_instance = build_state(concern, None);
+        partition_instance.json_data = partition::tests::build_partition_state_json_data(
+            current_state_partition.as_str(),
+            None,
+            None,
+            None,
+            None,
+        );
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+        state_instance.sub_instances = vec![Box::from(partition_instance.clone())];
 
-        let mut state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_vg_state_json_data(current_state, None),
-            sub_instances: vec![Box::from(partition_instance.clone())],
-        };
         {
             // DivergenceFound
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             let mut reaction = result.unwrap();
             assert!(matches!(
                 &reaction,
@@ -735,16 +647,16 @@ mod tests {
         }
         {
             // ChallengerWon
-            let current_state_partition = "0x4368616c6c656e676572576f6e"; // ChallengerWon
-            partition_instance.json_data = partition::tests::build_state_json_data(
-                current_state_partition,
+            let current_state_partition = encode("ChallengerWon");
+            partition_instance.json_data = partition::tests::build_partition_state_json_data(
+                current_state_partition.as_str(),
                 None,
                 None,
                 None,
                 None,
             );
             state_instance.sub_instances = vec![Box::from(partition_instance.clone())];
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             let mut reaction = result.unwrap();
             assert!(matches!(
                 &reaction,
@@ -757,18 +669,18 @@ mod tests {
                 panic!("Only transaction");
             }
         }
-        { 
+        {
             //pass control to the partition dapp
-            let current_state_partition = "0x556e6b6e6f776e"; // Unknown
-            partition_instance.json_data = partition::tests::build_state_json_data(
-                current_state_partition,
+            let current_state_partition = encode(UNKNOWNSTATE);
+            partition_instance.json_data = partition::tests::build_partition_state_json_data(
+                current_state_partition.as_str(),
                 None,
                 None,
                 None,
                 None,
             );
             state_instance.sub_instances = vec![Box::from(partition_instance.clone())];
-            VG::react(&state_instance, &archive, &None, &machine_id).unwrap();
+            VG::react(&state_instance, &archive, &None, &String::from(MACHINEID)).unwrap();
             panic!("Should've errored already");
         }
     }
@@ -777,39 +689,22 @@ mod tests {
     #[should_panic(expected = "ResponseMissError")]
     fn it_should_wait_memory_prove_as_challenger() {
         // WaitMemoryProveValues
-        let machine_id = String::from("Machine000");
-        let current_state = "0x576169744d656d6f727950726f766556616c756573"; // WaitMemoryProveValues
-        let current_state_mm = "0x57616974696e675265706c6179"; // WaitingReplay
-        let default_status = build_service_status();
+        let current_state = encode("WaitMemoryProveValues");
+        let current_state_mm = encode("WaitingReplay");
         let archive = Archive::new().unwrap();
+        let concern = build_concern(CHALLENGERADDR);
 
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"", //challenger
-            ),
-        };
-        let mut mm_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status.clone(),
-            json_data: mm::tests::build_mm_state_json_data(current_state_mm, None),
-            sub_instances: vec![],
-        };
-        let mut state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_vg_state_json_data(current_state, None),
-            sub_instances: vec![Box::from(mm_instance.clone())],
-        };
+        let mut mm_instance = build_state(concern, None);
+        mm_instance.json_data =
+            mm::tests::build_mm_state_json_data(current_state_mm.as_str(), None);
+
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+        state_instance.sub_instances = vec![Box::from(mm_instance.clone())];
+
         {
             //WaitingReplay
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             let mut reaction = result.unwrap();
             assert!(matches!(
                 &reaction,
@@ -824,69 +719,55 @@ mod tests {
         }
         {
             //FinishedReplay
-            let current_state_mm = "0x46696e69736865645265706c6179"; // FinishedReplay
-            mm_instance.json_data =  mm::tests::build_mm_state_json_data(current_state_mm, None);
+            let current_state_mm = encode("FinishedReplay");
+            mm_instance.json_data =
+                mm::tests::build_mm_state_json_data(current_state_mm.as_str(), None);
             state_instance.sub_instances = vec![Box::from(mm_instance.clone())];
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
         {
             //Unkonw state
-            let current_state_mm = "0x48656c6c6f20576f726c6421"; // Hello World!
-            mm_instance.json_data =  mm::tests::build_mm_state_json_data(current_state_mm, None);
+            let current_state_mm = encode(UNKNOWNSTATE);
+            mm_instance.json_data =
+                mm::tests::build_mm_state_json_data(current_state_mm.as_str(), None);
             state_instance.sub_instances = vec![Box::from(mm_instance.clone())];
-            let result = VG::react(&state_instance, &archive, &None, &machine_id);
+            let result = VG::react(&state_instance, &archive, &None, &String::from(MACHINEID));
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
         {
             //WaitingProofs
-            let current_state_mm = "0x57616974696e6750726f6f6673"; // WaitingProofs
-            mm_instance.json_data =  mm::tests::build_mm_state_json_data(current_state_mm, None);
+            let current_state_mm = encode("WaitingProofs");
+            mm_instance.json_data =
+                mm::tests::build_mm_state_json_data(current_state_mm.as_str(), None);
             state_instance.sub_instances = vec![Box::from(mm_instance.clone())];
-            let result = VG::react(&state_instance, &archive, &None, &machine_id).unwrap();
+            let _result =
+                VG::react(&state_instance, &archive, &None, &String::from(MACHINEID)).unwrap();
         }
     }
     #[test]
     fn it_should_call_get_pretty_instance() {
-        let current_state = "0x57616974506172746974696f6e"; // WaitPartition
-        let current_state_partition = "0x446976657267656e6365466f756e64"; // DivergenceFound
-        let machine_id = String::from("Machine000");
+        let current_state = encode("WaitPartition");
+        let current_state_partition = encode("DivergenceFound");
         let archive = Archive::new().unwrap();
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"", //challenger
-            ),
-        };
-        let default_status = build_service_status();
-        let partition_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status.clone(),
-            json_data: partition::tests::build_state_json_data(
-                current_state_partition,
-                None,
-                None,
-                None,
-                None,
-            ),
-            sub_instances: vec![],
-        };
+        let concern = build_concern(CHALLENGERADDR);
+        let mut partition_instance = build_state(concern, None);
+        partition_instance.json_data = partition::tests::build_partition_state_json_data(
+            current_state_partition.as_str(),
+            None,
+            None,
+            None,
+            None,
+        );
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+        state_instance.sub_instances = vec![Box::from(partition_instance.clone())];
 
-        let state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status.clone(),
-            json_data: build_vg_state_json_data(current_state, None),
-            sub_instances: vec![Box::from(partition_instance.clone())],
-        };
         {
             //WaitPartition
-            let result = VG::get_pretty_instance(&state_instance, &archive, &machine_id).unwrap();
+            let result =
+                VG::get_pretty_instance(&state_instance, &archive, &String::from(MACHINEID))
+                    .unwrap();
             assert_eq!("VG", result.name);
             assert_eq!(concern, result.concern);
             assert_eq!(state_instance.index, result.index);
@@ -895,7 +776,7 @@ mod tests {
                 serde_json::from_str(&result.json_data).unwrap();
             assert!(pretty_json.is_object());
             assert_eq!(
-                serde_json::json!("0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818".to_lowercase()),
+                serde_json::json!(CHALLENGERADDR.to_lowercase()),
                 pretty_json["challenger"]
             );
             assert_eq!(serde_json::json!("0x0"), pretty_json["deadline"]);
@@ -916,26 +797,18 @@ mod tests {
         }
         {
             // WaitMemoryProveValues
-            let current_state = "0x576169744d656d6f727950726f766556616c756573"; // WaitMemoryProveValues
-            let current_state_mm = "0x4368616c6c656e676572576f6e"; // ChallengerWon
-            let mm_instance = state::Instance {
-                name: "".to_string(),
-                concern,
-                index: U256::from(0),
-                service_status: default_status.clone(),
-                json_data: mm::tests::build_mm_state_json_data(current_state_mm, None),
-                sub_instances: vec![],
-            };
-            let state_instance = state::Instance {
-                name: "".to_string(),
-                concern,
-                index: U256::from(0),
-                service_status: default_status,
-                json_data: build_vg_state_json_data(current_state, None),
-                sub_instances: vec![Box::from(mm_instance.clone())],
-            };
+            let current_state = encode("WaitMemoryProveValues");
+            let current_state_mm = encode("ChallengerWon");
+            let mut mm_instance = build_state(concern, None);
+            mm_instance.json_data =
+                mm::tests::build_mm_state_json_data(current_state_mm.as_str(), None);
 
-            let result = VG::get_pretty_instance(&state_instance, &archive, &machine_id).unwrap();
+            state_instance.json_data = build_vg_state_json_data(current_state.as_str(), None);
+            state_instance.sub_instances = vec![Box::from(mm_instance.clone())];
+
+            let result =
+                VG::get_pretty_instance(&state_instance, &archive, &String::from(MACHINEID))
+                    .unwrap();
             assert_eq!("VG", result.name);
             assert_eq!(concern, result.concern);
             assert_eq!(state_instance.index, result.index);

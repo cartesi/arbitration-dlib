@@ -247,23 +247,24 @@ impl DApp<MMParams> for MM {
         return Ok(pretty_instance);
     }
 }
-
 #[cfg(test)]
 pub mod tests {
 
     use super::*;
     use emulator_service;
-    use ethereum_types::H160;
+    use tests::{
+        build_concern, build_state, encode, CLAIMERADDR, CONTRACTADDR, MACHINEID, UNKNOWNSTATE,
+    };
 
     pub fn build_mm_state_json_data(current_state: &str, history_length: Option<&str>) -> String {
         let _history_length = history_length.unwrap_or("0x0");
         let data = serde_json::json!([
         {"name": "provider",
-        "value": "0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818",
+        "value": CONTRACTADDR,
         "type": "address"},
 
         {"name": "client",
-        "value": "0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23942020",
+        "value": CLAIMERADDR,
         "type": "address"},
 
         {"name": "initial_hash",
@@ -286,49 +287,22 @@ pub mod tests {
         return String::from(serde_json::to_string(&data).unwrap());
     }
 
-    fn build_service_status() -> state::ServiceStatus {
-        state::ServiceStatus {
-            service_name: "".into(),
-            service_method: "".into(),
-            status: 0,
-            description: "".into(),
-            progress: 0,
-        }
-    }
-
-    fn hash_from_string<'de, T: serde::Deserialize<'de>>(hash: &'de str) -> T {
-        serde_json::from_str::<T>(hash).unwrap()
-    }
-
     #[test]
     fn it_should_be_idle() {
-        let machine_id = String::from("Machine000");
         let divergence_time = U256::from("200");
         let mm_params = MMParams {
-            machine_id,
+            machine_id: String::from(MACHINEID),
             divergence_time,
         };
-        let current_state = "0x46696e69736865645265706c6179"; // FinishedReplay,
-        let default_status = build_service_status();
-        let sub_instances: Vec<Box<state::Instance>> = vec![];
+        let current_state = encode("FinishedReplay"); // FinishedReplay,
         let archive = Archive::new().unwrap();
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-        };
+        // Through out these tests we will be using CONTRACTADDR as the user_address since 
+        //at this point it will not interfere with the results and we want to capture changes
+        //that affect this behaviour
+        let concern = build_concern(CONTRACTADDR);
 
-        let mut state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_mm_state_json_data(current_state, None),
-            sub_instances,
-        };
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_mm_state_json_data(current_state.as_str(), None);
 
         {
             // FinishedReplay
@@ -336,8 +310,8 @@ pub mod tests {
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
         {
-            let current_state = "0x48656c6c6f20576f726c6421"; // Hello World!
-            state_instance.json_data = build_mm_state_json_data(current_state, None);
+            let current_state = encode(UNKNOWNSTATE);
+            state_instance.json_data = build_mm_state_json_data(current_state.as_str(), None);
             let result = MM::react(&state_instance, &archive, &None, &mm_params);
             assert!(matches!(result.unwrap(), Reaction::Idle));
         }
@@ -345,15 +319,13 @@ pub mod tests {
 
     #[test]
     fn it_should_work_waiting_proofs_correclty() {
-        let machine_id = String::from("Machine000");
         let divergence_time = U256::from("200");
         let mm_params = MMParams {
-            machine_id: machine_id.clone(),
+            machine_id: String::from(MACHINEID),
             divergence_time,
         };
-        let current_state = "0x57616974696e6750726f6f6673"; // WaitingProofs,
-        let default_status = build_service_status();
-        let sub_instances: Vec<Box<state::Instance>> = vec![];
+        let current_state = encode("WaitingProofs");
+
         let mut archive = Archive::new().unwrap();
         let proof = emulator_service::Proof {
             address: 100,
@@ -369,26 +341,19 @@ pub mod tests {
             value_written: [0, 1, 2, 3, 4, 5, 6, 7],
             proof,
         };
-        let bin: Vec<u8> = SessionStepResponse { log: vec![access.clone()] }.into();
-        let archive_key =
-            build_session_step_key(machine_id.clone(), mm_params.divergence_time.to_string());
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-        };
+        let bin: Vec<u8> = SessionStepResponse {
+            log: vec![access.clone()],
+        }
+        .into();
+        let archive_key = build_session_step_key(
+            String::from(MACHINEID),
+            mm_params.divergence_time.to_string(),
+        );
+        let concern = build_concern(CONTRACTADDR);
 
-        let mut state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_mm_state_json_data(current_state, None),
-            sub_instances,
-        };
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_mm_state_json_data(current_state.as_str(), None);
+
         {
             //proveRead
             archive.insert_response(archive_key.clone(), Ok(bin.clone()));
@@ -398,6 +363,7 @@ pub mod tests {
                 &reaction,
                 Reaction::Transaction(TransactionRequest)
             ));
+            //@TODO test all fields of the reaction
             if let Reaction::Transaction(ref mut transaction) = reaction {
                 assert_eq!(transaction.concern, concern);
                 assert_eq!(transaction.function, "proveRead");
@@ -408,7 +374,10 @@ pub mod tests {
         {
             //proveWrite
             access.operation = emulator_service::AccessOperation::Write;
-            let bin: Vec<u8> = SessionStepResponse { log: vec![access.clone()] }.into();
+            let bin: Vec<u8> = SessionStepResponse {
+                log: vec![access.clone()],
+            }
+            .into();
             archive.insert_response(archive_key, Ok(bin.clone()));
             let result = MM::react(&state_instance, &archive, &None, &mm_params);
             let mut reaction = result.unwrap();
@@ -416,6 +385,7 @@ pub mod tests {
                 &reaction,
                 Reaction::Transaction(TransactionRequest)
             ));
+            //@TODO test all fields of the reaction
             if let Reaction::Transaction(ref mut transaction) = reaction {
                 assert_eq!(transaction.concern, concern);
                 assert_eq!(transaction.function, "proveWrite");
@@ -425,52 +395,37 @@ pub mod tests {
         }
         {
             // Finish Proof
-            state_instance.json_data = build_mm_state_json_data(current_state, Option::from("0x10"));
+            state_instance.json_data =
+                build_mm_state_json_data(current_state.as_str(), Option::from("0x10"));
             let result = MM::react(&state_instance, &archive, &None, &mm_params);
             let mut reaction = result.unwrap();
             assert!(matches!(
                 &reaction,
                 Reaction::Transaction(TransactionRequest)
             ));
+            //@TODO test all fields of the reaction
             if let Reaction::Transaction(ref mut transaction) = reaction {
                 assert_eq!(transaction.concern, concern);
                 assert_eq!(transaction.function, "finishProofPhase");
             } else {
                 panic!("Only transaction");
             }
-
         }
     }
 
     #[test]
     fn it_should_get_pretty_instance_correctly() {
-        let machine_id = String::from("Machine000");
         let divergence_time = U256::from("200");
         let mm_params = MMParams {
-            machine_id,
+            machine_id: String::from(MACHINEID),
             divergence_time,
         };
-        let current_state = "0x4368616c6c656e676572576f6e"; // ChallengerWon,
-        let default_status = build_service_status();
-        let sub_instances: Vec<Box<state::Instance>> = vec![];
+        let current_state = encode("ChallengerWon"); // ChallengerWon,
         let archive = Archive::new().unwrap();
-        let concern = configuration::Concern {
-            contract_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-            user_address: hash_from_string::<H160>(
-                "\"0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818\"",
-            ),
-        };
+        let concern = build_concern(CONTRACTADDR);
 
-        let state_instance = state::Instance {
-            name: "".to_string(),
-            concern,
-            index: U256::from(0),
-            service_status: default_status,
-            json_data: build_mm_state_json_data(current_state, None),
-            sub_instances,
-        };
+        let mut state_instance = build_state(concern, None);
+        state_instance.json_data = build_mm_state_json_data(current_state.as_str(), None);
 
         let result = MM::get_pretty_instance(&state_instance, &archive, &mm_params).unwrap();
         assert_eq!("MM", result.name);
@@ -481,7 +436,7 @@ pub mod tests {
             serde_json::from_str(&result.json_data).unwrap();
         assert!(pretty_json.is_object());
         assert_eq!(
-            serde_json::json!("0x2dB2FBbF7DAC83b3883F0E4fCB58ba7f23941818".to_lowercase()),
+            serde_json::json!(CONTRACTADDR.to_lowercase()),
             pretty_json["provider"]
         );
         assert_eq!(serde_json::json!("0x0"), pretty_json["history_length"]);
