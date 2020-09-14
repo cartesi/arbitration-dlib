@@ -5,21 +5,20 @@ jobs:
     runs-on: ubuntu-18.04
     services:
         ganache:
-            image: trufflesuite/ganache-cli
-            ports:
-                - 8545:8545
+          image: trufflesuite/ganache-cli
+          ports:
+              - 8545:8545
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-            node-version: '12.x'
-      - run: npm install -g --unsafe-perm=true --allow-root truffle
-      - run: npm install
+            node-version: '14'
+      - run: yarn install
 
       - uses: actions/setup-python@v1
         with:
             python-version: '3.x'
       - run: pip3 install -r requirements.txt
       
-      - run: ./deploy_development.sh
+      - run: yarn run deploy
       - run: ./run_python_tests.sh
