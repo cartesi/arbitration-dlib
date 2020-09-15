@@ -19,35 +19,24 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-import {
-    BuidlerRuntimeEnvironment,
-    DeployFunction
-} from "@nomiclabs/buidler/types";
-import { useOrDeploy } from "../src/helpers/useOrDeploy";
+import { BuidlerRuntimeEnvironment } from "@nomiclabs/buidler/types";
 
-const func: DeployFunction = async (bre: BuidlerRuntimeEnvironment) => {
-    const { deployments, getNamedAccounts } = bre;
-    const { deploy } = deployments;
-    const a = await getNamedAccounts();
-    const { deployer } = await getNamedAccounts();
-    const MerkleAddress = await useOrDeploy(bre, deployer, "Merkle");
-
-    const MMInstantiatorTestAux = await deploy("MMInstantiatorTestAux", {
-        from: deployer,
-        libraries: {
-            Merkle: MerkleAddress
-        },
-        log: true
-    });
-    await deploy("SimpleMemoryInstantiator", { from: deployer, log: true });
-    await deploy("PartitionTestAux", { from: deployer, log: true });
-    await deploy("TestHash", { from: deployer, log: true });
-    await deploy("Hasher", {
-        from: deployer,
-        log: true,
-        args: [MMInstantiatorTestAux.address]
-    });
+export const useOrDeploy = async (
+    bre: BuidlerRuntimeEnvironment,
+    deployer: string,
+    name: string
+): Promise<string> => {
+    const deployment = await bre.deployments.getOrNull(name);
+    if (deployment) {
+        // using pre-deployed contract
+        return deployment.address;
+    } else {
+        // deploying contract
+        const artifact = await bre.deployments.getArtifact(name);
+        const deployed = await bre.deployments.deploy(name, {
+            from: deployer,
+            contract: artifact
+        });
+        return deployed.address;
+    }
 };
-
-export default func;
-export const tags = ["Libs"];
