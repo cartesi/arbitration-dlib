@@ -6,7 +6,7 @@
     "info": "npm-scripts-info",
     "prepare": "buidler compile && buidler typechain",
     "test": "buidler test",
-    "clean": "rimraf artifacts && rimraf cache && rimraf deployments && rimraf src/types/*",
+    "clean": "rimraf artifacts && rimraf cache && rimraf deployments/localhost && rimraf src/types/*",
     "deploy": "run-s deploy:development",
     "deploy:testnet": "run-s deploy:ropsten deploy:rinkeby deploy:kovan deploy:goerli deploy:matic_testnet deploy:bsc_testnet",
     "deploy:development": "buidler deploy --network localhost",
@@ -16,6 +16,7 @@
     "deploy:goerli": "buidler deploy --network goerli",
     "deploy:matic_testnet": "buidler deploy --network matic_testnet",
     "deploy:bsc_testnet": "buidler deploy --network bsc_testnet",
+    "prepack": "run-s clean prepare",
     "start": "buidler node"
   },
   "scripts-info": {
@@ -33,7 +34,7 @@
     "deploy:bsc_testnet": "Deploy contracts to bsc_testnet."
   },
   "dependencies": {
-    "@cartesi/util": "^0.4.1"
+    "@cartesi/util": "^0.4.2"
   },
   "devDependencies": {
     "@nodefactory/buidler-typechain": "^0.2.0",
