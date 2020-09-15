@@ -4,6 +4,7 @@ bin
 cache
 contracts.json
 coverage*
+deployments
 node_modules
 test/*/
 .vscode

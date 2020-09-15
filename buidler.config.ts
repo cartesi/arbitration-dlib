@@ -74,7 +74,7 @@ const config: BuidlerConfig = {
             url: "https://data-seed-prebsc-1-s1.binance.org:8545",
             chainId: 97,
             accounts: mnemonic ? { mnemonic } : undefined
-        }        
+        }
     },
     solc: {
         version: "0.7.1",
@@ -86,6 +86,13 @@ const config: BuidlerConfig = {
         artifacts: "artifacts",
         deploy: "deploy",
         deployments: "deployments"
+    },
+    external: {
+        artifacts: ["node_modules/@cartesi/util/artifacts"],
+        deployments: {
+            localhost: ["node_modules/@cartesi/util/deployments/localhost"],
+            rinkeby: ["node_modules/@cartesi/util/deployments/rinkeby"]
+        }
     },
     typechain: {
         outDir: "src/types",
