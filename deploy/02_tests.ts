@@ -50,4 +50,4 @@ const func: DeployFunction = async (bre: BuidlerRuntimeEnvironment) => {
 };
 
 export default func;
-export const tags = ["Libs"];
+export const tags = ["Tests"];

@@ -91,7 +91,12 @@ const config: BuidlerConfig = {
         artifacts: ["node_modules/@cartesi/util/artifacts"],
         deployments: {
             localhost: ["node_modules/@cartesi/util/deployments/localhost"],
-            rinkeby: ["node_modules/@cartesi/util/deployments/rinkeby"]
+            ropsten: ["node_modules/@cartesi/util/deployments/ropsten"],
+            rinkeby: ["node_modules/@cartesi/util/deployments/rinkeby"],
+            kovan: ["node_modules/@cartesi/util/deployments/kovan"],
+            goerli: ["node_modules/@cartesi/util/deployments/goerli"],
+            matic_testnet: ["node_modules/@cartesi/util/deployments/matic_testnet"],
+            bsc_testnet: ["node_modules/@cartesi/util/deployments/bsc_testnet"]
         }
     },
     typechain: {
