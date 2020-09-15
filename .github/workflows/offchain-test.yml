@@ -1,0 +1,12 @@
+name: Offchain tests
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          token: ${{ secrets.CI_TOKEN }}
+      - run: sudo apt update && sudo apt install protobuf-compiler
+      - run: cd ./compute && cargo test
