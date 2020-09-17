@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@cartesi/util@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@cartesi/util/-/util-0.4.1.tgz#8a84e7dd1e0c5e0b6ddef86272be62cfbff911a1"
-  integrity sha512-Qiug6cMEdv3+JnZ0SFVnZGRNbcUVJ0SdsE1P3DK3+cIsSACrWwIgIrmqft7tqrGoGZ2qawfpoQB5Ox5U2vSG9Q==
+"@cartesi/util@^0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@cartesi/util/-/util-0.4.2.tgz#86aba57ad9b3c820987ff55cc9d23e7c3c145861"
+  integrity sha512-pSy9e3fkRqqvzBl4zHD6tl9n/nng4NGiphbqgGYKji3hRTAYLfm7cBpvz9RSl0tUc9+pXKaxF17rWG8HuPEhfA==
   dependencies:
     "@openzeppelin/contracts" "3.2.0-solc-0.7"
     ethers "5.0.8"

@@ -16,13 +16,13 @@
     "deploy:goerli": "buidler deploy --network goerli",
     "deploy:matic_testnet": "buidler deploy --network matic_testnet",
     "deploy:bsc_testnet": "buidler deploy --network bsc_testnet",
-    "prepack": "run-s clean prepare",
+    "prepack": "run-s clean deploy:testnet",
     "start": "buidler node"
   },
   "scripts-info": {
     "info": "Displays information about the scripts.",
     "test": "Run unit tests",
-    "clean": "Clean build artifacts, including contracts deployment information",
+    "clean": "Clean build artifacts, including contracts local deployment information",
     "deploy": "Deploy contracts to local ganache. Requires ganache running on localhost:8545",
     "deploy:testnet": "Deploy contracts to all supported testnets. Requires two environment variables: PROJECT_ID and MNEMONIC.",
     "deploy:development": "Deploy contracts to local ganache. Requires ganache running on localhost:8545",
@@ -69,6 +69,6 @@
     "contracts",
     "deployments"
   ],
-  "author": "Danilo Tuler <danilo@cartesi.io>",
+  "author": "Danilo Tuler <danilo.tuler@cartesi.io>",
   "license": "GPL-3.0-only"
 }
