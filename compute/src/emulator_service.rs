@@ -189,25 +189,25 @@ impl From<cartesi_machine::Hash> for NewSessionResponse {
 
 /// Access operation is either a `Read` or a `Write`
 #[derive(Debug, Clone)]
-pub enum AccessOperation {
+pub enum AccessType {
     Read,
     Write,
 }
 
-impl From<cartesi_machine::AccessOperation> for AccessOperation {
-    fn from(op: cartesi_machine::AccessOperation) -> Self {
+impl From<cartesi_machine::AccessType> for AccessType {
+    fn from(op: cartesi_machine::AccessType) -> Self {
         match op {
-            cartesi_machine::AccessOperation::READ => AccessOperation::Read,
-            cartesi_machine::AccessOperation::WRITE => AccessOperation::Write,
+            cartesi_machine::AccessType::READ => AccessType::Read,
+            cartesi_machine::AccessType::WRITE => AccessType::Write,
         }
     }
 }
 
-impl From<AccessOperation> for cartesi_machine::AccessOperation{
-    fn from(op: AccessOperation) -> Self { 
+impl From<AccessType> for cartesi_machine::AccessType{
+    fn from(op: AccessType) -> Self { 
         match op {
-            AccessOperation::Read => cartesi_machine::AccessOperation::READ,
-            AccessOperation::Write => cartesi_machine::AccessOperation::WRITE,
+            AccessType::Read => cartesi_machine::AccessType::READ,
+            AccessType::Write => cartesi_machine::AccessType::WRITE,
         }
     }
 }
@@ -279,7 +279,7 @@ impl From<Proof> for cartesi_machine::Proof{
 /// An access to be logged during the step procedure
 #[derive(Debug, Clone)]
 pub struct Access {
-    pub operation: AccessOperation,
+    pub field_type: AccessType,
     pub address: u64,
     pub value_read: [u8; 8],
     pub value_written: [u8; 8],
@@ -300,11 +300,11 @@ fn from_bytes(input: [u8; 8]) -> Vec<u8> {
     vec![input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],]
 }
 
-impl From<cartesi_machine::Access> for Access {
-    fn from(access: cartesi_machine::Access) -> Self {
+impl From<cartesi_machine::WordAccess> for Access {
+    fn from(access: cartesi_machine::WordAccess) -> Self {
         let proof: Proof = access.proof.into_option().expect("proof not found").into();
         Access {
-            operation: access.operation.into(),
+            field_type: access.field_type.into(),
             address: proof.address,
             value_read: to_bytes(
                 access
@@ -327,10 +327,10 @@ impl From<cartesi_machine::Access> for Access {
     }
 }
 
-impl From<Access> for cartesi_machine::Access {
+impl From<Access> for cartesi_machine::WordAccess {
     fn from(access: Access) -> Self {
-        let mut a = cartesi_machine::Access::new();
-        a.operation = access.operation.into();
+        let mut a = cartesi_machine::WordAccess::new();
+        a.field_type = access.field_type.into();
         
         let mut read_word = cartesi_machine::Word::new();
         read_word.data = from_bytes(access.value_read);

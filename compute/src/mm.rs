@@ -32,7 +32,7 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
 use super::{
-    AccessOperation, SessionStepRequest, SessionStepResponse, EMULATOR_METHOD_STEP,
+    AccessType, SessionStepRequest, SessionStepResponse, EMULATOR_METHOD_STEP,
     EMULATOR_SERVICE_NAME,
 };
 
@@ -162,8 +162,8 @@ impl DApp<MMParams> for MM {
                 // !!!!! This should not be necessary, !!!!!!!
                 // !!!!! the emulator should do it     !!!!!!!
                 siblings.reverse();
-                match access.operation {
-                    AccessOperation::Read => {
+                match access.field_type {
+                    AccessType::Read => {
                         let request = TransactionRequest {
                             contract_name: None, // Name not needed, is concern
                             concern: instance.concern.clone(),
@@ -185,7 +185,7 @@ impl DApp<MMParams> for MM {
                         };
                         return Ok(Reaction::Transaction(request));
                     }
-                    AccessOperation::Write => {
+                    AccessType::Write => {
                         let request = TransactionRequest {
                             contract_name: None, // Name not needed, is concern
                             concern: instance.concern.clone(),

@@ -47,7 +47,7 @@ extern crate transaction;
 pub use compute::{Compute, ComputeCtx, ComputeCtxParsed, win_by_deadline_or_idle};
 pub use emulator::{cartesi_machine, machine_manager};
 pub use emulator_service::{
-    AccessOperation, NewSessionRequest, NewSessionResponse, SessionGetProofRequest,
+    AccessType, NewSessionRequest, NewSessionResponse, SessionGetProofRequest,
     SessionGetProofResponse, SessionReadMemoryRequest, SessionReadMemoryResponse,
     SessionRunRequest, SessionRunResponse, SessionStepRequest, SessionStepResponse,
     SessionRunResponseOneOf, SessionRunResult, SessionWriteMemoryRequest,
