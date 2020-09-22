@@ -335,7 +335,7 @@ pub mod tests {
             sibling_hashes: vec![H256::zero(), H256::zero(), H256::zero(), H256::zero()],
         };
         let mut access = emulator_service::Access {
-            operation: emulator_service::AccessOperation::Read,
+            field_type: emulator_service::AccessType::Read,
             address: 100,
             value_read: [0, 1, 2, 3, 4, 5, 6, 7],
             value_written: [0, 1, 2, 3, 4, 5, 6, 7],
@@ -373,7 +373,7 @@ pub mod tests {
         }
         {
             //proveWrite
-            access.operation = emulator_service::AccessOperation::Write;
+            access.field_type = emulator_service::AccessType::Write;
             let bin: Vec<u8> = SessionStepResponse {
                 log: vec![access.clone()],
             }
