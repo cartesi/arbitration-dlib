@@ -18,3 +18,4 @@ build
 emulator/src/*.rs
 !emulator/src/lib.rs
 .venv
+dist

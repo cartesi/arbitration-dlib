@@ -3,23 +3,28 @@
   "version": "0.5.0",
   "description": "Arbitration DLib",
   "scripts": {
+    "build": "hardhat compile && tsc",
+    "copy-dts": "copyfiles -u 1 \"src/**/*.d.ts\" dist/src",
+    "export": "hardhat export-artifacts export/artifacts",
     "info": "npm-scripts-info",
-    "prepare": "buidler compile && buidler typechain",
-    "test": "buidler test",
+    "prepare": "run-s build copy-dts export",
+    "test": "hardhat test",
     "clean": "rimraf artifacts && rimraf cache && rimraf deployments/localhost && rimraf src/types/*",
     "deploy": "run-s deploy:development",
-    "deploy:testnet": "run-s deploy:ropsten deploy:rinkeby deploy:kovan deploy:goerli deploy:matic_testnet deploy:bsc_testnet",
-    "deploy:development": "buidler deploy --network localhost",
-    "deploy:ropsten": "buidler deploy --network ropsten",
-    "deploy:rinkeby": "buidler deploy --network rinkeby",
-    "deploy:kovan": "buidler deploy --network kovan",
-    "deploy:goerli": "buidler deploy --network goerli",
-    "deploy:matic_testnet": "buidler deploy --network matic_testnet",
-    "deploy:bsc_testnet": "buidler deploy --network bsc_testnet",
+    "deploy:testnet": "run-s deploy:rinkeby deploy:kovan deploy:goerli deploy:matic_testnet deploy:bsc_testnet",
+    "deploy:development": "hardhat deploy --network localhost",
+    "deploy:rinkeby": "hardhat deploy --network rinkeby --export export/abi/rinkeby.json",
+    "deploy:kovan": "hardhat deploy --network kovan --export export/abi/kovan.json",
+    "deploy:goerli": "hardhat deploy --network goerli --export export/abi/goerli.json",
+    "deploy:matic_testnet": "hardhat deploy --network matic_testnet --export export/abi/matic_testnet.json",
+    "deploy:bsc_testnet": "hardhat deploy --network bsc_testnet --export export/abi/bsc_testnet.json",
     "prepack": "run-s clean deploy:testnet",
-    "start": "buidler node"
+    "start": "hardhat node"
   },
   "scripts-info": {
+    "build": "Build contracts and typescript code",
+    "copy-dts": "Copy TypeChain type definition files to typescript output dir",
+    "export": "Export artifacts in a simpler format",
     "info": "Displays information about the scripts.",
     "test": "Run unit tests",
     "clean": "Clean build artifacts, including contracts local deployment information",
@@ -34,28 +39,30 @@
     "deploy:bsc_testnet": "Deploy contracts to bsc_testnet."
   },
   "dependencies": {
-    "@cartesi/util": "^0.4.2"
+    "@cartesi/util": "^0.6.1"
   },
   "devDependencies": {
-    "@nodefactory/buidler-typechain": "^0.2.0",
-    "@nomiclabs/buidler": "^1.4.5",
-    "@nomiclabs/buidler-ethers": "^2.0.0",
-    "@nomiclabs/buidler-waffle": "^2.1.0",
-    "@typechain/ethers-v5": "^1.0.0",
-    "@types/chai": "^4.2.12",
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@nomiclabs/hardhat-etherscan": "^2.0.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.0",
+    "@typechain/ethers-v5": "^2.0.0",
+    "@types/chai": "^4.2.14",
     "@types/mocha": "^8.0.3",
-    "@types/node": "^14.6.4",
-    "buidler-deploy": "0.6.0-beta.21",
+    "@types/node": "^14.14.2",
     "chai": "^4.2.0",
-    "ethereum-waffle": "^3.1.0",
+    "copyfiles": "^2.4.0",
+    "ethereum-waffle": "^3.1.2",
+    "ethers": "^5.0.19",
+    "hardhat": "^2.0.2",
+    "hardhat-deploy": "0.7.0-beta.28",
+    "hardhat-typechain": "^0.3.3",
     "npm-run-all": "^4.1.5",
     "npm-scripts-info": "^0.3.9",
     "rimraf": "^3.0.2",
-    "solc": "0.7.1",
-    "ts-generator": "^0.0.8",
+    "ts-generator": "^0.1.1",
     "ts-node": "^9.0.0",
-    "typechain": "^2.0.0",
-    "typescript": "^4.0.2"
+    "typechain": "^3.0.0",
+    "typescript": "^4.0.5"
   },
   "repository": {
     "type": "git",
@@ -65,9 +72,12 @@
     "cartesi"
   ],
   "files": [
-    "artifacts",
     "contracts",
-    "deployments"
+    "deployments/*/*.json",
+    "deployments/*/.chainid",
+    "dist/src/types",
+    "dist/deploy/*.js",
+    "export"
   ],
   "author": "Danilo Tuler <danilo.tuler@cartesi.io>",
   "license": "GPL-3.0-only"

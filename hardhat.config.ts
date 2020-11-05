@@ -1,12 +1,11 @@
-import fs from "fs";
-import { Wallet } from "@ethersproject/wallet";
-import { BuidlerConfig, task, usePlugin } from "@nomiclabs/buidler/config";
-import { HttpNetworkConfig } from "@nomiclabs/buidler/types";
+import { HardhatUserConfig, task } from "hardhat/config";
+import { HttpNetworkUserConfig } from "hardhat/types";
 
-usePlugin("@nomiclabs/buidler-ethers");
-usePlugin("@nomiclabs/buidler-waffle");
-usePlugin("@nodefactory/buidler-typechain");
-usePlugin("buidler-deploy");
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-waffle";
+import "hardhat-typechain";
+import "hardhat-deploy";
+
 
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
@@ -20,33 +19,12 @@ task("accounts", "Prints the list of accounts", async (taskArgs, bre) => {
 
 // read MNEMONIC from file or from env variable
 let mnemonic = process.env.MNEMONIC;
-try {
-    mnemonic = fs
-        .readFileSync(process.env.MNEMONIC_PATH || ".mnemonic")
-        .toString();
-} catch (e) {}
-
-// create a Buidler EVM account array from mnemonic
-const mnemonicAccounts = (n = 10) => {
-    return mnemonic
-        ? Array.from(Array(n).keys()).map(i => {
-              const wallet = Wallet.fromMnemonic(
-                  mnemonic as string,
-                  `m/44'/60'/0'/0/${i}`
-              );
-              return {
-                  privateKey: wallet.privateKey,
-                  balance: "1000000000000000000000"
-              };
-          })
-        : undefined;
-};
 
 const infuraNetwork = (
     network: string,
     chainId?: number,
     gas?: number
-): HttpNetworkConfig => {
+): HttpNetworkUserConfig => {
     return {
         url: `https://${network}.infura.io/v3/${process.env.PROJECT_ID}`,
         chainId,
@@ -55,9 +33,9 @@ const infuraNetwork = (
     };
 };
 
-const config: BuidlerConfig = {
+const config: HardhatUserConfig = {
     networks: {
-        buidlerevm: mnemonic ? { accounts: mnemonicAccounts() } : {},
+        hardhat: mnemonic ? { accounts: { mnemonic } } : {},
         localhost: {
             url: "http://localhost:8545",
             accounts: mnemonic ? { mnemonic } : undefined
@@ -77,10 +55,12 @@ const config: BuidlerConfig = {
             accounts: mnemonic ? { mnemonic } : undefined
         }
     },
-    solc: {
-        version: "0.7.1",
-        optimizer: {
-            enabled: true
+    solidity: {
+        version: "0.7.4",
+        settings: {
+            optimizer: {
+                enabled: true
+            }
         }
     },
     paths: {
@@ -89,7 +69,12 @@ const config: BuidlerConfig = {
         deployments: "deployments"
     },
     external: {
-        artifacts: ["node_modules/@cartesi/util/artifacts"],
+        contracts: [
+            {
+                artifacts: "node_modules/@cartesi/util/export/artifacts",
+                deploy: "node_modules/@cartesi/util/dist/deploy",
+            }
+        ],
         deployments: {
             localhost: ["node_modules/@cartesi/util/deployments/localhost"],
             ropsten: ["node_modules/@cartesi/util/deployments/ropsten"],
