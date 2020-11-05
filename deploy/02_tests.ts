@@ -37,14 +37,7 @@ const func: DeployFunction = async (bre: HardhatRuntimeEnvironment) => {
         },
         log: true
     });
-    await deploy("SimpleMemoryInstantiator", { from: deployer, log: true });
     await deploy("PartitionTestAux", { from: deployer, log: true });
-    await deploy("TestHash", { from: deployer, log: true });
-    await deploy("Hasher", {
-        from: deployer,
-        log: true,
-        args: [MMInstantiatorTestAux.address]
-    });
 };
 
 export default func;
