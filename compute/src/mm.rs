@@ -45,7 +45,6 @@ pub struct MM();
 #[derive(Serialize, Deserialize)]
 pub struct MMCtxParsed(
     pub AddressField,  // provider
-    pub AddressField,  // client
     pub Bytes32Field,  // initialHash
     pub Bytes32Field,  // newHash
     pub U256Field,     // historyLength
@@ -55,7 +54,6 @@ pub struct MMCtxParsed(
 #[derive(Serialize, Debug)]
 pub struct MMCtx {
     pub provider: Address,
-    pub client: Address,
     pub initial_hash: H256,
     pub final_hash: H256,
     pub history_length: U256,
@@ -72,11 +70,10 @@ impl From<MMCtxParsed> for MMCtx {
     fn from(parsed: MMCtxParsed) -> MMCtx {
         MMCtx {
             provider: parsed.0.value,
-            client: parsed.1.value,
-            initial_hash: parsed.2.value,
-            final_hash: parsed.3.value,
-            history_length: parsed.4.value,
-            current_state: parsed.5.value,
+            initial_hash: parsed.1.value,
+            final_hash: parsed.2.value,
+            history_length: parsed.3.value,
+            current_state: parsed.4.value,
         }
     }
 }
@@ -253,7 +250,7 @@ pub mod tests {
     use super::*;
     use emulator_service;
     use tests::{
-        build_concern, build_state, encode, CLAIMERADDR, CONTRACTADDR, MACHINEID, UNKNOWNSTATE,
+        build_concern, build_state, encode, CONTRACTADDR, MACHINEID, UNKNOWNSTATE,
     };
 
     pub fn build_mm_state_json_data(current_state: &str, history_length: Option<&str>) -> String {
@@ -261,10 +258,6 @@ pub mod tests {
         let data = serde_json::json!([
         {"name": "provider",
         "value": CONTRACTADDR,
-        "type": "address"},
-
-        {"name": "client",
-        "value": CLAIMERADDR,
         "type": "address"},
 
         {"name": "initial_hash",
