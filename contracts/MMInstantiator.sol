@@ -42,12 +42,11 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
 
     // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
     struct MMCtx {
+        address owner;
         address provider;
-        address client;
         bytes32 initialHash;
         bytes32 newHash; // hash after some write operations have been proved
         ReadWrite[] history;
-        uint256 historyPointer;
         state currentState;
     }
 
@@ -92,21 +91,20 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
 
     /// @notice Instantiate a memory manager instance.
     /// @param _provider address that will provide memory values/proofs.
-    /// @param _client address that will consume memory values/proofs.
     /// @param _initialHash hash before divergence, in which both client and provider agree.
     /// @return MemoryManager index.
     function instantiate(
+        address _owner,
         address _provider,
         address _client,
         bytes32 _initialHash
     ) public override returns (uint256) {
         require(_provider != _client, "Provider and client need to differ");
         MMCtx storage currentInstance = instance[currentIndex];
+        currentInstance.owner = _owner;
         currentInstance.provider = _provider;
-        currentInstance.client = _client;
         currentInstance.initialHash = _initialHash;
         currentInstance.newHash = _initialHash;
-        currentInstance.historyPointer = 0;
         currentInstance.currentState = state.WaitingProofs;
         emit MemoryCreated(currentIndex, _initialHash);
 
@@ -191,93 +189,15 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         emit FinishedProofs(_index);
     }
 
-    /// @notice Replays a read in memory that has been proved to be correct
-    /// according to initial hash
-    /// @param _position of the desired memory
-    function read(uint256 _index, uint64 _position)
-        public
-        override
-        onlyInstantiated(_index)
-        increasesNonce(_index)
-        returns (bytes8)
-    {
-        require(
-            instance[_index].client == tx.origin,
-            "Transaction has to be originated by the client"
-        );
-        require(
-            instance[_index].currentState == state.WaitingReplay,
-            "CurrentState is not WaitingReplay, cannot read"
-        );
-        require((_position & 7) == 0, "Position is not aligned");
-        uint256 pointer = instance[_index].historyPointer;
-        ReadWrite storage pointInHistory = instance[_index].history[pointer];
-        require(pointInHistory.wasRead, "PointInHistory was not read type");
-        require(
-            pointInHistory.position == _position,
-            "PointInHistory's position does not match"
-        );
-        bytes8 value = pointInHistory.value;
-        delete (instance[_index].history[pointer]);
-        instance[_index].historyPointer++;
-        emit ValueRead(_index, _position, value);
-        return value;
-    }
-
-    /// @notice Replays a write in memory that was proved correct
-    /// @param _position of the write
-    /// @param _value to be written
-    function write(
-        uint256 _index,
-        uint64 _position,
-        bytes8 _value
-    ) public override onlyInstantiated(_index) increasesNonce(_index) {
-        require(
-            instance[_index].client == tx.origin,
-            "Transaction has to be originated by the client"
-        );
-        require(
-            instance[_index].currentState == state.WaitingReplay,
-            "CurrentState is not WaitingReplay, cannot write"
-        );
-        require((_position & 7) == 0, "Position is not aligned");
-        uint256 pointer = instance[_index].historyPointer;
-        ReadWrite storage pointInHistory = instance[_index].history[pointer];
-        require(!pointInHistory.wasRead, "PointInHistory was not write type");
-        require(
-            pointInHistory.position == _position,
-            "PointInHistory's position does not match"
-        );
-        require(
-            pointInHistory.value == _value,
-            "PointInHistory's value does not match"
-        );
-        delete (instance[_index].history[pointer]);
-        instance[_index].historyPointer++;
-        emit ValueWritten(_index, _position, _value);
-    }
-
     /// @notice Stop write (or read) phase
     function finishReplayPhase(uint256 _index)
         public
         override
         onlyInstantiated(_index)
+        onlyBy(instance[_index].owner)
         increasesNonce(_index)
     {
-        require(
-            instance[_index].client == tx.origin,
-            "Transaction has to be originated by the client"
-        );
-        require(
-            instance[_index].currentState == state.WaitingReplay,
-            "CurrentState is not WaitingReplay, cannot finishReplayPhase"
-        );
-        require(
-            instance[_index].historyPointer == instance[_index].history.length,
-            "History pointer does not match length"
-        );
         delete (instance[_index].history);
-        delete (instance[_index].historyPointer);
         instance[_index].currentState = state.FinishedReplay;
 
         deactivate(_index);
@@ -285,14 +205,38 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
     }
 
     // getter methods
+    function getRWArrays(uint256 _index)
+    public
+    override
+    view
+    returns (
+        uint64[] memory,
+        bytes8[] memory,
+        bool[] memory
+    )
+    {
+        ReadWrite[] storage his = instance[_index].history;
+        uint256 length = his.length;
+        uint64[] memory positions = new uint64[](length);
+        bytes8[] memory values = new bytes8[](length);
+        bool[] memory isRead = new bool[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            positions[i] = his[i].position;
+            values[i] = his[i].value;
+            isRead[i] = his[i].wasRead;
+        }
+
+        return (positions, values, isRead);
+    }
+
     function isConcerned(uint256 _index, address _user)
         public
         override
         view
         returns (bool)
     {
-        return ((instance[_index].provider == _user) ||
-            (instance[_index].client == _user));
+        return instance[_index].provider == _user;
     }
 
     function getState(uint256 _index, address)
@@ -301,7 +245,6 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         onlyInstantiated(_index)
         returns (
             address _provider,
-            address _client,
             bytes32 _initialHash,
             bytes32 _newHash,
             uint256 _numberSubmitted,
@@ -312,7 +255,6 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
 
         return (
             i.provider,
-            i.client,
             i.initialHash,
             i.newHash,
             i.history.length,
@@ -338,15 +280,6 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         returns (address)
     {
         return instance[_index].provider;
-    }
-
-    function client(uint256 _index)
-        public
-        view
-        onlyInstantiated(_index)
-        returns (address)
-    {
-        return instance[_index].client;
     }
 
     function initialHash(uint256 _index)
