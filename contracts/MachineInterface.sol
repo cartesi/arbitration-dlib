@@ -28,7 +28,11 @@ pragma solidity ^0.7.0;
 interface MachineInterface {
     event StepGiven(uint8 exitCode);
 
-    function step(uint256) external returns (uint8);
+    function step(
+        uint64[] memory _rwPositions,
+        bytes8[] memory _rwValues,
+        bool[] memory _isRead
+    ) external returns (uint8, uint256);
 
     function getMemoryInteractor() external view returns (address);
 }
