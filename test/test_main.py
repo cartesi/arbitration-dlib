@@ -67,25 +67,16 @@ class BaseTest:
         with open('../deployments/localhost/MMInstantiator.json') as json_file:
             mm_data = json.load(json_file)
             self.mm = w3.eth.contract(address=mm_data['address'], abi=mm_data['abi'])
-        with open('../deployments/localhost/SimpleMemoryInstantiator.json') as json_file:
-            simplemm_data = json.load(json_file)
-            self.mm = w3.eth.contract(address=mm_data['address'], abi=mm_data['abi'])
-        with open('../deployments/localhost/Hasher.json') as json_file:
-            hasher_data = json.load(json_file)
-            self.hasher = w3.eth.contract(address=hasher_data['address'], abi=hasher_data['abi'])
         with open('../deployments/localhost/PartitionInstantiator.json') as json_file:
             partition_data = json.load(json_file)
             self.partition = w3.eth.contract(address=partition_data['address'], abi=partition_data['abi'])
         with open('../deployments/localhost/VGInstantiator.json') as json_file:
             vg_data = json.load(json_file)
             self.vg = w3.eth.contract(address=vg_data['address'], abi=vg_data['abi'])
+            self.vg_address = vg_data['address']
         with open('../deployments/localhost/ComputeInstantiator.json') as json_file:
             compute_data = json.load(json_file)
             self.compute = w3.eth.contract(address=compute_data['address'], abi=compute_data['abi'])
-        with open('../deployments/localhost/TestHash.json') as json_file:
-            testhash_data = json.load(json_file)
-            self.testhash = w3.eth.contract(address=testhash_data['address'], abi=testhash_data['abi'])
-
         with open('../deployments/localhost/MMInstantiatorTestAux.json') as json_file:
             mm_testaux_data = json.load(json_file)
             self.mm_testaux = w3.eth.contract(address=mm_testaux_data['address'], abi=mm_testaux_data['abi'])
