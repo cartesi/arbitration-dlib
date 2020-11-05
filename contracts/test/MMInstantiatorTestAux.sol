@@ -28,33 +28,7 @@ contract MMInstantiatorTestAux is MMInstantiator {
         instance[index].currentState = toState;
     }
 
-    function setHistoryPointerAtIndex(uint256 index, uint256 pointer) public {
-        instance[index].historyPointer = pointer;
-    }
-
-    function setHistoryAtIndex(
-        uint256 index,
-        bool[] memory listOfWasRead,
-        uint64[] memory listOfPositions,
-        bytes8[] memory listOfValues
-    ) public {
-        for (uint256 i = 0; i < listOfWasRead.length; i++) {
-            ReadWrite memory dummyReadWrite;
-            dummyReadWrite.wasRead = listOfWasRead[i];
-            dummyReadWrite.position = listOfPositions[i];
-            dummyReadWrite.value = listOfValues[i];
-
-            instance[index].history.push(dummyReadWrite);
-        }
-    }
-
     function setNewHashAtIndex(uint256 index, bytes32 newHash) public {
         instance[index].newHash = newHash;
-    }
-
-    //Wrapper because ThrowProxy contract do not work with return values
-    //https://github.com/trufflesuite/truffle/issues/1001
-    function readWrapper(uint256 index, uint64 position) public {
-        read(index, position);
     }
 }
