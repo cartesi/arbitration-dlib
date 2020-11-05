@@ -77,8 +77,12 @@ def test_partition_make_query():
         ret = base_test.partition_testaux.functions.getState(index, fake_address).call({'from': address_1})
         assert ret[5][0:13].decode('utf-8') == "WaitingHashes", error_msg
 
+        blocktime = base_test.w3.eth.getBlock('latest')['timestamp']
         error_msg = "time of last move should be now"
         ret_time = base_test.partition_testaux.functions.getTimeOfLastMoveAtIndex(index).call({'from': address_1})
-        assert 2 > (int(ret_time) - int(time.time())), error_msg
+        assert int(blocktime) == int(ret_time), error_msg
+
+        
+       
 
 
