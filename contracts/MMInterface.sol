@@ -31,24 +31,27 @@ interface MMInterface is Instantiator {
     function getCurrentState(uint256 _index) external view returns (bytes32);
 
     function instantiate(
+        address _owner,
         address _provider,
-        address _client,
         bytes32 _initialHash
     ) external returns (uint256);
-
-    function read(uint256 _index, uint64 _position) external returns (bytes8);
-
-    function write(
-        uint256 _index,
-        uint64 _position,
-        bytes8 _value
-    ) external;
 
     function newHash(uint256 _index) external view returns (bytes32);
 
     function finishProofPhase(uint256 _index) external;
 
     function finishReplayPhase(uint256 _index) external;
+
+    function getRWArrays(
+        uint256 _index
+    )
+    external
+    view
+    returns (
+        uint64[] memory,
+        bytes8[] memory,
+        bool[] memory
+    );
 
     function stateIsWaitingProofs(uint256 _index) external view returns (bool);
 
