@@ -96,10 +96,8 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
     function instantiate(
         address _owner,
         address _provider,
-        address _client,
         bytes32 _initialHash
     ) public override returns (uint256) {
-        require(_provider != _client, "Provider and client need to differ");
         MMCtx storage currentInstance = instance[currentIndex];
         currentInstance.owner = _owner;
         currentInstance.provider = _provider;
