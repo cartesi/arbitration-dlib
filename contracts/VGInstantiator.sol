@@ -194,10 +194,9 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
         instance[_index].divergenceTime = divergenceTime;
         instance[_index].hashBeforeDivergence = partition.timeHash(partitionIndex, divergenceTime);
         instance[_index].hashAfterDivergence = partition.timeHash(partitionIndex, divergenceTime + 1);
-        address memoryInteractorAddress = instance[_index].machine.getMemoryInteractor();
         instance[_index].mmInstance = mm.instantiate(
+            address(this),
             instance[_index].challenger,
-            memoryInteractorAddress,
             instance[_index].hashBeforeDivergence
         );
         // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!
@@ -218,7 +217,20 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
         require(instance[_index].currentState == state.WaitMemoryProveValues, "State should be WaitMemoryProveValues");
         uint256 mmIndex = instance[_index].mmInstance;
         require(mm.stateIsWaitingReplay(mmIndex), "State of MM should be WaitingReplay");
-        instance[_index].machine.step(mmIndex);
+
+        (
+            uint64[] memory positions,
+            bytes8[] memory values,
+            bool[] memory wasRead
+        ) = mm.getRWArrays(mmIndex);
+
+        (uint8 exitCode, uint256 memoryAccesses) = instance[_index].machine.step(positions, values, wasRead);
+
+        require(exitCode == 0, "Step didnt exit correctly");
+        require(memoryAccesses == positions.length, "Number of memory acceses didnt match");
+
+        mm.finishReplayPhase(mmIndex);
+
         require(mm.stateIsFinishedReplay(mmIndex), "State of MM  should be FinishedReplay");
         require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence, "newHash should match");
         challengerWins(_index);
