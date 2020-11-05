@@ -43,11 +43,10 @@ def run_between_tests():
 def test_getters():
     base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
-    client = Web3.toChecksumAddress(base_test.w3.eth.accounts[1])
     initial_hash = bytes("initialHash", 'utf-8')
     new_hash = bytes("newHash", 'utf-8')
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, initial_hash).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(base_test.vg_address, provider, initial_hash).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
@@ -55,11 +54,7 @@ def test_getters():
     error_msg = "Provider address should match"
     ret_provider = base_test.mm_testaux.functions.provider(index).call({'from': provider})
     assert ret_provider == provider, error_msg
-    
-    error_msg = "Client address should match"
-    ret_client = base_test.mm_testaux.functions.client(index).call({'from': provider})
-    assert ret_client == client, error_msg
-    
+
     error_msg = "Initial hash should match"
     ret_initial_hash = base_test.mm_testaux.functions.initialHash(index).call({'from': provider})
     assert ret_initial_hash[0:11] == initial_hash, error_msg
@@ -67,11 +62,11 @@ def test_getters():
     # call setNewHashAtIndex function via transaction
     tx_hash = base_test.mm_testaux.functions.setNewHashAtIndex(index, new_hash).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    
+
     error_msg = "New hash should match"
     ret_new_hash = base_test.mm_testaux.functions.newHash(index).call({'from': provider})
     assert ret_new_hash[0:7] == new_hash, error_msg
-    
+
 def test_state_getters():
     base_test = BaseTest()
     provider = Web3.toChecksumAddress(base_test.w3.eth.accounts[0])
@@ -79,14 +74,14 @@ def test_state_getters():
     initial_hash = bytes("initialHash", 'utf-8')
     new_hash = bytes("newHash", 'utf-8')
 
-    tx_hash = base_test.mm_testaux.functions.instantiate(provider, client, initial_hash).transact({'from': provider})
+    tx_hash = base_test.mm_testaux.functions.instantiate(base_test.vg_address, provider, initial_hash).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
     mm_logs = base_test.mm_testaux.events.MemoryCreated().processReceipt(tx_receipt)
     index = mm_logs[0]['args']['_index']
 
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingReplay.value).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    
+
     error_msg = "state should be WaitingReplay"
     ret = base_test.mm_testaux.functions.stateIsWaitingReplay(index).call({'from': provider})
     assert ret, error_msg
@@ -101,7 +96,7 @@ def test_state_getters():
 
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.WaitingProofs.value).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    
+
     error_msg = "state shouldn't be WaitingReplay"
     ret = base_test.mm_testaux.functions.stateIsWaitingReplay(index).call({'from': provider})
     assert not ret, error_msg
@@ -116,7 +111,7 @@ def test_state_getters():
 
     tx_hash = base_test.mm_testaux.functions.setState(index, MMState.FinishedReplay.value).transact({'from': provider})
     tx_receipt = base_test.w3.eth.waitForTransactionReceipt(tx_hash)
-    
+
     error_msg = "state shouldn't be WaitingReplay"
     ret = base_test.mm_testaux.functions.stateIsWaitingReplay(index).call({'from': provider})
     assert not ret, error_msg
