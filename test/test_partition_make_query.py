@@ -82,7 +82,3 @@ def test_partition_make_query():
         ret_time = base_test.partition_testaux.functions.getTimeOfLastMoveAtIndex(index).call({'from': address_1})
         assert int(blocktime) == int(ret_time), error_msg
 
-        
-       
-
-
