@@ -3,7 +3,7 @@ import { HttpNetworkUserConfig } from "hardhat/types";
 
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
-import "hardhat-typechain";
+// import "hardhat-typechain";
 import "hardhat-deploy";
 
 
@@ -85,10 +85,10 @@ const config: HardhatUserConfig = {
             bsc_testnet: ["node_modules/@cartesi/util/deployments/bsc_testnet"]
         }
     },
-    typechain: {
-        outDir: "src/types",
-        target: "ethers-v5"
-    },
+    // typechain: {
+    //     outDir: "src/types",
+    //     target: "ethers-v5"
+    // },
     namedAccounts: {
         deployer: {
             default: 0

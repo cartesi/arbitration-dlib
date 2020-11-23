@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "description": "Arbitration DLib",
   "scripts": {
-    "build": "hardhat compile",
+    "build": "hardhat compile && tsc",
     "copy-dts": "copyfiles -u 1 \"src/**/*.d.ts\" dist/src",
     "export": "hardhat export-artifacts export/artifacts",
     "info": "npm-scripts-info",
