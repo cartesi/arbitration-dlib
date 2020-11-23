@@ -1,0 +1,93 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "_out",
+          "type": "bytes32"
+        }
+      ],
+      "name": "OutB32",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "_out",
+          "type": "uint64"
+        }
+      ],
+      "name": "OutUint64",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes8",
+          "name": "",
+          "type": "bytes8"
+        },
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "name": "testing",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "receipt": {
+    "to": null,
+    "from": "0x18930e8a66a1DbE21D00581216789AAB7460Afd0",
+    "contractAddress": "0xF56bde27D4Cda6Fd80989A524Be8493bB9c8c9aa",
+    "transactionIndex": 16,
+    "gasUsed": "168645",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xdccc7cfbdd00a3477b52950982ff6dbd35ab801f4728726be1eded34eb952b82",
+    "transactionHash": "0x9579b6b94afaf65faacea14a8f20bdc484a09c8687cc57d83cd898de18450660",
+    "logs": [],
+    "blockNumber": 8693091,
+    "cumulativeGasUsed": "543927",
+    "status": 1,
+    "byzantium": true
+  },
+  "address": "0xF56bde27D4Cda6Fd80989A524Be8493bB9c8c9aa",
+  "args": [],
+  "solcInputHash": "0x42b609482474b272bec93b3bfa26f2c87c2a0a56d0daaf2511deb7af6d8c3952",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.1+commit.f4a555be\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"_out\",\"type\":\"bytes32\"}],\"name\":\"OutB32\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"_out\",\"type\":\"uint64\"}],\"name\":\"OutUint64\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes8\",\"name\":\"\",\"type\":\"bytes8\"},{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"name\":\"testing\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/test/TestHash.sol\":\"TestHash\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/test/TestHash.sol\":{\"content\":\"// Copyright (C) 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: GPL-3.0-only\\n// This program is free software: you can redistribute it and/or modify it under\\n// the terms of the GNU General Public License as published by the Free Software\\n// Foundation, either version 3 of the License, or (at your option) any later\\n// version.\\n\\n// This program is distributed in the hope that it will be useful, but WITHOUT ANY\\n// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\\n// PARTICULAR PURPOSE. See the GNU General Public License for more details.\\n\\n// You should have received a copy of the GNU General Public License\\n// along with this program.  If not, see <https://www.gnu.org/licenses/>.\\n\\n// Note: This component currently has dependencies that are licensed under the GNU\\n// GPL, version 3, and so you should treat this component as a whole as being under\\n// the GPL version 3. But all Cartesi-written code in this component is licensed\\n// under the Apache License, version 2, or a compatible permissive license, and can\\n// be used independently under the Apache v2 license. After this component is\\n// rewritten, the entire component will be released under the Apache v2 license.\\n\\npragma solidity ^0.7.0;\\n\\ncontract TestHash {\\n    event OutB32(bytes32 _out);\\n    event OutUint64(uint64 _out);\\n\\n    function testing(bytes8, uint64) public {\\n        uint64 a = uint64(0x0000000000000001);\\n        uint64 b = uint64(0x0100000000000000);\\n\\n        emit OutB32(keccak256(abi.encodePacked(a)));\\n        emit OutB32(keccak256(abi.encodePacked(b)));\\n        emit OutB32(keccak256(abi.encodePacked(a, b)));\\n        emit OutB32(keccak256(abi.encodePacked(a + b)));\\n    }\\n}\\n\",\"keccak256\":\"0xfd758d93bd1b0303a6d30b2e1bf6311d0649c30cabb82795c53d4a4bc8c1bf14\",\"license\":\"GPL-3.0-only\"}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b506102168061001f6000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c80630946c50614610030575b600080fd5b6100676004803603604081101561004657600080fd5b5080356001600160c01b031916906020013567ffffffffffffffff16610069565b005b60408051600160c01b60208083019190915282518083036008018152602883018085528151919092012090529051600191670100000000000000916000805160206101c18339815191529181900360480190a1604080516001600160c01b031960c084901b16602080830191909152825180830360080181526028830180855281519190920120905290516000805160206101c18339815191529181900360480190a1604080516001600160c01b031960c085811b82166020808501919091529085901b9091166028830152825160108184030181526030830180855281519190920120905290516000805160206101c18339815191529181900360500190a1604080516001600160c01b031984840160c01b16602080830191909152825180830360080181526028830180855281519190920120905290516000805160206101c18339815191529181900360480190a15050505056fe28994c6335dbf41500ab3c26d53d481fe33bc2fa178f0ac34f77e44a04646671a264697066735822122007e66f80c4718af8952af204ce34f8cf8ad92cca176e6af042ad18a4c303de0564736f6c63430007010033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c80630946c50614610030575b600080fd5b6100676004803603604081101561004657600080fd5b5080356001600160c01b031916906020013567ffffffffffffffff16610069565b005b60408051600160c01b60208083019190915282518083036008018152602883018085528151919092012090529051600191670100000000000000916000805160206101c18339815191529181900360480190a1604080516001600160c01b031960c084901b16602080830191909152825180830360080181526028830180855281519190920120905290516000805160206101c18339815191529181900360480190a1604080516001600160c01b031960c085811b82166020808501919091529085901b9091166028830152825160108184030181526030830180855281519190920120905290516000805160206101c18339815191529181900360500190a1604080516001600160c01b031984840160c01b16602080830191909152825180830360080181526028830180855281519190920120905290516000805160206101c18339815191529181900360480190a15050505056fe28994c6335dbf41500ab3c26d53d481fe33bc2fa178f0ac34f77e44a04646671a264697066735822122007e66f80c4718af8952af204ce34f8cf8ad92cca176e6af042ad18a4c303de0564736f6c63430007010033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  },
+  "gasEstimates": {
+    "creation": {
+      "codeDepositCost": "106800",
+      "executionCost": "153",
+      "totalCost": "106953"
+    },
+    "external": {
+      "testing(bytes8,uint64)": "infinite"
+    }
+  }
+}

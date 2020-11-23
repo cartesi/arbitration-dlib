@@ -1,10 +1,11 @@
-artifacts
+/artifacts
 src/types
 bin
 cache
 contracts.json
 coverage*
-deployments
+**/solcInputs
+deployments/localhost
 node_modules
 test/*/
 .vscode

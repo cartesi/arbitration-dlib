@@ -1,0 +1,522 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "currentIndex",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "deactivate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "finishProofPhase",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "finishReplayPhase",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCurrentState",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMaxInstanceDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "getNonce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentNonce",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "getSubInstances",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "_addresses",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "_indices",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "instantiate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "isActive",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isConcerned",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "newHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_address",
+          "type": "uint64"
+        }
+      ],
+      "name": "read",
+      "outputs": [
+        {
+          "internalType": "bytes8",
+          "name": "",
+          "type": "bytes8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "stateIsFinishedReplay",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "stateIsWaitingProofs",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "stateIsWaitingReplay",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_address",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes8",
+          "name": "_value",
+          "type": "bytes8"
+        }
+      ],
+      "name": "write",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "receipt": {
+    "to": null,
+    "from": "0x18930e8a66a1DbE21D00581216789AAB7460Afd0",
+    "contractAddress": "0x0f4E152E9bc18De7043aB842B2445d8Cfa780336",
+    "transactionIndex": 2,
+    "gasUsed": "380957",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x58278ed565052984bcd0f592bbb278a32834b3207c2e8c76824bbb3253fdce84",
+    "transactionHash": "0xf93746d70325cd8c1b1dfa0ca59919ace03177dd04de807b1d02478c006cc823",
+    "logs": [],
+    "blockNumber": 3409504,
+    "cumulativeGasUsed": "469786",
+    "status": 1,
+    "byzantium": true
+  },
+  "address": "0x0f4E152E9bc18De7043aB842B2445d8Cfa780336",
+  "args": [],
+  "solcInputHash": "0x42b609482474b272bec93b3bfa26f2c87c2a0a56d0daaf2511deb7af6d8c3952",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.1+commit.f4a555be\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"currentIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"deactivate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"finishProofPhase\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"finishReplayPhase\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"getCurrentState\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"getMaxInstanceDuration\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"currentNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getSubInstances\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"_addresses\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"_indices\",\"type\":\"uint256[]\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"instantiate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"isActive\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isConcerned\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"newHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"_address\",\"type\":\"uint64\"}],\"name\":\"read\",\"outputs\":[{\"internalType\":\"bytes8\",\"name\":\"\",\"type\":\"bytes8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stateIsFinishedReplay\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stateIsWaitingProofs\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stateIsWaitingReplay\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"_address\",\"type\":\"uint64\"},{\"internalType\":\"bytes8\",\"name\":\"_value\",\"type\":\"bytes8\"}],\"name\":\"write\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"read(uint256,uint64)\":{\"params\":{\"_address\":\"of the desired memory\"}},\"write(uint256,uint64,bytes8)\":{\"params\":{\"_address\":\"of the write\",\"_value\":\"to be written\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"read(uint256,uint64)\":{\"notice\":\"reads a slot in memory\"},\"write(uint256,uint64,bytes8)\":{\"notice\":\"writes on a slot of memory during read and write phase\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/test/SimpleMemoryInstantiator.sol\":\"SimpleMemoryInstantiator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@cartesi/util/contracts/Instantiator.sol\":{\"content\":\"// Copyright 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: Apache-2.0\\n// Licensed under the Apache License, Version 2.0 (the \\\"License\\\"); you may not use\\n// this file except in compliance with the License. You may obtain a copy of the\\n// License at http://www.apache.org/licenses/LICENSE-2.0\\n\\n// Unless required by applicable law or agreed to in writing, software distributed\\n// under the License is distributed on an \\\"AS IS\\\" BASIS, WITHOUT WARRANTIES OR\\n// CONDITIONS OF ANY KIND, either express or implied. See the License for the\\n// specific language governing permissions and limitations under the License.\\n\\n\\npragma solidity ^0.7.0;\\n\\n\\ninterface Instantiator {\\n\\n    modifier onlyInstantiated(uint256 _index) virtual;\\n\\n    modifier onlyActive(uint256 _index) virtual;\\n\\n    modifier increasesNonce(uint256 _index) virtual;\\n\\n    function isActive(uint256 _index) external view returns (bool);\\n\\n    function getNonce(uint256 _index) external view returns (uint256);\\n\\n    function isConcerned(uint256 _index, address _user) external view returns (bool);\\n\\n    function getSubInstances(uint256 _index, address) external view returns (address[] memory _addresses, uint256[] memory _indices);\\n\\n    function deactivate(uint256 _index) external;\\n}\\n\",\"keccak256\":\"0x084e3e769f423b3f32bd8faf119be132a478eeea8006bed69b527b2fdcfd45a1\",\"license\":\"Apache-2.0\"},\"@cartesi/util/contracts/InstantiatorImpl.sol\":{\"content\":\"// Copyright 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: Apache-2.0\\n// Licensed under the Apache License, Version 2.0 (the \\\"License\\\"); you may not use\\n// this file except in compliance with the License. You may obtain a copy of the\\n// License at http://www.apache.org/licenses/LICENSE-2.0\\n\\n// Unless required by applicable law or agreed to in writing, software distributed\\n// under the License is distributed on an \\\"AS IS\\\" BASIS, WITHOUT WARRANTIES OR\\n// CONDITIONS OF ANY KIND, either express or implied. See the License for the\\n// specific language governing permissions and limitations under the License.\\n\\npragma solidity ^0.7.0;\\n\\nimport \\\"./Instantiator.sol\\\";\\n\\nabstract contract InstantiatorImpl is Instantiator {\\n    uint256 public currentIndex = 0;\\n\\n    mapping(uint256 => bool) internal active;\\n    mapping(uint256 => uint256) internal nonce;\\n\\n    modifier onlyInstantiated(uint256 _index) override {\\n        require(currentIndex > _index, \\\"Index not instantiated\\\");\\n        _;\\n    }\\n\\n    modifier onlyActive(uint256 _index) override {\\n        require(currentIndex > _index, \\\"Index not instantiated\\\");\\n        require(isActive(_index), \\\"Index inactive\\\");\\n        _;\\n    }\\n\\n    modifier increasesNonce(uint256 _index) override {\\n        nonce[_index]++;\\n        _;\\n    }\\n\\n    function isActive(uint256 _index) public override view returns (bool) {\\n        return (active[_index]);\\n    }\\n\\n    function getNonce(uint256 _index)\\n        public\\n        override\\n        view\\n        onlyActive(_index)\\n        returns (uint256 currentNonce)\\n    {\\n        return nonce[_index];\\n    }\\n\\n    function deactivate(uint256 _index) public override {\\n        active[_index] = false;\\n        nonce[_index] = 0;\\n    }\\n}\\n\",\"keccak256\":\"0xc1db237a28042f74224ae2d4398616fb670ce87709ffd8505c142cddedee6954\",\"license\":\"Apache-2.0\"},\"contracts/MMInterface.sol\":{\"content\":\"// Copyright (C) 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: GPL-3.0-only\\n// This program is free software: you can redistribute it and/or modify it under\\n// the terms of the GNU General Public License as published by the Free Software\\n// Foundation, either version 3 of the License, or (at your option) any later\\n// version.\\n\\n// This program is distributed in the hope that it will be useful, but WITHOUT ANY\\n// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\\n// PARTICULAR PURPOSE. See the GNU General Public License for more details.\\n\\n// You should have received a copy of the GNU General Public License\\n// along with this program.  If not, see <https://www.gnu.org/licenses/>.\\n\\n// Note: This component currently has dependencies that are licensed under the GNU\\n// GPL, version 3, and so you should treat this component as a whole as being under\\n// the GPL version 3. But all Cartesi-written code in this component is licensed\\n// under the Apache License, version 2, or a compatible permissive license, and can\\n// be used independently under the Apache v2 license. After this component is\\n// rewritten, the entire component will be released under the Apache v2 license.\\n\\n/// @title Interface for memory manager instantiator\\npragma solidity ^0.7.0;\\n\\nimport \\\"@cartesi/util/contracts/Instantiator.sol\\\";\\n\\ninterface MMInterface is Instantiator {\\n    enum state {WaitingProofs, WaitingReplay, FinishedReplay}\\n\\n    function getCurrentState(uint256 _index) external view returns (bytes32);\\n\\n    function instantiate(\\n        address _provider,\\n        address _client,\\n        bytes32 _initialHash\\n    ) external returns (uint256);\\n\\n    function read(uint256 _index, uint64 _position) external returns (bytes8);\\n\\n    function write(\\n        uint256 _index,\\n        uint64 _position,\\n        bytes8 _value\\n    ) external;\\n\\n    function newHash(uint256 _index) external view returns (bytes32);\\n\\n    function finishProofPhase(uint256 _index) external;\\n\\n    function finishReplayPhase(uint256 _index) external;\\n\\n    function stateIsWaitingProofs(uint256 _index) external view returns (bool);\\n\\n    function stateIsWaitingReplay(uint256 _index) external view returns (bool);\\n\\n    function stateIsFinishedReplay(uint256 _index) external view returns (bool);\\n\\n    function getMaxInstanceDuration(\\n        uint256 _roundDuration,\\n        uint256 _timeToStartMachine\\n    ) external view returns (uint256);\\n}\\n\",\"keccak256\":\"0xe5e3665a3d9d2afb1dcec8496525625e04af657676e18e14a0916e3eca3227ad\",\"license\":\"GPL-3.0-only\"},\"contracts/test/SimpleMemoryInstantiator.sol\":{\"content\":\"// Copyright (C) 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: GPL-3.0-only\\n// This program is free software: you can redistribute it and/or modify it under\\n// the terms of the GNU General Public License as published by the Free Software\\n// Foundation, either version 3 of the License, or (at your option) any later\\n// version.\\n\\n// This program is distributed in the hope that it will be useful, but WITHOUT ANY\\n// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\\n// PARTICULAR PURPOSE. See the GNU General Public License for more details.\\n\\n// You should have received a copy of the GNU General Public License\\n// along with this program.  If not, see <https://www.gnu.org/licenses/>.\\n\\n// Note: This component currently has dependencies that are licensed under the GNU\\n// GPL, version 3, and so you should treat this component as a whole as being under\\n// the GPL version 3. But all Cartesi-written code in this component is licensed\\n// under the Apache License, version 2, or a compatible permissive license, and can\\n// be used independently under the Apache v2 license. After this component is\\n// rewritten, the entire component will be released under the Apache v2 license.\\n\\n/// @title Partition contract\\npragma solidity ^0.7.0;\\n\\nimport \\\"@cartesi/util/contracts/InstantiatorImpl.sol\\\";\\nimport \\\"../MMInterface.sol\\\";\\n\\ncontract SimpleMemoryInstantiator is InstantiatorImpl, MMInterface {\\n    struct SimpleMemoryCtx {\\n        mapping(uint64 => bytes8) value; // value present at address\\n    }\\n\\n    mapping(uint256 => SimpleMemoryCtx) private instance;\\n\\n    function instantiate(\\n        address,\\n        address,\\n        bytes32\\n    ) public override returns (uint256) {\\n        active[currentIndex] = true;\\n        return (currentIndex++);\\n    }\\n\\n    /// @notice reads a slot in memory\\n    /// @param _address of the desired memory\\n    function read(uint256 _index, uint64 _address)\\n        public\\n        override\\n        view\\n        returns (bytes8)\\n    {\\n        require((_address & 7) == 0);\\n        return instance[_index].value[_address];\\n    }\\n\\n    /// @notice writes on a slot of memory during read and write phase\\n    /// @param _address of the write\\n    /// @param _value to be written\\n    function write(\\n        uint256 _index,\\n        uint64 _address,\\n        bytes8 _value\\n    ) public override {\\n        require((_address & 7) == 0);\\n        instance[_index].value[_address] = _value;\\n    }\\n\\n    function newHash(uint256) public override pure returns (bytes32) {\\n        require(false);\\n    }\\n\\n    function finishProofPhase(uint256) public override {}\\n\\n    function finishReplayPhase(uint256) public override {}\\n\\n    function stateIsWaitingProofs(uint256) public override pure returns (bool) {\\n        require(false);\\n        return (true);\\n    }\\n\\n    function stateIsWaitingReplay(uint256) public override pure returns (bool) {\\n        require(false);\\n        return (true);\\n    }\\n\\n    function stateIsFinishedReplay(uint256)\\n        public\\n        override\\n        pure\\n        returns (bool)\\n    {\\n        require(false);\\n        return (true);\\n    }\\n\\n    function isConcerned(uint256, address) public override pure returns (bool) {\\n        return (true);\\n    }\\n\\n    function getCurrentState(uint256) public override pure returns (bytes32) {\\n        return (bytes32(0));\\n    }\\n\\n    function getMaxStateDuration(\\n        state,\\n        uint256,\\n        uint256\\n    ) private pure returns (uint256) {\\n        return 0;\\n    }\\n\\n    function getMaxInstanceDuration(uint256, uint256)\\n        public\\n        override\\n        pure\\n        returns (uint256)\\n    {\\n        return 0;\\n    }\\n\\n    function getSubInstances(uint256, address)\\n        public\\n        override\\n        pure\\n        returns (address[] memory _addresses, uint256[] memory _indices)\\n    {\\n        address[] memory a = new address[](0);\\n        uint256[] memory b = new uint256[](0);\\n        return (a, b);\\n    }\\n}\\n\",\"keccak256\":\"0x6fede5442502006fb3bcbabb079033f026c525115ae4a5a6a0e4263bfd408c70\",\"license\":\"GPL-3.0-only\"}},\"version\":1}",
+  "bytecode": "0x60806040526000805534801561001457600080fd5b506105e9806100246000396000f3fe608060405234801561001057600080fd5b506004361061010b5760003560e01c80635748c130116100a25780638a05e478116100715780638a05e478146102a757806390645840146102dd578063916b9bef146102f357806396f429ba14610150578063c526656c146103105761010b565b80635748c1301461024a5780637d036b0d146101e357806382afd23b1461026757806384dfd44d146102845761010b565b80633d46b819116100de5780633d46b819146101c65780633ed5d456146101e357806343d4b78b1461015057806346336cd3146102005761010b565b806301ff62ab146101105780631c5d3c601461015057806326987b601461016d578063281ca73e14610187575b600080fd5b61013c6004803603604081101561012657600080fd5b50803590602001356001600160a01b03166103d5565b604080519115158252519081900360200190f35b61013c6004803603602081101561016657600080fd5b50356103dd565b6101756103e3565b60408051918252519081900360200190f35b6101c46004803603606081101561019d57600080fd5b50803590602081013567ffffffffffffffff1690604001356001600160c01b0319166103e9565b005b610175600480360360208110156101dc57600080fd5b5035610437565b6101c4600480360360208110156101f957600080fd5b50356104e8565b61022d6004803603604081101561021657600080fd5b508035906020013567ffffffffffffffff166104eb565b604080516001600160c01b03199092168252519081900360200190f35b6101756004803603602081101561026057600080fd5b5035610528565b61013c6004803603602081101561027d57600080fd5b503561052e565b6101756004803603604081101561029a57600080fd5b5080359060200135610543565b610175600480360360608110156102bd57600080fd5b506001600160a01b0381358116916020810135909116906040013561054b565b6101756004803603602081101561016657600080fd5b6101c46004803603602081101561030957600080fd5b5035610575565b61033c6004803603604081101561032657600080fd5b50803590602001356001600160a01b0316610598565b604051808060200180602001838103835285818151815260200191508051906020019060200280838360005b83811015610380578181015183820152602001610368565b50505050905001838103825284818151815260200191508051906020019060200280838360005b838110156103bf5781810151838201526020016103a7565b5050505090500194505050505060405180910390f35b600192915050565b60008080fd5b60005481565b60078216156103f757600080fd5b600092835260036020908152604080852067ffffffffffffffff9490941685529290529120805467ffffffffffffffff191660c09290921c919091179055565b6000818060005411610489576040805162461bcd60e51b8152602060048201526016602482015275125b99195e081b9bdd081a5b9cdd185b9d1a585d195960521b604482015290519081900360640190fd5b6104928161052e565b6104d4576040805162461bcd60e51b815260206004820152600e60248201526d496e64657820696e61637469766560901b604482015290519081900360640190fd5b505060009081526002602052604090205490565b50565b600060078216156104fb57600080fd5b50600091825260036020908152604080842067ffffffffffffffff93909316845291905290205460c01b90565b50600090565b60009081526001602052604090205460ff1690565b600092915050565b6000805481526001602081905260408220805460ff19168217905581549081019091559392505050565b6000908152600160209081526040808320805460ff191690556002909152812055565b5050604080516000808252602082019081528183019092529156fea26469706673582212209a43abe09f0956b87b0efea3d63ba873f5601597a5950307388ceb971130d40664736f6c63430007010033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061010b5760003560e01c80635748c130116100a25780638a05e478116100715780638a05e478146102a757806390645840146102dd578063916b9bef146102f357806396f429ba14610150578063c526656c146103105761010b565b80635748c1301461024a5780637d036b0d146101e357806382afd23b1461026757806384dfd44d146102845761010b565b80633d46b819116100de5780633d46b819146101c65780633ed5d456146101e357806343d4b78b1461015057806346336cd3146102005761010b565b806301ff62ab146101105780631c5d3c601461015057806326987b601461016d578063281ca73e14610187575b600080fd5b61013c6004803603604081101561012657600080fd5b50803590602001356001600160a01b03166103d5565b604080519115158252519081900360200190f35b61013c6004803603602081101561016657600080fd5b50356103dd565b6101756103e3565b60408051918252519081900360200190f35b6101c46004803603606081101561019d57600080fd5b50803590602081013567ffffffffffffffff1690604001356001600160c01b0319166103e9565b005b610175600480360360208110156101dc57600080fd5b5035610437565b6101c4600480360360208110156101f957600080fd5b50356104e8565b61022d6004803603604081101561021657600080fd5b508035906020013567ffffffffffffffff166104eb565b604080516001600160c01b03199092168252519081900360200190f35b6101756004803603602081101561026057600080fd5b5035610528565b61013c6004803603602081101561027d57600080fd5b503561052e565b6101756004803603604081101561029a57600080fd5b5080359060200135610543565b610175600480360360608110156102bd57600080fd5b506001600160a01b0381358116916020810135909116906040013561054b565b6101756004803603602081101561016657600080fd5b6101c46004803603602081101561030957600080fd5b5035610575565b61033c6004803603604081101561032657600080fd5b50803590602001356001600160a01b0316610598565b604051808060200180602001838103835285818151815260200191508051906020019060200280838360005b83811015610380578181015183820152602001610368565b50505050905001838103825284818151815260200191508051906020019060200280838360005b838110156103bf5781810151838201526020016103a7565b5050505090500194505050505060405180910390f35b600192915050565b60008080fd5b60005481565b60078216156103f757600080fd5b600092835260036020908152604080852067ffffffffffffffff9490941685529290529120805467ffffffffffffffff191660c09290921c919091179055565b6000818060005411610489576040805162461bcd60e51b8152602060048201526016602482015275125b99195e081b9bdd081a5b9cdd185b9d1a585d195960521b604482015290519081900360640190fd5b6104928161052e565b6104d4576040805162461bcd60e51b815260206004820152600e60248201526d496e64657820696e61637469766560901b604482015290519081900360640190fd5b505060009081526002602052604090205490565b50565b600060078216156104fb57600080fd5b50600091825260036020908152604080842067ffffffffffffffff93909316845291905290205460c01b90565b50600090565b60009081526001602052604090205460ff1690565b600092915050565b6000805481526001602081905260408220805460ff19168217905581549081019091559392505050565b6000908152600160209081526040808320805460ff191690556002909152812055565b5050604080516000808252602082019081528183019092529156fea26469706673582212209a43abe09f0956b87b0efea3d63ba873f5601597a5950307388ceb971130d40664736f6c63430007010033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "read(uint256,uint64)": {
+        "params": {
+          "_address": "of the desired memory"
+        }
+      },
+      "write(uint256,uint64,bytes8)": {
+        "params": {
+          "_address": "of the write",
+          "_value": "to be written"
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "read(uint256,uint64)": {
+        "notice": "reads a slot in memory"
+      },
+      "write(uint256,uint64,bytes8)": {
+        "notice": "writes on a slot of memory during read and write phase"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 94,
+        "contract": "contracts/test/SimpleMemoryInstantiator.sol:SimpleMemoryInstantiator",
+        "label": "currentIndex",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 98,
+        "contract": "contracts/test/SimpleMemoryInstantiator.sol:SimpleMemoryInstantiator",
+        "label": "active",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_bool)"
+      },
+      {
+        "astId": 102,
+        "contract": "contracts/test/SimpleMemoryInstantiator.sol:SimpleMemoryInstantiator",
+        "label": "nonce",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_uint256,t_uint256)"
+      },
+      {
+        "astId": 6951,
+        "contract": "contracts/test/SimpleMemoryInstantiator.sol:SimpleMemoryInstantiator",
+        "label": "instance",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_uint256,t_struct(SimpleMemoryCtx)6947_storage)"
+      }
+    ],
+    "types": {
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes8": {
+        "encoding": "inplace",
+        "label": "bytes8",
+        "numberOfBytes": "8"
+      },
+      "t_mapping(t_uint256,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_struct(SimpleMemoryCtx)6947_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct SimpleMemoryInstantiator.SimpleMemoryCtx)",
+        "numberOfBytes": "32",
+        "value": "t_struct(SimpleMemoryCtx)6947_storage"
+      },
+      "t_mapping(t_uint256,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_uint64,t_bytes8)": {
+        "encoding": "mapping",
+        "key": "t_uint64",
+        "label": "mapping(uint64 => bytes8)",
+        "numberOfBytes": "32",
+        "value": "t_bytes8"
+      },
+      "t_struct(SimpleMemoryCtx)6947_storage": {
+        "encoding": "inplace",
+        "label": "struct SimpleMemoryInstantiator.SimpleMemoryCtx",
+        "members": [
+          {
+            "astId": 6946,
+            "contract": "contracts/test/SimpleMemoryInstantiator.sol:SimpleMemoryInstantiator",
+            "label": "value",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_uint64,t_bytes8)"
+          }
+        ],
+        "numberOfBytes": "32"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint64": {
+        "encoding": "inplace",
+        "label": "uint64",
+        "numberOfBytes": "8"
+      }
+    }
+  },
+  "gasEstimates": {
+    "creation": {
+      "codeDepositCost": "302600",
+      "executionCost": "5349",
+      "totalCost": "307949"
+    },
+    "external": {
+      "currentIndex()": "1066",
+      "deactivate(uint256)": "26202",
+      "finishProofPhase(uint256)": "233",
+      "finishReplayPhase(uint256)": "233",
+      "getCurrentState(uint256)": "265",
+      "getMaxInstanceDuration(uint256,uint256)": "351",
+      "getNonce(uint256)": "2881",
+      "getSubInstances(uint256,address)": "722",
+      "instantiate(address,address,bytes32)": "42842",
+      "isActive(uint256)": "1185",
+      "isConcerned(uint256,address)": "310",
+      "newHash(uint256)": "230",
+      "read(uint256,uint64)": "1361",
+      "stateIsFinishedReplay(uint256)": "274",
+      "stateIsWaitingProofs(uint256)": "232",
+      "stateIsWaitingReplay(uint256)": "253",
+      "write(uint256,uint64,bytes8)": "21354"
+    },
+    "internal": {
+      "getMaxStateDuration(enum MMInterface.state,uint256,uint256)": "infinite"
+    }
+  }
+}

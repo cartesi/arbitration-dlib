@@ -1,0 +1,955 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "FinishedProofs",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "FinishedReplay",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "_initialHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "MemoryCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "_wasRead",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "_position",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes8",
+          "name": "_value",
+          "type": "bytes8"
+        }
+      ],
+      "name": "ValueProved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "_position",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes8",
+          "name": "_value",
+          "type": "bytes8"
+        }
+      ],
+      "name": "ValueRead",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "_position",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes8",
+          "name": "_value",
+          "type": "bytes8"
+        }
+      ],
+      "name": "ValueWritten",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "client",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "currentIndex",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "deactivate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "finishProofPhase",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "finishReplayPhase",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "getCurrentState",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_roundDuration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_timeToStartMachine",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMaxInstanceDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "getNonce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentNonce",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "getState",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_provider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_client",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_initialHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_newHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_numberSubmitted",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_currentState",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "getSubInstances",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_provider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_client",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_initialHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "instantiate",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "isActive",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "isConcerned",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "newHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_position",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes8",
+          "name": "_value",
+          "type": "bytes8"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "proveRead",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_position",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes8",
+          "name": "_oldValue",
+          "type": "bytes8"
+        },
+        {
+          "internalType": "bytes8",
+          "name": "_newValue",
+          "type": "bytes8"
+        },
+        {
+          "internalType": "bytes32[]",
+          "name": "proof",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "proveWrite",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "provider",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_position",
+          "type": "uint64"
+        }
+      ],
+      "name": "read",
+      "outputs": [
+        {
+          "internalType": "bytes8",
+          "name": "",
+          "type": "bytes8"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "stateIsFinishedReplay",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "stateIsWaitingProofs",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "stateIsWaitingReplay",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_position",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes8",
+          "name": "_value",
+          "type": "bytes8"
+        }
+      ],
+      "name": "write",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "receipt": {
+    "to": null,
+    "from": "0x18930e8a66a1DbE21D00581216789AAB7460Afd0",
+    "contractAddress": "0xc07948989C64fa5CcdA1d1dc90002A3cB50eB61a",
+    "transactionIndex": 29,
+    "gasUsed": "2007451",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xc4254269083a225f3a348b55259897546fe3dc9e100f567e15762fc4d047743a",
+    "transactionHash": "0xe7dda86643afff56f9ab7f10949a53c61672a48e1332566c69982af82e36feea",
+    "logs": [],
+    "blockNumber": 8693081,
+    "cumulativeGasUsed": "2962896",
+    "status": 1,
+    "byzantium": true
+  },
+  "address": "0xc07948989C64fa5CcdA1d1dc90002A3cB50eB61a",
+  "args": [],
+  "solcInputHash": "0x42b609482474b272bec93b3bfa26f2c87c2a0a56d0daaf2511deb7af6d8c3952",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.1+commit.f4a555be\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"FinishedProofs\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"FinishedReplay\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"_initialHash\",\"type\":\"bytes32\"}],\"name\":\"MemoryCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"_wasRead\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"_position\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes8\",\"name\":\"_value\",\"type\":\"bytes8\"}],\"name\":\"ValueProved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"_position\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes8\",\"name\":\"_value\",\"type\":\"bytes8\"}],\"name\":\"ValueRead\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"_position\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes8\",\"name\":\"_value\",\"type\":\"bytes8\"}],\"name\":\"ValueWritten\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"client\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"deactivate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"finishProofPhase\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"finishReplayPhase\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"getCurrentState\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_roundDuration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_timeToStartMachine\",\"type\":\"uint256\"}],\"name\":\"getMaxInstanceDuration\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"getNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"currentNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getState\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"_provider\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_client\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"_initialHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"_newHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_numberSubmitted\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"_currentState\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getSubInstances\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"initialHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_provider\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_client\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"_initialHash\",\"type\":\"bytes32\"}],\"name\":\"instantiate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"isActive\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_user\",\"type\":\"address\"}],\"name\":\"isConcerned\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"newHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"_position\",\"type\":\"uint64\"},{\"internalType\":\"bytes8\",\"name\":\"_value\",\"type\":\"bytes8\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"proveRead\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"_position\",\"type\":\"uint64\"},{\"internalType\":\"bytes8\",\"name\":\"_oldValue\",\"type\":\"bytes8\"},{\"internalType\":\"bytes8\",\"name\":\"_newValue\",\"type\":\"bytes8\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"proveWrite\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"provider\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"_position\",\"type\":\"uint64\"}],\"name\":\"read\",\"outputs\":[{\"internalType\":\"bytes8\",\"name\":\"\",\"type\":\"bytes8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"stateIsFinishedReplay\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"stateIsWaitingProofs\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"stateIsWaitingReplay\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"_position\",\"type\":\"uint64\"},{\"internalType\":\"bytes8\",\"name\":\"_value\",\"type\":\"bytes8\"}],\"name\":\"write\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"getMaxInstanceDuration(uint256,uint256)\":{\"params\":{\"_timeToStartMachine\":\"time to build the machine for the first time\"}},\"instantiate(address,address,bytes32)\":{\"params\":{\"_client\":\"address that will consume memory values/proofs.\",\"_initialHash\":\"hash before divergence, in which both client and provider agree.\",\"_provider\":\"address that will provide memory values/proofs.\"},\"returns\":{\"_0\":\"MemoryManager index.\"}},\"proveWrite(uint256,uint64,bytes8,bytes8,bytes32[])\":{\"params\":{\"_newValue\":\"to be written\",\"_oldValue\":\"before write\",\"_position\":\"to be written\",\"proof\":\"The proof that the old value was correct\"}},\"read(uint256,uint64)\":{\"params\":{\"_position\":\"of the desired memory\"}},\"write(uint256,uint64,bytes8)\":{\"params\":{\"_position\":\"of the write\",\"_value\":\"to be written\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"finishProofPhase(uint256)\":{\"notice\":\"Stop memory insertion and start read and write phase\"},\"finishReplayPhase(uint256)\":{\"notice\":\"Stop write (or read) phase\"},\"instantiate(address,address,bytes32)\":{\"notice\":\"Instantiate a memory manager instance.\"},\"proveRead(uint256,uint64,bytes8,bytes32[])\":{\"notice\":\"Proves that a certain value in current memory is correct\"},\"proveWrite(uint256,uint64,bytes8,bytes8,bytes32[])\":{\"notice\":\"Register a write operation and update newHash\"},\"read(uint256,uint64)\":{\"notice\":\"Replays a read in memory that has been proved to be correct according to initial hash\"},\"write(uint256,uint64,bytes8)\":{\"notice\":\"Replays a write in memory that was proved correct\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/MMInstantiator.sol\":\"MMInstantiator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@cartesi/util/contracts/Decorated.sol\":{\"content\":\"// Copyright 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: Apache-2.0\\n// Licensed under the Apache License, Version 2.0 (the \\\"License\\\"); you may not use\\n// this file except in compliance with the License. You may obtain a copy of the\\n// License at http://www.apache.org/licenses/LICENSE-2.0\\n\\n// Unless required by applicable law or agreed to in writing, software distributed\\n// under the License is distributed on an \\\"AS IS\\\" BASIS, WITHOUT WARRANTIES OR\\n// CONDITIONS OF ANY KIND, either express or implied. See the License for the\\n// specific language governing permissions and limitations under the License.\\n\\npragma solidity ^0.7.0;\\n\\n\\ncontract Decorated {\\n    // This contract defines several modifiers but does not use\\n    // them - they will be used in derived contracts.\\n    modifier onlyBy(address user) {\\n        require(msg.sender == user, \\\"Cannot be called by user\\\");\\n        _;\\n    }\\n\\n    modifier onlyAfter(uint256 time) {\\n        require(block.timestamp > time, \\\"Cannot be called now\\\");\\n        _;\\n    }\\n}\\n\",\"keccak256\":\"0xdbba019b8f7f93b212a5bbae402ee988321c4fa82ed2b4c9e55b4d7ddf35dcc3\",\"license\":\"Apache-2.0\"},\"@cartesi/util/contracts/Instantiator.sol\":{\"content\":\"// Copyright 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: Apache-2.0\\n// Licensed under the Apache License, Version 2.0 (the \\\"License\\\"); you may not use\\n// this file except in compliance with the License. You may obtain a copy of the\\n// License at http://www.apache.org/licenses/LICENSE-2.0\\n\\n// Unless required by applicable law or agreed to in writing, software distributed\\n// under the License is distributed on an \\\"AS IS\\\" BASIS, WITHOUT WARRANTIES OR\\n// CONDITIONS OF ANY KIND, either express or implied. See the License for the\\n// specific language governing permissions and limitations under the License.\\n\\n\\npragma solidity ^0.7.0;\\n\\n\\ninterface Instantiator {\\n\\n    modifier onlyInstantiated(uint256 _index) virtual;\\n\\n    modifier onlyActive(uint256 _index) virtual;\\n\\n    modifier increasesNonce(uint256 _index) virtual;\\n\\n    function isActive(uint256 _index) external view returns (bool);\\n\\n    function getNonce(uint256 _index) external view returns (uint256);\\n\\n    function isConcerned(uint256 _index, address _user) external view returns (bool);\\n\\n    function getSubInstances(uint256 _index, address) external view returns (address[] memory _addresses, uint256[] memory _indices);\\n\\n    function deactivate(uint256 _index) external;\\n}\\n\",\"keccak256\":\"0x084e3e769f423b3f32bd8faf119be132a478eeea8006bed69b527b2fdcfd45a1\",\"license\":\"Apache-2.0\"},\"@cartesi/util/contracts/InstantiatorImpl.sol\":{\"content\":\"// Copyright 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: Apache-2.0\\n// Licensed under the Apache License, Version 2.0 (the \\\"License\\\"); you may not use\\n// this file except in compliance with the License. You may obtain a copy of the\\n// License at http://www.apache.org/licenses/LICENSE-2.0\\n\\n// Unless required by applicable law or agreed to in writing, software distributed\\n// under the License is distributed on an \\\"AS IS\\\" BASIS, WITHOUT WARRANTIES OR\\n// CONDITIONS OF ANY KIND, either express or implied. See the License for the\\n// specific language governing permissions and limitations under the License.\\n\\npragma solidity ^0.7.0;\\n\\nimport \\\"./Instantiator.sol\\\";\\n\\nabstract contract InstantiatorImpl is Instantiator {\\n    uint256 public currentIndex = 0;\\n\\n    mapping(uint256 => bool) internal active;\\n    mapping(uint256 => uint256) internal nonce;\\n\\n    modifier onlyInstantiated(uint256 _index) override {\\n        require(currentIndex > _index, \\\"Index not instantiated\\\");\\n        _;\\n    }\\n\\n    modifier onlyActive(uint256 _index) override {\\n        require(currentIndex > _index, \\\"Index not instantiated\\\");\\n        require(isActive(_index), \\\"Index inactive\\\");\\n        _;\\n    }\\n\\n    modifier increasesNonce(uint256 _index) override {\\n        nonce[_index]++;\\n        _;\\n    }\\n\\n    function isActive(uint256 _index) public override view returns (bool) {\\n        return (active[_index]);\\n    }\\n\\n    function getNonce(uint256 _index)\\n        public\\n        override\\n        view\\n        onlyActive(_index)\\n        returns (uint256 currentNonce)\\n    {\\n        return nonce[_index];\\n    }\\n\\n    function deactivate(uint256 _index) public override {\\n        active[_index] = false;\\n        nonce[_index] = 0;\\n    }\\n}\\n\",\"keccak256\":\"0xc1db237a28042f74224ae2d4398616fb670ce87709ffd8505c142cddedee6954\",\"license\":\"Apache-2.0\"},\"@cartesi/util/contracts/Merkle.sol\":{\"content\":\"// Copyright 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: Apache-2.0\\n// Licensed under the Apache License, Version 2.0 (the \\\"License\\\"); you may not use\\n// this file except in compliance with the License. You may obtain a copy of the\\n// License at http://www.apache.org/licenses/LICENSE-2.0\\n\\n// Unless required by applicable law or agreed to in writing, software distributed\\n// under the License is distributed on an \\\"AS IS\\\" BASIS, WITHOUT WARRANTIES OR\\n// CONDITIONS OF ANY KIND, either express or implied. See the License for the\\n// specific language governing permissions and limitations under the License.\\n\\n\\n/// @title Library for Merkle proofs\\npragma solidity ^0.7.0;\\n\\n\\nlibrary Merkle {\\n    function getPristineHash(uint8 _log2Size) public pure returns (bytes32) {\\n        require(_log2Size >= 3, \\\"Has to be at least one word\\\");\\n        require(_log2Size <= 64, \\\"Cannot be bigger than the machine itself\\\");\\n\\n        bytes8 value = 0;\\n        bytes32 runningHash = keccak256(abi.encodePacked(value));\\n\\n        for (uint256 i = 3; i < _log2Size; i++) {\\n            runningHash = keccak256(abi.encodePacked(runningHash, runningHash));\\n        }\\n\\n        return runningHash;\\n    }\\n\\n    function getRoot(uint64 _position, bytes8 _value, bytes32[] memory proof) public pure returns (bytes32) {\\n        bytes32 runningHash = keccak256(abi.encodePacked(_value));\\n\\n        return getRootWithDrive(\\n            _position,\\n            3,\\n            runningHash,\\n            proof\\n        );\\n    }\\n\\n    function getRootWithDrive(\\n        uint64 _position,\\n        uint8 _logOfSize,\\n        bytes32 _drive,\\n        bytes32[] memory siblings\\n    ) public pure returns (bytes32)\\n    {\\n        require(_logOfSize >= 3, \\\"Must be at least a word\\\");\\n        require(_logOfSize <= 64, \\\"Cannot be bigger than the machine itself\\\");\\n\\n        uint64 size = uint64(2) ** _logOfSize;\\n\\n        require(((size - 1) & _position) == 0, \\\"Position is not aligned\\\");\\n        require(siblings.length == 64 - _logOfSize, \\\"Proof length does not match\\\");\\n\\n        bytes32 drive = _drive;\\n\\n        for (uint64 i = 0; i < siblings.length; i++) {\\n            if ((_position & (size << i)) == 0) {\\n                drive = keccak256(abi.encodePacked(drive, siblings[i]));\\n            } else {\\n                drive = keccak256(abi.encodePacked(siblings[i], drive));\\n            }\\n        }\\n\\n        return drive;\\n    }\\n\\n    function getLog2Floor(uint256 number) public pure returns (uint8) {\\n\\n        uint8 result = 0;\\n\\n        uint256 checkNumber = number;\\n        checkNumber = checkNumber >> 1;\\n        while (checkNumber > 0) {\\n            ++result;\\n            checkNumber = checkNumber >> 1;\\n        }\\n\\n        return result;\\n    }\\n\\n    function isPowerOf2(uint256 number) public pure returns (bool) {\\n\\n        uint256 checkNumber = number;\\n        if (checkNumber == 0) {\\n            return false;\\n        }\\n\\n        while ((checkNumber & 1) == 0) {\\n            checkNumber = checkNumber >> 1;\\n        }\\n\\n        checkNumber = checkNumber >> 1;\\n\\n        if (checkNumber == 0) {\\n            return true;\\n        }\\n\\n        return false;\\n    }\\n\\n    /// @notice Calculate the root of Merkle tree from an array of power of 2 elements\\n    /// @param hashes The array containing power of 2 elements\\n    /// @return byte32 the root hash being calculated\\n    function calculateRootFromPowerOfTwo(bytes32[] memory hashes) public pure returns (bytes32) {\\n        // revert when the input is not of power of 2\\n        require(isPowerOf2(hashes.length), \\\"The input array must contain power of 2 elements\\\");\\n\\n        if (hashes.length == 1) {\\n            return hashes[0];\\n        }else {\\n            bytes32[] memory newHashes = new bytes32[](hashes.length >> 1);\\n\\n            for (uint256 i = 0; i < hashes.length; i += 2) {\\n                newHashes[i >> 1] = keccak256(abi.encodePacked(hashes[i], hashes[i + 1]));\\n            }\\n\\n            return calculateRootFromPowerOfTwo(newHashes);\\n        }\\n    }\\n\\n}\\n\",\"keccak256\":\"0xfab427885024176038f230531f5fbc87e80c38b22d7b5307a57a7a0b7cdfc6fe\",\"license\":\"Apache-2.0\"},\"contracts/MMInstantiator.sol\":{\"content\":\"// Copyright (C) 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: GPL-3.0-only\\n// This program is free software: you can redistribute it and/or modify it under\\n// the terms of the GNU General Public License as published by the Free Software\\n// Foundation, either version 3 of the License, or (at your option) any later\\n// version.\\n\\n// This program is distributed in the hope that it will be useful, but WITHOUT ANY\\n// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\\n// PARTICULAR PURPOSE. See the GNU General Public License for more details.\\n\\n// You should have received a copy of the GNU General Public License\\n// along with this program.  If not, see <https://www.gnu.org/licenses/>.\\n\\n// Note: This component currently has dependencies that are licensed under the GNU\\n// GPL, version 3, and so you should treat this component as a whole as being under\\n// the GPL version 3. But all Cartesi-written code in this component is licensed\\n// under the Apache License, version 2, or a compatible permissive license, and can\\n// be used independently under the Apache v2 license. After this component is\\n// rewritten, the entire component will be released under the Apache v2 license.\\n\\n/// @title An instantiator of memory managers\\npragma solidity ^0.7.0;\\n\\nimport \\\"@cartesi/util/contracts/InstantiatorImpl.sol\\\";\\nimport \\\"@cartesi/util/contracts/Decorated.sol\\\";\\nimport \\\"./MMInterface.sol\\\";\\nimport \\\"@cartesi/util/contracts/Merkle.sol\\\";\\n\\ncontract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {\\n    // the provider will fill the memory for the client to read and write\\n    // memory starts with hash and all values that are inserted are first verified\\n    // then client can read inserted values and write some more\\n    // finally the provider has to update the hash to account for writes\\n\\n    struct ReadWrite {\\n        bool wasRead;\\n        uint64 position;\\n        bytes8 value;\\n    }\\n\\n    // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!\\n    struct MMCtx {\\n        address provider;\\n        address client;\\n        bytes32 initialHash;\\n        bytes32 newHash; // hash after some write operations have been proved\\n        ReadWrite[] history;\\n        uint256 historyPointer;\\n        state currentState;\\n    }\\n\\n    mapping(uint256 => MMCtx) internal instance;\\n\\n    // These are the possible states and transitions of the contract.\\n    //\\n    // +---+\\n    // |   |\\n    // +---+\\n    //   |\\n    //   | instantiate\\n    //   v\\n    // +---------------+    | proveRead\\n    // | WaitingProofs |----| proveWrite\\n    // +---------------+\\n    //   |\\n    //   | finishProofPhase\\n    //   v\\n    // +----------------+    |read\\n    // | WaitingReplay  |----|write\\n    // +----------------+\\n    //   |\\n    //   | finishReplayPhase\\n    //   v\\n    // +----------------+\\n    // | FinishedReplay |\\n    // +----------------+\\n    //\\n\\n    event MemoryCreated(uint256 _index, bytes32 _initialHash);\\n    event ValueProved(\\n        uint256 _index,\\n        bool _wasRead,\\n        uint64 _position,\\n        bytes8 _value\\n    );\\n    event ValueRead(uint256 _index, uint64 _position, bytes8 _value);\\n    event ValueWritten(uint256 _index, uint64 _position, bytes8 _value);\\n    event FinishedProofs(uint256 _index);\\n    event FinishedReplay(uint256 _index);\\n\\n    /// @notice Instantiate a memory manager instance.\\n    /// @param _provider address that will provide memory values/proofs.\\n    /// @param _client address that will consume memory values/proofs.\\n    /// @param _initialHash hash before divergence, in which both client and provider agree.\\n    /// @return MemoryManager index.\\n    function instantiate(\\n        address _provider,\\n        address _client,\\n        bytes32 _initialHash\\n    ) public override returns (uint256) {\\n        require(_provider != _client, \\\"Provider and client need to differ\\\");\\n        MMCtx storage currentInstance = instance[currentIndex];\\n        currentInstance.provider = _provider;\\n        currentInstance.client = _client;\\n        currentInstance.initialHash = _initialHash;\\n        currentInstance.newHash = _initialHash;\\n        currentInstance.historyPointer = 0;\\n        currentInstance.currentState = state.WaitingProofs;\\n        emit MemoryCreated(currentIndex, _initialHash);\\n\\n        active[currentIndex] = true;\\n        return currentIndex++;\\n    }\\n\\n    /// @notice Proves that a certain value in current memory is correct\\n    // @param _position The address of the value to be confirmed\\n    // @param _value The value in that address to be confirmed\\n    // @param proof The proof that this value is correct\\n    function proveRead(\\n        uint256 _index,\\n        uint64 _position,\\n        bytes8 _value,\\n        bytes32[] memory proof\\n    )\\n        public\\n        onlyInstantiated(_index)\\n        onlyBy(instance[_index].provider)\\n        increasesNonce(_index)\\n    {\\n        require(\\n            instance[_index].currentState == state.WaitingProofs,\\n            \\\"CurrentState is not WaitingProofs, cannot proveRead\\\"\\n        );\\n        require(\\n            Merkle.getRoot(_position, _value, proof) ==\\n                instance[_index].newHash,\\n            \\\"Merkle proof does not match\\\"\\n        );\\n        instance[_index].history.push(ReadWrite(true, _position, _value));\\n        emit ValueProved(_index, true, _position, _value);\\n    }\\n\\n    /// @notice Register a write operation and update newHash\\n    /// @param _position to be written\\n    /// @param _oldValue before write\\n    /// @param _newValue to be written\\n    /// @param proof The proof that the old value was correct\\n    function proveWrite(\\n        uint256 _index,\\n        uint64 _position,\\n        bytes8 _oldValue,\\n        bytes8 _newValue,\\n        bytes32[] memory proof\\n    )\\n        public\\n        onlyInstantiated(_index)\\n        onlyBy(instance[_index].provider)\\n        increasesNonce(_index)\\n    {\\n        require(\\n            instance[_index].currentState == state.WaitingProofs,\\n            \\\"CurrentState is not WaitingProofs, cannot proveWrite\\\"\\n        );\\n        // check proof of old value\\n        require(\\n            Merkle.getRoot(_position, _oldValue, proof) ==\\n                instance[_index].newHash,\\n            \\\"Merkle proof of write does not match\\\"\\n        );\\n        // update root\\n        instance[_index].newHash = Merkle.getRoot(_position, _newValue, proof);\\n        instance[_index].history.push(ReadWrite(false, _position, _newValue));\\n        emit ValueProved(_index, false, _position, _newValue);\\n    }\\n\\n    /// @notice Stop memory insertion and start read and write phase\\n    function finishProofPhase(uint256 _index)\\n        public\\n        override\\n        onlyInstantiated(_index)\\n        onlyBy(instance[_index].provider)\\n        increasesNonce(_index)\\n    {\\n        require(\\n            instance[_index].currentState == state.WaitingProofs,\\n            \\\"CurrentState is not WaitingProofs, cannot finishProofPhase\\\"\\n        );\\n        instance[_index].currentState = state.WaitingReplay;\\n        emit FinishedProofs(_index);\\n    }\\n\\n    /// @notice Replays a read in memory that has been proved to be correct\\n    /// according to initial hash\\n    /// @param _position of the desired memory\\n    function read(uint256 _index, uint64 _position)\\n        public\\n        override\\n        onlyInstantiated(_index)\\n        increasesNonce(_index)\\n        returns (bytes8)\\n    {\\n        require(\\n            instance[_index].client == tx.origin,\\n            \\\"Transaction has to be originated by the client\\\"\\n        );\\n        require(\\n            instance[_index].currentState == state.WaitingReplay,\\n            \\\"CurrentState is not WaitingReplay, cannot read\\\"\\n        );\\n        require((_position & 7) == 0, \\\"Position is not aligned\\\");\\n        uint256 pointer = instance[_index].historyPointer;\\n        ReadWrite storage pointInHistory = instance[_index].history[pointer];\\n        require(pointInHistory.wasRead, \\\"PointInHistory was not read type\\\");\\n        require(\\n            pointInHistory.position == _position,\\n            \\\"PointInHistory's position does not match\\\"\\n        );\\n        bytes8 value = pointInHistory.value;\\n        delete (instance[_index].history[pointer]);\\n        instance[_index].historyPointer++;\\n        emit ValueRead(_index, _position, value);\\n        return value;\\n    }\\n\\n    /// @notice Replays a write in memory that was proved correct\\n    /// @param _position of the write\\n    /// @param _value to be written\\n    function write(\\n        uint256 _index,\\n        uint64 _position,\\n        bytes8 _value\\n    ) public override onlyInstantiated(_index) increasesNonce(_index) {\\n        require(\\n            instance[_index].client == tx.origin,\\n            \\\"Transaction has to be originated by the client\\\"\\n        );\\n        require(\\n            instance[_index].currentState == state.WaitingReplay,\\n            \\\"CurrentState is not WaitingReplay, cannot write\\\"\\n        );\\n        require((_position & 7) == 0, \\\"Position is not aligned\\\");\\n        uint256 pointer = instance[_index].historyPointer;\\n        ReadWrite storage pointInHistory = instance[_index].history[pointer];\\n        require(!pointInHistory.wasRead, \\\"PointInHistory was not write type\\\");\\n        require(\\n            pointInHistory.position == _position,\\n            \\\"PointInHistory's position does not match\\\"\\n        );\\n        require(\\n            pointInHistory.value == _value,\\n            \\\"PointInHistory's value does not match\\\"\\n        );\\n        delete (instance[_index].history[pointer]);\\n        instance[_index].historyPointer++;\\n        emit ValueWritten(_index, _position, _value);\\n    }\\n\\n    /// @notice Stop write (or read) phase\\n    function finishReplayPhase(uint256 _index)\\n        public\\n        override\\n        onlyInstantiated(_index)\\n        increasesNonce(_index)\\n    {\\n        require(\\n            instance[_index].client == tx.origin,\\n            \\\"Transaction has to be originated by the client\\\"\\n        );\\n        require(\\n            instance[_index].currentState == state.WaitingReplay,\\n            \\\"CurrentState is not WaitingReplay, cannot finishReplayPhase\\\"\\n        );\\n        require(\\n            instance[_index].historyPointer == instance[_index].history.length,\\n            \\\"History pointer does not match length\\\"\\n        );\\n        delete (instance[_index].history);\\n        delete (instance[_index].historyPointer);\\n        instance[_index].currentState = state.FinishedReplay;\\n\\n        deactivate(_index);\\n        emit FinishedReplay(_index);\\n    }\\n\\n    // getter methods\\n    function isConcerned(uint256 _index, address _user)\\n        public\\n        override\\n        view\\n        returns (bool)\\n    {\\n        return ((instance[_index].provider == _user) ||\\n            (instance[_index].client == _user));\\n    }\\n\\n    function getState(uint256 _index, address)\\n        public\\n        view\\n        onlyInstantiated(_index)\\n        returns (\\n            address _provider,\\n            address _client,\\n            bytes32 _initialHash,\\n            bytes32 _newHash,\\n            uint256 _numberSubmitted,\\n            bytes32 _currentState\\n        )\\n    {\\n        MMCtx memory i = instance[_index];\\n\\n        return (\\n            i.provider,\\n            i.client,\\n            i.initialHash,\\n            i.newHash,\\n            i.history.length,\\n            getCurrentState(_index)\\n        );\\n    }\\n\\n    function getSubInstances(uint256, address)\\n        public\\n        override\\n        pure\\n        returns (address[] memory, uint256[] memory)\\n    {\\n        address[] memory a = new address[](0);\\n        uint256[] memory i = new uint256[](0);\\n        return (a, i);\\n    }\\n\\n    function provider(uint256 _index)\\n        public\\n        view\\n        onlyInstantiated(_index)\\n        returns (address)\\n    {\\n        return instance[_index].provider;\\n    }\\n\\n    function client(uint256 _index)\\n        public\\n        view\\n        onlyInstantiated(_index)\\n        returns (address)\\n    {\\n        return instance[_index].client;\\n    }\\n\\n    function initialHash(uint256 _index)\\n        public\\n        view\\n        onlyInstantiated(_index)\\n        returns (bytes32)\\n    {\\n        return instance[_index].initialHash;\\n    }\\n\\n    function newHash(uint256 _index)\\n        public\\n        override\\n        view\\n        onlyInstantiated(_index)\\n        returns (bytes32)\\n    {\\n        return instance[_index].newHash;\\n    }\\n\\n    // state getters\\n\\n    function getCurrentState(uint256 _index)\\n        public\\n        override\\n        view\\n        onlyInstantiated(_index)\\n        returns (bytes32)\\n    {\\n        if (instance[_index].currentState == state.WaitingProofs) {\\n            return \\\"WaitingProofs\\\";\\n        }\\n        if (instance[_index].currentState == state.WaitingReplay) {\\n            return \\\"WaitingReplay\\\";\\n        }\\n        if (instance[_index].currentState == state.FinishedReplay) {\\n            return \\\"FinishedReplay\\\";\\n        }\\n        require(false, \\\"Unrecognized state\\\");\\n    }\\n\\n    /// @notice Get the worst case scenario duration for a specific state\\n    /// @param _roundDuration security parameter, the max time an agent\\n    //          has to react and submit one simple transaction\\n    /// @param _timeToStartMachine time to build the machine for the first time\\n    function getMaxStateDuration(\\n        state _state,\\n        uint256 _roundDuration,\\n        uint256 _timeToStartMachine\\n    ) private pure returns (uint256) {\\n        if (_state == state.WaitingProofs) {\\n            // proving siblings is assumed to be free\\n            // so its time to start the machine\\n            // + one round duration to send the proofs\\n            // + one transaction for finishProofPhase transaction\\n            return _timeToStartMachine + uint256(2) * _roundDuration;\\n        }\\n        if (_state == state.WaitingReplay) {\\n            // one transaction for the step function to be completed\\n            return _roundDuration;\\n        }\\n        if (_state == state.FinishedReplay) {\\n            // one transaction for finishReplay transaction\\n            return _roundDuration;\\n        }\\n\\n        require(false, \\\"Unrecognized state\\\");\\n    }\\n\\n    /// @notice Get the worst case scenario duration for an instance of this contract\\n    /// @param _roundDuration security parameter, the max time an agent\\n    //          has to react and submit one simple transaction\\n    /// @param _timeToStartMachine time to build the machine for the first time\\n    function getMaxInstanceDuration(\\n        uint256 _roundDuration,\\n        uint256 _timeToStartMachine\\n    ) public override pure returns (uint256) {\\n        uint256 waitingProofsDuration = getMaxStateDuration(\\n            state.WaitingProofs,\\n            _roundDuration,\\n            _timeToStartMachine\\n        );\\n\\n        uint256 waitingReplayDuration = getMaxStateDuration(\\n            state.WaitingReplay,\\n            _roundDuration,\\n            _timeToStartMachine\\n        );\\n\\n        uint256 finishProofsDuration = getMaxStateDuration(\\n            state.WaitingProofs,\\n            _roundDuration,\\n            _timeToStartMachine\\n        );\\n\\n        return\\n            waitingProofsDuration +\\n            waitingReplayDuration +\\n            finishProofsDuration;\\n    }\\n\\n    // remove these functions and change tests accordingly\\n    function stateIsWaitingProofs(uint256 _index)\\n        public\\n        override\\n        view\\n        onlyInstantiated(_index)\\n        returns (bool)\\n    {\\n        return instance[_index].currentState == state.WaitingProofs;\\n    }\\n\\n    function stateIsWaitingReplay(uint256 _index)\\n        public\\n        override\\n        view\\n        onlyInstantiated(_index)\\n        returns (bool)\\n    {\\n        return instance[_index].currentState == state.WaitingReplay;\\n    }\\n\\n    function stateIsFinishedReplay(uint256 _index)\\n        public\\n        override\\n        view\\n        onlyInstantiated(_index)\\n        returns (bool)\\n    {\\n        return instance[_index].currentState == state.FinishedReplay;\\n    }\\n}\\n\",\"keccak256\":\"0xfb7e0e5a076c73405362543bd3e284c4903578bfea5f678863c5a1ab166c8d0f\",\"license\":\"GPL-3.0-only\"},\"contracts/MMInterface.sol\":{\"content\":\"// Copyright (C) 2020 Cartesi Pte. Ltd.\\n\\n// SPDX-License-Identifier: GPL-3.0-only\\n// This program is free software: you can redistribute it and/or modify it under\\n// the terms of the GNU General Public License as published by the Free Software\\n// Foundation, either version 3 of the License, or (at your option) any later\\n// version.\\n\\n// This program is distributed in the hope that it will be useful, but WITHOUT ANY\\n// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A\\n// PARTICULAR PURPOSE. See the GNU General Public License for more details.\\n\\n// You should have received a copy of the GNU General Public License\\n// along with this program.  If not, see <https://www.gnu.org/licenses/>.\\n\\n// Note: This component currently has dependencies that are licensed under the GNU\\n// GPL, version 3, and so you should treat this component as a whole as being under\\n// the GPL version 3. But all Cartesi-written code in this component is licensed\\n// under the Apache License, version 2, or a compatible permissive license, and can\\n// be used independently under the Apache v2 license. After this component is\\n// rewritten, the entire component will be released under the Apache v2 license.\\n\\n/// @title Interface for memory manager instantiator\\npragma solidity ^0.7.0;\\n\\nimport \\\"@cartesi/util/contracts/Instantiator.sol\\\";\\n\\ninterface MMInterface is Instantiator {\\n    enum state {WaitingProofs, WaitingReplay, FinishedReplay}\\n\\n    function getCurrentState(uint256 _index) external view returns (bytes32);\\n\\n    function instantiate(\\n        address _provider,\\n        address _client,\\n        bytes32 _initialHash\\n    ) external returns (uint256);\\n\\n    function read(uint256 _index, uint64 _position) external returns (bytes8);\\n\\n    function write(\\n        uint256 _index,\\n        uint64 _position,\\n        bytes8 _value\\n    ) external;\\n\\n    function newHash(uint256 _index) external view returns (bytes32);\\n\\n    function finishProofPhase(uint256 _index) external;\\n\\n    function finishReplayPhase(uint256 _index) external;\\n\\n    function stateIsWaitingProofs(uint256 _index) external view returns (bool);\\n\\n    function stateIsWaitingReplay(uint256 _index) external view returns (bool);\\n\\n    function stateIsFinishedReplay(uint256 _index) external view returns (bool);\\n\\n    function getMaxInstanceDuration(\\n        uint256 _roundDuration,\\n        uint256 _timeToStartMachine\\n    ) external view returns (uint256);\\n}\\n\",\"keccak256\":\"0xe5e3665a3d9d2afb1dcec8496525625e04af657676e18e14a0916e3eca3227ad\",\"license\":\"GPL-3.0-only\"}},\"version\":1}",
+  "bytecode": "0x60806040526000805534801561001457600080fd5b50612355806100246000396000f3fe608060405234801561001057600080fd5b506004361061014d5760003560e01c80637d036b0d116100c3578063916b9bef1161007c578063916b9bef1461043557806396f429ba14610452578063a9c7a1e61461046f578063ac448b1614610541578063ade5f4171461060a578063c526656c146106275761014d565b80637d036b0d14610368578063812e32191461038557806382afd23b146103a257806384dfd44d146103bf5780638a05e478146103e257806390645840146104185761014d565b80633ed5d456116101155780633ed5d4561461022457806343d4b78b1461024157806346336cd31461025e57806352cc70c6146102a75780635748c130146102e057806373df1612146102fd5761014d565b806301ff62ab146101525780631c5d3c601461019257806326987b60146101af578063281ca73e146101c95780633d46b81914610207575b600080fd5b61017e6004803603604081101561016857600080fd5b50803590602001356001600160a01b03166106ec565b604080519115158252519081900360200190f35b61017e600480360360208110156101a857600080fd5b5035610737565b6101b76107ab565b60408051918252519081900360200190f35b610205600480360360608110156101df57600080fd5b5080359060208101356001600160401b031690604001356001600160c01b0319166107b1565b005b6101b76004803603602081101561021d57600080fd5b5035610ad6565b6102056004803603602081101561023a57600080fd5b5035610b7c565b61017e6004803603602081101561025757600080fd5b5035610d63565b61028a6004803603604081101561027457600080fd5b50803590602001356001600160401b0316610db1565b604080516001600160c01b03199092168252519081900360200190f35b6102c4600480360360208110156102bd57600080fd5b50356110a7565b604080516001600160a01b039092168252519081900360200190f35b6101b7600480360360208110156102f657600080fd5b503561110b565b6103296004803603604081101561031357600080fd5b50803590602001356001600160a01b0316611253565b604080516001600160a01b039788168152959096166020860152848601939093526060840191909152608083015260a082015290519081900360c00190f35b6102056004803603602081101561037e57600080fd5b50356113e8565b6102c46004803603602081101561039b57600080fd5b503561155e565b61017e600480360360208110156103b857600080fd5b50356115c5565b6101b7600480360360408110156103d557600080fd5b50803590602001356115da565b6101b7600480360360608110156103f857600080fd5b506001600160a01b03813581169160208101359091169060400135611616565b6101b76004803603602081101561042e57600080fd5b503561172d565b6102056004803603602081101561044b57600080fd5b503561178c565b61017e6004803603602081101561046857600080fd5b50356117af565b610205600480360360a081101561048557600080fd5b8135916001600160401b03602082013516916001600160c01b0319604083013581169260608101359091169181019060a0810160808201356401000000008111156104cf57600080fd5b8201836020820111156104e157600080fd5b8035906020019184602083028401116401000000008311171561050357600080fd5b9190808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152509295506117fd945050505050565b6102056004803603608081101561055757600080fd5b8135916001600160401b03602082013516916001600160c01b0319604083013516919081019060808101606082013564010000000081111561059857600080fd5b8201836020820111156105aa57600080fd5b803590602001918460208302840111640100000000831117156105cc57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250929550611c1d945050505050565b6101b76004803603602081101561062057600080fd5b5035611f72565b6106536004803603604081101561063d57600080fd5b50803590602001356001600160a01b0316611fd0565b604051808060200180602001838103835285818151815260200191508051906020019060200280838360005b8381101561069757818101518382015260200161067f565b50505050905001838103825284818151815260200191508051906020019060200280838360005b838110156106d65781810151838201526020016106be565b5050505090500194505050505060405180910390f35b6000828152600360205260408120546001600160a01b038381169116148061073057506000838152600360205260409020600101546001600160a01b038381169116145b9392505050565b600081806000541161077e576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b60005b60008481526003602052604090206006015460ff1660028111156107a157fe5b1491505b50919050565b60005481565b8280600054116107f6576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000848152600260209081526040808320805460019081019091556003909252909120015484906001600160a01b031632146108635760405162461bcd60e51b815260040180806020018281038252602e815260200180612215602e913960400191505060405180910390fd5b600160008681526003602052604090206006015460ff16600281111561088557fe5b146108c15760405162461bcd60e51b815260040180806020018281038252602f8152602001806122ac602f913960400191505060405180910390fd5b6007841615610911576040805162461bcd60e51b8152602060048201526017602482015276141bdcda5d1a5bdb881a5cc81b9bdd08185b1a59db9959604a1b604482015290519081900360640190fd5b60008581526003602052604081206005810154600490910180549192918390811061093857fe5b6000918252602090912001805490915060ff16156109875760405162461bcd60e51b81526004018080602001828103825260218152602001806121f46021913960400191505060405180910390fd5b80546001600160401b0387811661010090920416146109d75760405162461bcd60e51b81526004018080602001828103825260288152602001806121776028913960400191505060405180910390fd5b80546001600160c01b0319868116600160481b90920460c01b1614610a2d5760405162461bcd60e51b81526004018080602001828103825260258152602001806121186025913960400191505060405180910390fd5b6000878152600360205260409020600401805483908110610a4a57fe5b6000918252602080832090910180546001600160881b0319169055888252600381526040918290206005018054600101905581518981526001600160401b038916918101919091526001600160c01b031987168183015290517f1a89c2c5f3636ceb6d880c0d97e9bb38407469e452f527cf78b9553d04b55dc49181900360600190a150505050505050565b6000818060005411610b1d576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b610b26816115c5565b610b68576040805162461bcd60e51b815260206004820152600e60248201526d496e64657820696e61637469766560901b604482015290519081900360640190fd5b505060009081526002602052604090205490565b808060005411610bc1576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000828152600260209081526040808320805460019081019091556003909252909120015482906001600160a01b03163214610c2e5760405162461bcd60e51b815260040180806020018281038252602e815260200180612215602e913960400191505060405180910390fd5b600160008481526003602052604090206006015460ff166002811115610c5057fe5b14610c8c5760405162461bcd60e51b815260040180806020018281038252603b815260200180612243603b913960400191505060405180910390fd5b6000838152600360205260409020600481015460059091015414610ce15760405162461bcd60e51b81526004018080602001828103825260258152602001806122fb6025913960400191505060405180910390fd5b6000838152600360205260408120610cfe91600490910190612042565b60008381526003602052604081206005810191909155600601805460ff19166002179055610d2b8361178c565b6040805184815290517feac25e5c6b8f91fcaaec2cbaed6317b8403630d1f793fc32c10fa4731a464e879181900360200190a1505050565b6000818060005411610daa576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6001610781565b6000828060005411610df8576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000848152600260209081526040808320805460019081019091556003909252909120015484906001600160a01b03163214610e655760405162461bcd60e51b815260040180806020018281038252602e815260200180612215602e913960400191505060405180910390fd5b600160008681526003602052604090206006015460ff166002811115610e8757fe5b14610ec35760405162461bcd60e51b815260040180806020018281038252602e81526020018061227e602e913960400191505060405180910390fd5b6007841615610f13576040805162461bcd60e51b8152602060048201526017602482015276141bdcda5d1a5bdb881a5cc81b9bdd08185b1a59db9959604a1b604482015290519081900360640190fd5b600085815260036020526040812060058101546004909101805491929183908110610f3a57fe5b6000918252602090912001805490915060ff16610f9e576040805162461bcd60e51b815260206004820181905260248201527f506f696e74496e486973746f727920776173206e6f7420726561642074797065604482015290519081900360640190fd5b80546001600160401b038781166101009092041614610fee5760405162461bcd60e51b81526004018080602001828103825260288152602001806121776028913960400191505060405180910390fd5b805460008881526003602052604090206004018054600160481b90920460c01b918490811061101957fe5b6000918252602080832090910180546001600160881b0319169055898252600381526040918290206005018054600101905581518a81526001600160401b038a16918101919091526001600160c01b031983168183015290517f0cac98cb64b0a437ae48678c1884bcbf0e7c702bf74c7e16c6986454e8990d629181900360600190a1979650505050505050565b60008180600054116110ee576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b50506000908152600360205260409020546001600160a01b031690565b6000818060005411611152576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b60008381526003602052604081206006015460ff16600281111561117257fe5b1415611190576c57616974696e6750726f6f667360981b91506107a5565b600160008481526003602052604090206006015460ff1660028111156111b257fe5b14156111d0576c57616974696e675265706c617960981b91506107a5565b600260008481526003602052604090206006015460ff1660028111156111f257fe5b1415611211576d46696e69736865645265706c617960901b91506107a5565b6040805162461bcd60e51b8152602060048201526012602482015271556e7265636f676e697a656420737461746560701b604482015290519081900360640190fd5b6000806000806000808780600054116112a1576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6112a9612063565b60008a8152600360208181526040808420815160e08101835281546001600160a01b039081168252600183015416818501526002820154818401529381015460608501526004810180548351818602810186019094528084529495919460808701949192909184015b82821015611373576000848152602090819020604080516060810182529185015460ff81161515835261010081046001600160401b031683850152600160481b900460c01b6001600160c01b03191690820152825260019092019101611312565b5050509082525060058201546020820152600682015460409091019060ff16600281111561139d57fe5b60028111156113a857fe5b81525050905080600001518160200151826040015183606001518460800151516113d18f61110b565b949f939e50919c509a509850909650945050505050565b80806000541161142d576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000828152600360205260409020546001600160a01b0316338114611494576040805162461bcd60e51b815260206004820152601860248201527721b0b73737ba1031329031b0b63632b210313c903ab9b2b960411b604482015290519081900360640190fd5b600083815260026020526040812080546001019055839060008581526003602052604090206006015460ff1660028111156114cb57fe5b146115075760405162461bcd60e51b815260040180806020018281038252603a81526020018061213d603a913960400191505060405180910390fd5b600084815260036020908152604091829020600601805460ff19166001179055815186815291517f0b1229d47b7ccd1dde07b4148a6c9336fd9d5fb57cca980e709576e96ae600ed9281900390910190a150505050565b60008180600054116115a5576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b50506000908152600360205260409020600101546001600160a01b031690565b60009081526001602052604090205460ff1690565b6000806115e960008585611feb565b905060006115f960018686611feb565b9050600061160960008787611feb565b9190920101949350505050565b6000826001600160a01b0316846001600160a01b031614156116695760405162461bcd60e51b81526004018080602001828103825260228152602001806121d26022913960400191505060405180910390fd5b60008054815260036020818152604080842080546001600160a01b038a81166001600160a01b0319928316178355600183018054918b1691909216179055600281018790559283018690556005830184905560068301805460ff1916905592548351908152908101859052825191927f9d7a7145d65060279d0bc06f7f03a791000bbaa9b8a8e75c3c10e2d24348791b92918290030190a150506000805481526001602081905260408220805460ff19168217905581549081019091559392505050565b6000818060005411611774576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b50506000908152600360208190526040909120015490565b6000908152600160209081526040808320805460ff191690556002909152812055565b60008180600054116117f6576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6002610781565b848060005411611842576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000868152600360205260409020546001600160a01b03163381146118a9576040805162461bcd60e51b815260206004820152601860248201527721b0b73737ba1031329031b0b63632b210313c903ab9b2b960411b604482015290519081900360640190fd5b600087815260026020526040812080546001019055879060008981526003602052604090206006015460ff1660028111156118e057fe5b1461191c5760405162461bcd60e51b81526004018080602001828103825260348152602001806120c06034913960400191505060405180910390fd5b600360008981526020019081526020016000206003015473__$c7dbd794b8c7b5c2028db781007df1176e$__638492d93b8989886040518463ffffffff1660e01b815260040180846001600160401b03168152602001836001600160c01b031916815260200180602001828103825283818151815260200191508051906020019060200280838360005b838110156119be5781810151838201526020016119a6565b5050505090500194505050505060206040518083038186803b1580156119e357600080fd5b505af41580156119f7573d6000803e3d6000fd5b505050506040513d6020811015611a0d57600080fd5b505114611a4b5760405162461bcd60e51b81526004018080602001828103825260248152602001806120f46024913960400191505060405180910390fd5b604051638492d93b60e01b81526001600160401b038816600482019081526001600160c01b03198716602483015260606044830190815286516064840152865173__$c7dbd794b8c7b5c2028db781007df1176e$__93638492d93b938c938b938b93608401906020808601910280838360005b83811015611ad6578181015183820152602001611abe565b5050505090500194505050505060206040518083038186803b158015611afb57600080fd5b505af4158015611b0f573d6000803e3d6000fd5b505050506040513d6020811015611b2557600080fd5b50516000898152600360208181526040808420928301949094558351606080820186528482526001600160401b03808e168385018181526001600160c01b03198e16858a0181815260049098018054600181018255908a52878a209651960180549251985160c01c600160481b0267ffffffffffffffff60481b19999095166101000268ffffffffffffffff001997151560ff19909416939093179690961691909117969096169190911790925585518e815292830194909452818501529182015290517f912a59309f29407977c171115122b2599e36be67312d6366767f7dbeb3d831ce9181900360800190a15050505050505050565b838060005411611c62576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000858152600360205260409020546001600160a01b0316338114611cc9576040805162461bcd60e51b815260206004820152601860248201527721b0b73737ba1031329031b0b63632b210313c903ab9b2b960411b604482015290519081900360640190fd5b600086815260026020526040812080546001019055869060008881526003602052604090206006015460ff166002811115611d0057fe5b14611d3c5760405162461bcd60e51b815260040180806020018281038252603381526020018061219f6033913960400191505060405180910390fd5b600360008881526020019081526020016000206003015473__$c7dbd794b8c7b5c2028db781007df1176e$__638492d93b8888886040518463ffffffff1660e01b815260040180846001600160401b03168152602001836001600160c01b031916815260200180602001828103825283818151815260200191508051906020019060200280838360005b83811015611dde578181015183820152602001611dc6565b5050505090500194505050505060206040518083038186803b158015611e0357600080fd5b505af4158015611e17573d6000803e3d6000fd5b505050506040513d6020811015611e2d57600080fd5b505114611e81576040805162461bcd60e51b815260206004820152601b60248201527f4d65726b6c652070726f6f6620646f6573206e6f74206d617463680000000000604482015290519081900360640190fd5b600087815260036020908152604080832081516060808201845260018083526001600160401b03808e168488018181526001600160c01b03198f16868901818152600490980180548087018255908c529a8a9020965196909a0180549151975160c01c600160481b0267ffffffffffffffff60481b19989094166101000268ffffffffffffffff001997151560ff19909316929092179690961617959095161790925583518d8152948501919091528383019190915282019290925290517f912a59309f29407977c171115122b2599e36be67312d6366767f7dbeb3d831ce9181900360800190a150505050505050565b6000818060005411611fb9576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b505060009081526003602052604090206002015490565b50506040805160008082526020820190815281830190925291565b600080846002811115611ffa57fe5b141561200c5750600282028101610730565b600184600281111561201a57fe5b1415612027575081610730565b600284600281111561203557fe5b1415611211575081610730565b5080546000825590600052602060002090810190612060919061209c565b50565b6040805160e0810182526000808252602082018190529181018290526060808201839052608082015260a081018290529060c082015290565b5b808211156120bb5780546001600160881b031916815560010161209d565b509056fe43757272656e745374617465206973206e6f742057616974696e6750726f6f66732c2063616e6e6f742070726f766557726974654d65726b6c652070726f6f66206f6620777269746520646f6573206e6f74206d61746368506f696e74496e486973746f727927732076616c756520646f6573206e6f74206d6174636843757272656e745374617465206973206e6f742057616974696e6750726f6f66732c2063616e6e6f742066696e69736850726f6f665068617365506f696e74496e486973746f7279277320706f736974696f6e20646f6573206e6f74206d6174636843757272656e745374617465206973206e6f742057616974696e6750726f6f66732c2063616e6e6f742070726f76655265616450726f766964657220616e6420636c69656e74206e65656420746f20646966666572506f696e74496e486973746f727920776173206e6f7420777269746520747970655472616e73616374696f6e2068617320746f206265206f726967696e617465642062792074686520636c69656e7443757272656e745374617465206973206e6f742057616974696e675265706c61792c2063616e6e6f742066696e6973685265706c6179506861736543757272656e745374617465206973206e6f742057616974696e675265706c61792c2063616e6e6f74207265616443757272656e745374617465206973206e6f742057616974696e675265706c61792c2063616e6e6f74207772697465496e646578206e6f7420696e7374616e74696174656400000000000000000000486973746f727920706f696e74657220646f6573206e6f74206d61746368206c656e677468a2646970667358221220780676cc9b2b9bd0403cec1682581c95bf8c9f106a7dd1123876e31a126406c864736f6c63430007010033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061014d5760003560e01c80637d036b0d116100c3578063916b9bef1161007c578063916b9bef1461043557806396f429ba14610452578063a9c7a1e61461046f578063ac448b1614610541578063ade5f4171461060a578063c526656c146106275761014d565b80637d036b0d14610368578063812e32191461038557806382afd23b146103a257806384dfd44d146103bf5780638a05e478146103e257806390645840146104185761014d565b80633ed5d456116101155780633ed5d4561461022457806343d4b78b1461024157806346336cd31461025e57806352cc70c6146102a75780635748c130146102e057806373df1612146102fd5761014d565b806301ff62ab146101525780631c5d3c601461019257806326987b60146101af578063281ca73e146101c95780633d46b81914610207575b600080fd5b61017e6004803603604081101561016857600080fd5b50803590602001356001600160a01b03166106ec565b604080519115158252519081900360200190f35b61017e600480360360208110156101a857600080fd5b5035610737565b6101b76107ab565b60408051918252519081900360200190f35b610205600480360360608110156101df57600080fd5b5080359060208101356001600160401b031690604001356001600160c01b0319166107b1565b005b6101b76004803603602081101561021d57600080fd5b5035610ad6565b6102056004803603602081101561023a57600080fd5b5035610b7c565b61017e6004803603602081101561025757600080fd5b5035610d63565b61028a6004803603604081101561027457600080fd5b50803590602001356001600160401b0316610db1565b604080516001600160c01b03199092168252519081900360200190f35b6102c4600480360360208110156102bd57600080fd5b50356110a7565b604080516001600160a01b039092168252519081900360200190f35b6101b7600480360360208110156102f657600080fd5b503561110b565b6103296004803603604081101561031357600080fd5b50803590602001356001600160a01b0316611253565b604080516001600160a01b039788168152959096166020860152848601939093526060840191909152608083015260a082015290519081900360c00190f35b6102056004803603602081101561037e57600080fd5b50356113e8565b6102c46004803603602081101561039b57600080fd5b503561155e565b61017e600480360360208110156103b857600080fd5b50356115c5565b6101b7600480360360408110156103d557600080fd5b50803590602001356115da565b6101b7600480360360608110156103f857600080fd5b506001600160a01b03813581169160208101359091169060400135611616565b6101b76004803603602081101561042e57600080fd5b503561172d565b6102056004803603602081101561044b57600080fd5b503561178c565b61017e6004803603602081101561046857600080fd5b50356117af565b610205600480360360a081101561048557600080fd5b8135916001600160401b03602082013516916001600160c01b0319604083013581169260608101359091169181019060a0810160808201356401000000008111156104cf57600080fd5b8201836020820111156104e157600080fd5b8035906020019184602083028401116401000000008311171561050357600080fd5b9190808060200260200160405190810160405280939291908181526020018383602002808284376000920191909152509295506117fd945050505050565b6102056004803603608081101561055757600080fd5b8135916001600160401b03602082013516916001600160c01b0319604083013516919081019060808101606082013564010000000081111561059857600080fd5b8201836020820111156105aa57600080fd5b803590602001918460208302840111640100000000831117156105cc57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600092019190915250929550611c1d945050505050565b6101b76004803603602081101561062057600080fd5b5035611f72565b6106536004803603604081101561063d57600080fd5b50803590602001356001600160a01b0316611fd0565b604051808060200180602001838103835285818151815260200191508051906020019060200280838360005b8381101561069757818101518382015260200161067f565b50505050905001838103825284818151815260200191508051906020019060200280838360005b838110156106d65781810151838201526020016106be565b5050505090500194505050505060405180910390f35b6000828152600360205260408120546001600160a01b038381169116148061073057506000838152600360205260409020600101546001600160a01b038381169116145b9392505050565b600081806000541161077e576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b60005b60008481526003602052604090206006015460ff1660028111156107a157fe5b1491505b50919050565b60005481565b8280600054116107f6576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000848152600260209081526040808320805460019081019091556003909252909120015484906001600160a01b031632146108635760405162461bcd60e51b815260040180806020018281038252602e815260200180612215602e913960400191505060405180910390fd5b600160008681526003602052604090206006015460ff16600281111561088557fe5b146108c15760405162461bcd60e51b815260040180806020018281038252602f8152602001806122ac602f913960400191505060405180910390fd5b6007841615610911576040805162461bcd60e51b8152602060048201526017602482015276141bdcda5d1a5bdb881a5cc81b9bdd08185b1a59db9959604a1b604482015290519081900360640190fd5b60008581526003602052604081206005810154600490910180549192918390811061093857fe5b6000918252602090912001805490915060ff16156109875760405162461bcd60e51b81526004018080602001828103825260218152602001806121f46021913960400191505060405180910390fd5b80546001600160401b0387811661010090920416146109d75760405162461bcd60e51b81526004018080602001828103825260288152602001806121776028913960400191505060405180910390fd5b80546001600160c01b0319868116600160481b90920460c01b1614610a2d5760405162461bcd60e51b81526004018080602001828103825260258152602001806121186025913960400191505060405180910390fd5b6000878152600360205260409020600401805483908110610a4a57fe5b6000918252602080832090910180546001600160881b0319169055888252600381526040918290206005018054600101905581518981526001600160401b038916918101919091526001600160c01b031987168183015290517f1a89c2c5f3636ceb6d880c0d97e9bb38407469e452f527cf78b9553d04b55dc49181900360600190a150505050505050565b6000818060005411610b1d576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b610b26816115c5565b610b68576040805162461bcd60e51b815260206004820152600e60248201526d496e64657820696e61637469766560901b604482015290519081900360640190fd5b505060009081526002602052604090205490565b808060005411610bc1576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000828152600260209081526040808320805460019081019091556003909252909120015482906001600160a01b03163214610c2e5760405162461bcd60e51b815260040180806020018281038252602e815260200180612215602e913960400191505060405180910390fd5b600160008481526003602052604090206006015460ff166002811115610c5057fe5b14610c8c5760405162461bcd60e51b815260040180806020018281038252603b815260200180612243603b913960400191505060405180910390fd5b6000838152600360205260409020600481015460059091015414610ce15760405162461bcd60e51b81526004018080602001828103825260258152602001806122fb6025913960400191505060405180910390fd5b6000838152600360205260408120610cfe91600490910190612042565b60008381526003602052604081206005810191909155600601805460ff19166002179055610d2b8361178c565b6040805184815290517feac25e5c6b8f91fcaaec2cbaed6317b8403630d1f793fc32c10fa4731a464e879181900360200190a1505050565b6000818060005411610daa576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6001610781565b6000828060005411610df8576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000848152600260209081526040808320805460019081019091556003909252909120015484906001600160a01b03163214610e655760405162461bcd60e51b815260040180806020018281038252602e815260200180612215602e913960400191505060405180910390fd5b600160008681526003602052604090206006015460ff166002811115610e8757fe5b14610ec35760405162461bcd60e51b815260040180806020018281038252602e81526020018061227e602e913960400191505060405180910390fd5b6007841615610f13576040805162461bcd60e51b8152602060048201526017602482015276141bdcda5d1a5bdb881a5cc81b9bdd08185b1a59db9959604a1b604482015290519081900360640190fd5b600085815260036020526040812060058101546004909101805491929183908110610f3a57fe5b6000918252602090912001805490915060ff16610f9e576040805162461bcd60e51b815260206004820181905260248201527f506f696e74496e486973746f727920776173206e6f7420726561642074797065604482015290519081900360640190fd5b80546001600160401b038781166101009092041614610fee5760405162461bcd60e51b81526004018080602001828103825260288152602001806121776028913960400191505060405180910390fd5b805460008881526003602052604090206004018054600160481b90920460c01b918490811061101957fe5b6000918252602080832090910180546001600160881b0319169055898252600381526040918290206005018054600101905581518a81526001600160401b038a16918101919091526001600160c01b031983168183015290517f0cac98cb64b0a437ae48678c1884bcbf0e7c702bf74c7e16c6986454e8990d629181900360600190a1979650505050505050565b60008180600054116110ee576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b50506000908152600360205260409020546001600160a01b031690565b6000818060005411611152576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b60008381526003602052604081206006015460ff16600281111561117257fe5b1415611190576c57616974696e6750726f6f667360981b91506107a5565b600160008481526003602052604090206006015460ff1660028111156111b257fe5b14156111d0576c57616974696e675265706c617960981b91506107a5565b600260008481526003602052604090206006015460ff1660028111156111f257fe5b1415611211576d46696e69736865645265706c617960901b91506107a5565b6040805162461bcd60e51b8152602060048201526012602482015271556e7265636f676e697a656420737461746560701b604482015290519081900360640190fd5b6000806000806000808780600054116112a1576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6112a9612063565b60008a8152600360208181526040808420815160e08101835281546001600160a01b039081168252600183015416818501526002820154818401529381015460608501526004810180548351818602810186019094528084529495919460808701949192909184015b82821015611373576000848152602090819020604080516060810182529185015460ff81161515835261010081046001600160401b031683850152600160481b900460c01b6001600160c01b03191690820152825260019092019101611312565b5050509082525060058201546020820152600682015460409091019060ff16600281111561139d57fe5b60028111156113a857fe5b81525050905080600001518160200151826040015183606001518460800151516113d18f61110b565b949f939e50919c509a509850909650945050505050565b80806000541161142d576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000828152600360205260409020546001600160a01b0316338114611494576040805162461bcd60e51b815260206004820152601860248201527721b0b73737ba1031329031b0b63632b210313c903ab9b2b960411b604482015290519081900360640190fd5b600083815260026020526040812080546001019055839060008581526003602052604090206006015460ff1660028111156114cb57fe5b146115075760405162461bcd60e51b815260040180806020018281038252603a81526020018061213d603a913960400191505060405180910390fd5b600084815260036020908152604091829020600601805460ff19166001179055815186815291517f0b1229d47b7ccd1dde07b4148a6c9336fd9d5fb57cca980e709576e96ae600ed9281900390910190a150505050565b60008180600054116115a5576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b50506000908152600360205260409020600101546001600160a01b031690565b60009081526001602052604090205460ff1690565b6000806115e960008585611feb565b905060006115f960018686611feb565b9050600061160960008787611feb565b9190920101949350505050565b6000826001600160a01b0316846001600160a01b031614156116695760405162461bcd60e51b81526004018080602001828103825260228152602001806121d26022913960400191505060405180910390fd5b60008054815260036020818152604080842080546001600160a01b038a81166001600160a01b0319928316178355600183018054918b1691909216179055600281018790559283018690556005830184905560068301805460ff1916905592548351908152908101859052825191927f9d7a7145d65060279d0bc06f7f03a791000bbaa9b8a8e75c3c10e2d24348791b92918290030190a150506000805481526001602081905260408220805460ff19168217905581549081019091559392505050565b6000818060005411611774576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b50506000908152600360208190526040909120015490565b6000908152600160209081526040808320805460ff191690556002909152812055565b60008180600054116117f6576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6002610781565b848060005411611842576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000868152600360205260409020546001600160a01b03163381146118a9576040805162461bcd60e51b815260206004820152601860248201527721b0b73737ba1031329031b0b63632b210313c903ab9b2b960411b604482015290519081900360640190fd5b600087815260026020526040812080546001019055879060008981526003602052604090206006015460ff1660028111156118e057fe5b1461191c5760405162461bcd60e51b81526004018080602001828103825260348152602001806120c06034913960400191505060405180910390fd5b600360008981526020019081526020016000206003015473__$c7dbd794b8c7b5c2028db781007df1176e$__638492d93b8989886040518463ffffffff1660e01b815260040180846001600160401b03168152602001836001600160c01b031916815260200180602001828103825283818151815260200191508051906020019060200280838360005b838110156119be5781810151838201526020016119a6565b5050505090500194505050505060206040518083038186803b1580156119e357600080fd5b505af41580156119f7573d6000803e3d6000fd5b505050506040513d6020811015611a0d57600080fd5b505114611a4b5760405162461bcd60e51b81526004018080602001828103825260248152602001806120f46024913960400191505060405180910390fd5b604051638492d93b60e01b81526001600160401b038816600482019081526001600160c01b03198716602483015260606044830190815286516064840152865173__$c7dbd794b8c7b5c2028db781007df1176e$__93638492d93b938c938b938b93608401906020808601910280838360005b83811015611ad6578181015183820152602001611abe565b5050505090500194505050505060206040518083038186803b158015611afb57600080fd5b505af4158015611b0f573d6000803e3d6000fd5b505050506040513d6020811015611b2557600080fd5b50516000898152600360208181526040808420928301949094558351606080820186528482526001600160401b03808e168385018181526001600160c01b03198e16858a0181815260049098018054600181018255908a52878a209651960180549251985160c01c600160481b0267ffffffffffffffff60481b19999095166101000268ffffffffffffffff001997151560ff19909416939093179690961691909117969096169190911790925585518e815292830194909452818501529182015290517f912a59309f29407977c171115122b2599e36be67312d6366767f7dbeb3d831ce9181900360800190a15050505050505050565b838060005411611c62576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b6000858152600360205260409020546001600160a01b0316338114611cc9576040805162461bcd60e51b815260206004820152601860248201527721b0b73737ba1031329031b0b63632b210313c903ab9b2b960411b604482015290519081900360640190fd5b600086815260026020526040812080546001019055869060008881526003602052604090206006015460ff166002811115611d0057fe5b14611d3c5760405162461bcd60e51b815260040180806020018281038252603381526020018061219f6033913960400191505060405180910390fd5b600360008881526020019081526020016000206003015473__$c7dbd794b8c7b5c2028db781007df1176e$__638492d93b8888886040518463ffffffff1660e01b815260040180846001600160401b03168152602001836001600160c01b031916815260200180602001828103825283818151815260200191508051906020019060200280838360005b83811015611dde578181015183820152602001611dc6565b5050505090500194505050505060206040518083038186803b158015611e0357600080fd5b505af4158015611e17573d6000803e3d6000fd5b505050506040513d6020811015611e2d57600080fd5b505114611e81576040805162461bcd60e51b815260206004820152601b60248201527f4d65726b6c652070726f6f6620646f6573206e6f74206d617463680000000000604482015290519081900360640190fd5b600087815260036020908152604080832081516060808201845260018083526001600160401b03808e168488018181526001600160c01b03198f16868901818152600490980180548087018255908c529a8a9020965196909a0180549151975160c01c600160481b0267ffffffffffffffff60481b19989094166101000268ffffffffffffffff001997151560ff19909316929092179690961617959095161790925583518d8152948501919091528383019190915282019290925290517f912a59309f29407977c171115122b2599e36be67312d6366767f7dbeb3d831ce9181900360800190a150505050505050565b6000818060005411611fb9576040805162461bcd60e51b815260206004820152601660248201526000805160206122db833981519152604482015290519081900360640190fd5b505060009081526003602052604090206002015490565b50506040805160008082526020820190815281830190925291565b600080846002811115611ffa57fe5b141561200c5750600282028101610730565b600184600281111561201a57fe5b1415612027575081610730565b600284600281111561203557fe5b1415611211575081610730565b5080546000825590600052602060002090810190612060919061209c565b50565b6040805160e0810182526000808252602082018190529181018290526060808201839052608082015260a081018290529060c082015290565b5b808211156120bb5780546001600160881b031916815560010161209d565b509056fe43757272656e745374617465206973206e6f742057616974696e6750726f6f66732c2063616e6e6f742070726f766557726974654d65726b6c652070726f6f66206f6620777269746520646f6573206e6f74206d61746368506f696e74496e486973746f727927732076616c756520646f6573206e6f74206d6174636843757272656e745374617465206973206e6f742057616974696e6750726f6f66732c2063616e6e6f742066696e69736850726f6f665068617365506f696e74496e486973746f7279277320706f736974696f6e20646f6573206e6f74206d6174636843757272656e745374617465206973206e6f742057616974696e6750726f6f66732c2063616e6e6f742070726f76655265616450726f766964657220616e6420636c69656e74206e65656420746f20646966666572506f696e74496e486973746f727920776173206e6f7420777269746520747970655472616e73616374696f6e2068617320746f206265206f726967696e617465642062792074686520636c69656e7443757272656e745374617465206973206e6f742057616974696e675265706c61792c2063616e6e6f742066696e6973685265706c6179506861736543757272656e745374617465206973206e6f742057616974696e675265706c61792c2063616e6e6f74207265616443757272656e745374617465206973206e6f742057616974696e675265706c61792c2063616e6e6f74207772697465496e646578206e6f7420696e7374616e74696174656400000000000000000000486973746f727920706f696e74657220646f6573206e6f74206d61746368206c656e677468a2646970667358221220780676cc9b2b9bd0403cec1682581c95bf8c9f106a7dd1123876e31a126406c864736f6c63430007010033",
+  "libraries": {
+    "Merkle": "0xe319796b2d69ce96bbfad9ab8ef7259a06c7c7d6"
+  },
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "getMaxInstanceDuration(uint256,uint256)": {
+        "params": {
+          "_timeToStartMachine": "time to build the machine for the first time"
+        }
+      },
+      "instantiate(address,address,bytes32)": {
+        "params": {
+          "_client": "address that will consume memory values/proofs.",
+          "_initialHash": "hash before divergence, in which both client and provider agree.",
+          "_provider": "address that will provide memory values/proofs."
+        },
+        "returns": {
+          "_0": "MemoryManager index."
+        }
+      },
+      "proveWrite(uint256,uint64,bytes8,bytes8,bytes32[])": {
+        "params": {
+          "_newValue": "to be written",
+          "_oldValue": "before write",
+          "_position": "to be written",
+          "proof": "The proof that the old value was correct"
+        }
+      },
+      "read(uint256,uint64)": {
+        "params": {
+          "_position": "of the desired memory"
+        }
+      },
+      "write(uint256,uint64,bytes8)": {
+        "params": {
+          "_position": "of the write",
+          "_value": "to be written"
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "finishProofPhase(uint256)": {
+        "notice": "Stop memory insertion and start read and write phase"
+      },
+      "finishReplayPhase(uint256)": {
+        "notice": "Stop write (or read) phase"
+      },
+      "instantiate(address,address,bytes32)": {
+        "notice": "Instantiate a memory manager instance."
+      },
+      "proveRead(uint256,uint64,bytes8,bytes32[])": {
+        "notice": "Proves that a certain value in current memory is correct"
+      },
+      "proveWrite(uint256,uint64,bytes8,bytes8,bytes32[])": {
+        "notice": "Register a write operation and update newHash"
+      },
+      "read(uint256,uint64)": {
+        "notice": "Replays a read in memory that has been proved to be correct according to initial hash"
+      },
+      "write(uint256,uint64,bytes8)": {
+        "notice": "Replays a write in memory that was proved correct"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 94,
+        "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+        "label": "currentIndex",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 98,
+        "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+        "label": "active",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_bool)"
+      },
+      {
+        "astId": 102,
+        "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+        "label": "nonce",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_uint256,t_uint256)"
+      },
+      {
+        "astId": 2166,
+        "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+        "label": "instance",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_uint256,t_struct(MMCtx)2162_storage)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_struct(ReadWrite)2146_storage)dyn_storage": {
+        "base": "t_struct(ReadWrite)2146_storage",
+        "encoding": "dynamic_array",
+        "label": "struct MMInstantiator.ReadWrite[]",
+        "numberOfBytes": "32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_bytes8": {
+        "encoding": "inplace",
+        "label": "bytes8",
+        "numberOfBytes": "8"
+      },
+      "t_enum(state)3174": {
+        "encoding": "inplace",
+        "label": "enum MMInterface.state",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_uint256,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_struct(MMCtx)2162_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct MMInstantiator.MMCtx)",
+        "numberOfBytes": "32",
+        "value": "t_struct(MMCtx)2162_storage"
+      },
+      "t_mapping(t_uint256,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_struct(MMCtx)2162_storage": {
+        "encoding": "inplace",
+        "label": "struct MMInstantiator.MMCtx",
+        "members": [
+          {
+            "astId": 2148,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "provider",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 2150,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "client",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 2152,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "initialHash",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32"
+          },
+          {
+            "astId": 2154,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "newHash",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_bytes32"
+          },
+          {
+            "astId": 2157,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "history",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_array(t_struct(ReadWrite)2146_storage)dyn_storage"
+          },
+          {
+            "astId": 2159,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "historyPointer",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 2161,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "currentState",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_enum(state)3174"
+          }
+        ],
+        "numberOfBytes": "224"
+      },
+      "t_struct(ReadWrite)2146_storage": {
+        "encoding": "inplace",
+        "label": "struct MMInstantiator.ReadWrite",
+        "members": [
+          {
+            "astId": 2141,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "wasRead",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool"
+          },
+          {
+            "astId": 2143,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "position",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_uint64"
+          },
+          {
+            "astId": 2145,
+            "contract": "contracts/MMInstantiator.sol:MMInstantiator",
+            "label": "value",
+            "offset": 9,
+            "slot": "0",
+            "type": "t_bytes8"
+          }
+        ],
+        "numberOfBytes": "32"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint64": {
+        "encoding": "inplace",
+        "label": "uint64",
+        "numberOfBytes": "8"
+      }
+    }
+  },
+  "gasEstimates": {
+    "creation": {
+      "codeDepositCost": "1809000",
+      "executionCost": "6911",
+      "totalCost": "1815911"
+    },
+    "external": {
+      "client(uint256)": "infinite",
+      "currentIndex()": "1066",
+      "deactivate(uint256)": "26158",
+      "finishProofPhase(uint256)": "infinite",
+      "finishReplayPhase(uint256)": "infinite",
+      "getCurrentState(uint256)": "infinite",
+      "getMaxInstanceDuration(uint256,uint256)": "infinite",
+      "getNonce(uint256)": "infinite",
+      "getState(uint256,address)": "infinite",
+      "getSubInstances(uint256,address)": "744",
+      "initialHash(uint256)": "infinite",
+      "instantiate(address,address,bytes32)": "infinite",
+      "isActive(uint256)": "1185",
+      "isConcerned(uint256,address)": "2138",
+      "newHash(uint256)": "infinite",
+      "proveRead(uint256,uint64,bytes8,bytes32[])": "infinite",
+      "proveWrite(uint256,uint64,bytes8,bytes8,bytes32[])": "infinite",
+      "provider(uint256)": "infinite",
+      "read(uint256,uint64)": "infinite",
+      "stateIsFinishedReplay(uint256)": "infinite",
+      "stateIsWaitingProofs(uint256)": "infinite",
+      "stateIsWaitingReplay(uint256)": "infinite",
+      "write(uint256,uint64,bytes8)": "infinite"
+    },
+    "internal": {
+      "getMaxStateDuration(enum MMInterface.state,uint256,uint256)": "infinite"
+    }
+  }
+}
