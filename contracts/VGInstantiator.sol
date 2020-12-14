@@ -232,7 +232,10 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
         mm.finishReplayPhase(mmIndex);
 
         require(mm.stateIsFinishedReplay(mmIndex), "State of MM  should be FinishedReplay");
-        require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence, "newHash should match");
+        require(
+            mm.newHash(mmIndex) != instance[_index].hashAfterDivergence,
+            "newHash after challenger proofs must diverge from claimer"
+        );
         challengerWins(_index);
     }
 
