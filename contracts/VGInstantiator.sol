@@ -300,7 +300,7 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
             currentState = "WaitMemoryProveValues";
         }
         if (i.currentState == state.FinishedClaimerWon) {
-            currentState = "FinishClaimerWon";
+            currentState = "FinishedClaimerWon";
         }
         if (i.currentState == state.FinishedChallengerWon) {
             currentState = "FinishedChallengerWon";
@@ -422,7 +422,7 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
             return "WaitMemoryProveValues";
         }
         if (instance[_index].currentState == state.FinishedClaimerWon) {
-            return "FinishClaimerWon";
+            return "FinishedClaimerWon";
         }
         if (instance[_index].currentState == state.FinishedChallengerWon) {
             return "FinishedChallengerWon";
