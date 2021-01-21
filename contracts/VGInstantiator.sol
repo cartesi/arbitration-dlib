@@ -378,7 +378,7 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
         );
 
         uint256 waitMemoryProveValues = getMaxStateDuration(
-            state.WaitPartition,
+            state.WaitMemoryProveValues,
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
