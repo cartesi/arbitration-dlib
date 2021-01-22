@@ -226,16 +226,15 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
 
         (uint8 exitCode, uint256 memoryAccesses) = instance[_index].machine.step(positions, values, wasRead);
 
-        require(exitCode == 0, "Step didnt exit correctly");
-        require(memoryAccesses == positions.length, "Number of memory acceses didnt match");
-
         mm.finishReplayPhase(mmIndex);
-
-        require(mm.stateIsFinishedReplay(mmIndex), "State of MM  should be FinishedReplay");
-        require(
-            mm.newHash(mmIndex) != instance[_index].hashAfterDivergence,
-            "newHash after challenger proofs must diverge from claimer"
-        );
+        
+        if( exitCode != 0 || //Step didnt exit correctly
+            memoryAccesses != positions.length || //Number of memory acceses didnt match
+            !mm.stateIsFinishedReplay(mmIndex) || //State of MM  should be FinishedReplay
+            mm.newHash(mmIndex) == instance[_index].hashAfterDivergence // newHash after challenger proofs must diverge from claimer
+        ) {
+            claimerWins(_index);
+        }
         challengerWins(_index);
     }
 
