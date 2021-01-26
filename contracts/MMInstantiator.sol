@@ -195,6 +195,7 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         onlyBy(instance[_index].owner)
         increasesNonce(_index)
     {
+        require(stateIsWaitingReplay(_index), "State of MM should be WaitingReplay");
         delete (instance[_index].history);
         instance[_index].currentState = state.FinishedReplay;
 
