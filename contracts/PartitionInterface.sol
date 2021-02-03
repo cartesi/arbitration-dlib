@@ -73,6 +73,8 @@ interface PartitionInterface is Instantiator {
 
     function getQuerySize(uint256 _index) external view returns (uint256);
 
+    function getCurrentStateDeadline(uint _index) external view returns (uint time);
+
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine,

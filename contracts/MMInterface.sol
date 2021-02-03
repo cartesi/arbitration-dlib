@@ -59,6 +59,12 @@ interface MMInterface is Instantiator {
 
     function stateIsFinishedReplay(uint256 _index) external view returns (bool);
 
+    function getCurrentStateDeadline(
+        uint256 _index,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine
+    ) external view returns (uint256);
+
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine

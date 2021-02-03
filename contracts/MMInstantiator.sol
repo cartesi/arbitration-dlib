@@ -349,6 +349,23 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         require(false, "Unrecognized state");
     }
 
+    function getCurrentStateDeadline(
+        uint256 _index,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine
+    )   public
+        override
+        view
+        onlyInstantiated(_index)
+        returns (uint256)
+    {
+        return getMaxStateDuration(
+            instance[_index].currentState,
+            _roundDuration,
+            _timeToStartMachine
+        );
+    }
+
     /// @notice Get the worst case scenario duration for an instance of this contract
     /// @param _roundDuration security parameter, the max time an agent
     //          has to react and submit one simple transaction

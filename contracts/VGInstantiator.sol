@@ -264,6 +264,18 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
     }
 
     // state getters
+    function getCurrentStateDeadline(uint _index) public view
+        onlyInstantiated(_index)
+        returns (uint time)
+    {
+        VGCtx memory i = instance[_index];
+        time = i.timeOfLastMove + getMaxStateDuration(
+            _index,
+            i.roundDuration,
+            40 // time to start machine @DEV I want to use preprocessor constant for this, like:
+            // #def TIMETOSTARTMACHINE 40
+        );
+    }
 
     function getState(uint256 _index, address) public view
         onlyInstantiated(_index)
@@ -326,6 +338,28 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
         return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
     }
 
+    function getMaxStateDuration(
+        uint256 _index,
+        uint256 _roundDuration,
+        uint256 _timeToStartMachine
+        ) private view returns (uint256)
+    {
+        VGCtx memory i = instance[_index];
+        // TODO: the 1 should probably be roundDuration
+        if (instance[_index].currentState == state.WaitPartition) {
+            return partition.getCurrentStateDeadline(i.partitionInstance) - i.timeOfLastMove;
+        }
+        if (instance[_index].currentState == state.WaitMemoryProveValues) {
+            return mm.getCurrentStateDeadline(i.mmInstance, _roundDuration, _timeToStartMachine);
+        }
+
+        if (instance[_index].currentState == state.FinishedClaimerWon ||
+            instance[_index].currentState == state.FinishedChallengerWon) {
+            return 0; // final state
+        }
+        require(false, "Unrecognized state");
+    }
+
     /// @notice Get the worst case scenario duration for a specific state
     /// @param _roundDuration security parameter, the max time an agent
     //          has to react and submit one simple transaction
@@ -334,13 +368,15 @@ contract VGInstantiator is InstantiatorImpl, Decorated, VGInterface {
     //          will run to reach the necessary hash
     /// @param _maxCycle is the maximum amount of steps a machine can perform
     //          before being forced into becoming halted
+    //  @DEV I want to delete this..can we change the getMaxInstanceDuration interface safely??
     function getMaxStateDuration(
         state _state,
         uint256 _roundDuration,
         uint256 _timeToStartMachine,
         uint256 _partitionSize,
         uint256 _maxCycle,
-        uint256 _picoSecondsToRunInsn) private view returns (uint256)
+        uint256 _picoSecondsToRunInsn
+    ) private view returns (uint256)
     {
         // TODO: the 1 should probably be roundDuration
         if (_state == state.WaitPartition) {

@@ -405,6 +405,23 @@ contract PartitionInstantiator is
 
     // Getters methods
 
+    function getCurrentStateDeadline(uint _index) public override view
+        onlyInstantiated(_index)
+        returns (uint time)
+    {
+        PartitionCtx storage i = instance[_index];
+        time = i.timeOfLastMove +
+            getMaxStateDuration(
+                i.currentState,
+                i.roundDuration,
+                40,
+                i.querySize,
+                i.partitionGameIndex,
+                i.finalTime,
+                500
+        ); //deadline (40 seconds to build machine, 500 pico seconds per insn
+    }
+
     function getState(uint256 _index, address)
         public
         view
