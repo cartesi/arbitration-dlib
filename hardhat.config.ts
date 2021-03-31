@@ -40,7 +40,6 @@ const config: HardhatUserConfig = {
             url: "http://localhost:8545",
             accounts: mnemonic ? { mnemonic } : undefined,
         },
-        ropsten: infuraNetwork("ropsten", 3, 6283185),
         rinkeby: infuraNetwork("rinkeby", 4, 6283185),
         kovan: infuraNetwork("kovan", 42, 6283185),
         goerli: infuraNetwork("goerli", 5, 6283185),
@@ -82,7 +81,6 @@ const config: HardhatUserConfig = {
         ],
         deployments: {
             localhost: ["node_modules/@cartesi/util/deployments/localhost"],
-            ropsten: ["node_modules/@cartesi/util/deployments/ropsten"],
             rinkeby: ["node_modules/@cartesi/util/deployments/rinkeby"],
             kovan: ["node_modules/@cartesi/util/deployments/kovan"],
             goerli: ["node_modules/@cartesi/util/deployments/goerli"],
