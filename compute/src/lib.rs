@@ -44,16 +44,15 @@ extern crate ethabi;
 extern crate ethereum_types;
 extern crate transaction;
 
-pub use compute::{Compute, ComputeCtx, ComputeCtxParsed, win_by_deadline_or_idle};
+pub use compute::{win_by_deadline_or_idle, Compute, ComputeCtx, ComputeCtxParsed};
 pub use emulator::{cartesi_machine, machine_manager};
 pub use emulator_service::{
     AccessType, NewSessionRequest, NewSessionResponse, SessionGetProofRequest,
     SessionGetProofResponse, SessionReadMemoryRequest, SessionReadMemoryResponse,
-    SessionRunRequest, SessionRunResponse, SessionStepRequest, SessionStepResponse,
-    SessionRunResponseOneOf, SessionRunResult, SessionWriteMemoryRequest,
-    EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_WRITE,
-    EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
-    EMULATOR_SERVICE_NAME, 
+    SessionRunRequest, SessionRunResponse, SessionRunResponseOneOf, SessionRunResult,
+    SessionStepRequest, SessionStepResponse, SessionWriteMemoryRequest, TerminateSessionRequest,
+    EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN,
+    EMULATOR_METHOD_STEP, EMULATOR_METHOD_TERMINATE, EMULATOR_METHOD_WRITE, EMULATOR_SERVICE_NAME,
 };
 pub use mm::MM;
 pub use partition::Partition;
@@ -96,21 +95,19 @@ pub fn get_run_result(
     archive: &dispatcher::Archive,
     contract: String,
     key: String,
-    request: Vec<u8>
+    request: Vec<u8>,
 ) -> error::Result<SessionRunResult> {
     let processed_response: SessionRunResponse = archive
         .get_response(
             EMULATOR_SERVICE_NAME.to_string(),
             key.clone(),
             EMULATOR_METHOD_RUN.to_string(),
-            request.clone()
+            request.clone(),
         )?
         .into();
-    
+
     match processed_response.one_of {
-        SessionRunResponseOneOf::RunResult(s) => {
-            Ok(s)
-        },
+        SessionRunResponseOneOf::RunResult(s) => Ok(s),
         SessionRunResponseOneOf::RunProgress(p) => {
             error!("Fail to get machine run result, progress: {}", p.progress);
             Err(error::Error::from(error::ErrorKind::ServiceNeedsRetry(
@@ -121,17 +118,16 @@ pub fn get_run_result(
                 contract,
                 1,
                 p.progress,
-                "machine stil running".to_string()
+                "machine stil running".to_string(),
             )))
-        },
+        }
     }
 }
-
 
 #[cfg(test)]
 pub mod tests {
     extern crate hex;
-    use ethereum_types::{ H160, U256 };
+    use ethereum_types::{H160, U256};
 
     pub const MACHINEID: &str = "Machine000";
     pub const CLAIMERADDR: &str = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -166,7 +162,10 @@ pub mod tests {
             user_address: hash_from_string::<H160>(user),
         }
     }
-    pub fn build_state(concern: configuration::Concern, json_data: Option<String>) -> state::Instance {
+    pub fn build_state(
+        concern: configuration::Concern,
+        json_data: Option<String>,
+    ) -> state::Instance {
         let _json_data = json_data.unwrap_or(String::from(""));
         state::Instance {
             name: "".to_string(),
