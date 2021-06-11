@@ -30,7 +30,6 @@ use super::ethereum_types::H256;
 use super::grpc::marshall::Marshaller;
 use super::{cartesi_machine, machine_manager};
 
-
 pub const EMULATOR_SERVICE_NAME: &'static str = "emulator";
 pub const EMULATOR_METHOD_NEW: &'static str = "/CartesiMachineManager.MachineManager/NewSession";
 pub const EMULATOR_METHOD_RUN: &'static str = "/CartesiMachineManager.MachineManager/SessionRun";
@@ -41,6 +40,8 @@ pub const EMULATOR_METHOD_WRITE: &'static str =
     "/CartesiMachineManager.MachineManager/SessionWriteMemory";
 pub const EMULATOR_METHOD_PROOF: &'static str =
     "/CartesiMachineManager.MachineManager/SessionGetProof";
+pub const EMULATOR_METHOD_TERMINATE: &'static str =
+    "/CartesiMachineManager.MachineManager/TerminateSession";
 
 /// Representation of a request for new session
 #[derive(Debug, Clone)]
@@ -85,28 +86,24 @@ pub struct SessionRunResult {
 impl From<machine_manager::SessionRunResponse_oneof_run_oneof> for SessionRunResponseOneOf {
     fn from(one_of: machine_manager::SessionRunResponse_oneof_run_oneof) -> Self {
         match one_of {
-            machine_manager::SessionRunResponse_oneof_run_oneof::progress(s)
-            => {
+            machine_manager::SessionRunResponse_oneof_run_oneof::progress(s) => {
                 SessionRunResponseOneOf::RunProgress(s.into())
-            },
-            machine_manager::SessionRunResponse_oneof_run_oneof::result(p)
-            => {
+            }
+            machine_manager::SessionRunResponse_oneof_run_oneof::result(p) => {
                 SessionRunResponseOneOf::RunResult(p.into())
-            },
+            }
         }
     }
 }
-impl From<SessionRunResponseOneOf> for machine_manager::SessionRunResponse_oneof_run_oneof{
+impl From<SessionRunResponseOneOf> for machine_manager::SessionRunResponse_oneof_run_oneof {
     fn from(one_of: SessionRunResponseOneOf) -> Self {
         match one_of {
-            SessionRunResponseOneOf::RunProgress(s)
-            => {
+            SessionRunResponseOneOf::RunProgress(s) => {
                 machine_manager::SessionRunResponse_oneof_run_oneof::progress(s.into())
-            },
-            SessionRunResponseOneOf::RunResult(p)
-            => {
+            }
+            SessionRunResponseOneOf::RunResult(p) => {
                 machine_manager::SessionRunResponse_oneof_run_oneof::result(p.into())
-            },
+            }
         }
     }
 }
@@ -165,10 +162,7 @@ impl From<machine_manager::SessionRunResult> for SessionRunResult {
 impl From<machine_manager::SessionRunResponse> for SessionRunResponse {
     fn from(response: machine_manager::SessionRunResponse) -> Self {
         SessionRunResponse {
-            one_of: response
-                .run_oneof
-                .unwrap()
-                .into(),
+            one_of: response.run_oneof.unwrap().into(),
         }
     }
 }
@@ -203,8 +197,8 @@ impl From<cartesi_machine::AccessType> for AccessType {
     }
 }
 
-impl From<AccessType> for cartesi_machine::AccessType{
-    fn from(op: AccessType) -> Self { 
+impl From<AccessType> for cartesi_machine::AccessType {
+    fn from(op: AccessType) -> Self {
         match op {
             AccessType::Read => cartesi_machine::AccessType::READ,
             AccessType::Write => cartesi_machine::AccessType::WRITE,
@@ -214,19 +208,21 @@ impl From<AccessType> for cartesi_machine::AccessType{
 /// A proof that a certain subtree has the contents represented by
 /// `target_hash`.
 #[derive(Debug, Clone)]
-pub struct Proof {
+pub struct MerkleTreeProof {
     pub address: u64,
-    pub log2_size: u32,
+    pub log2_target_size: u64,
+    pub log2_root_size: u64,
     pub target_hash: H256,
     pub sibling_hashes: Vec<H256>,
     pub root_hash: H256,
 }
 
-impl From<cartesi_machine::Proof> for Proof {
-    fn from(proof: cartesi_machine::Proof) -> Self {
-        Proof {
-            address: proof.address,
-            log2_size: proof.log2_size,
+impl From<cartesi_machine::MerkleTreeProof> for MerkleTreeProof {
+    fn from(proof: cartesi_machine::MerkleTreeProof) -> Self {
+        MerkleTreeProof {
+            address: proof.target_address,
+            log2_target_size: proof.log2_target_size,
+            log2_root_size: proof.log2_root_size,
             target_hash: H256::from_slice(
                 &proof
                     .target_hash
@@ -251,11 +247,12 @@ impl From<cartesi_machine::Proof> for Proof {
     }
 }
 
-impl From<Proof> for cartesi_machine::Proof{
-    fn from(proof: Proof) -> Self {
-        let mut p = cartesi_machine::Proof::new();
-        p.address = proof.address;
-        p.log2_size = proof.log2_size;
+impl From<MerkleTreeProof> for cartesi_machine::MerkleTreeProof {
+    fn from(proof: MerkleTreeProof) -> Self {
+        let mut p = cartesi_machine::MerkleTreeProof::new();
+        p.target_address = proof.address;
+        p.log2_target_size = proof.log2_target_size;
+        p.log2_root_size = proof.log2_root_size;
         let mut h = emulator::cartesi_machine::Hash::new();
         h.data = proof.target_hash.as_bytes().into();
         p.target_hash = protobuf::SingularPtrField::some(h);
@@ -264,7 +261,8 @@ impl From<Proof> for cartesi_machine::Proof{
         h.data = proof.root_hash.as_bytes().into();
         p.root_hash = protobuf::SingularPtrField::some(h);
 
-        p.sibling_hashes = proof.sibling_hashes
+        p.sibling_hashes = proof
+            .sibling_hashes
             .into_iter()
             .map(|hash| {
                 let mut h = emulator::cartesi_machine::Hash::new();
@@ -273,7 +271,7 @@ impl From<Proof> for cartesi_machine::Proof{
             })
             .collect();
         return p;
-    } 
+    }
 }
 
 /// An access to be logged during the step procedure
@@ -283,7 +281,7 @@ pub struct Access {
     pub address: u64,
     pub value_read: [u8; 8],
     pub value_written: [u8; 8],
-    pub proof: Proof,
+    pub proof: MerkleTreeProof,
 }
 
 fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
@@ -297,48 +295,31 @@ fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
 }
 
 fn from_bytes(input: [u8; 8]) -> Vec<u8> {
-    vec![input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],]
+    vec![
+        input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],
+    ]
 }
 
-impl From<cartesi_machine::WordAccess> for Access {
-    fn from(access: cartesi_machine::WordAccess) -> Self {
-        let proof: Proof = access.proof.into_option().expect("proof not found").into();
+impl From<cartesi_machine::Access> for Access {
+    fn from(access: cartesi_machine::Access) -> Self {
+        let proof: MerkleTreeProof = access.proof.into_option().expect("proof not found").into();
         Access {
             field_type: access.field_type.into(),
             address: proof.address,
-            value_read: to_bytes(
-                access
-                    .read
-                    .into_option()
-                    .expect("read access not found")
-                    .data,
-            )
-            .expect("read value has the wrong size"),
-            value_written: to_bytes(
-                access
-                    .written
-                    .into_option()
-                    .expect("write access not found")
-                    .data,
-            )
-            .expect("write value has the wrong size"),
+            value_read: to_bytes(access.read).expect("read value has the wrong size"),
+            value_written: to_bytes(access.written).expect("write value has the wrong size"),
             proof: proof,
         }
     }
 }
 
-impl From<Access> for cartesi_machine::WordAccess {
+impl From<Access> for cartesi_machine::Access {
     fn from(access: Access) -> Self {
-        let mut a = cartesi_machine::WordAccess::new();
+        let mut a = cartesi_machine::Access::new();
         a.field_type = access.field_type.into();
-        
-        let mut read_word = cartesi_machine::Word::new();
-        read_word.data = from_bytes(access.value_read);
-        a.read = protobuf::SingularPtrField::some(read_word);
 
-        let mut written_word = cartesi_machine::Word::new();
-        written_word.data = from_bytes(access.value_written);
-        a.written = protobuf::SingularPtrField::some(written_word);
+        a.read = access.value_read.to_vec();
+        a.written = access.value_written.to_vec();
 
         a.proof = protobuf::SingularPtrField::some(access.proof.into());
         return a;
@@ -378,10 +359,7 @@ impl From<SessionStepResponse> for machine_manager::SessionStepResponse {
     fn from(response: SessionStepResponse) -> Self {
         let mut m = machine_manager::SessionStepResponse::new();
         let mut l = cartesi_machine::AccessLog::new();
-        l.accesses = response.log
-            .into_iter()
-            .map(|hash| hash.into())
-            .collect();
+        l.accesses = response.log.into_iter().map(|hash| hash.into()).collect();
         m.log = protobuf::SingularPtrField::some(l);
         return m;
     }
@@ -444,15 +422,22 @@ pub struct SessionGetProofRequest {
 /// Representation of a response for read the memory
 #[derive(Debug, Clone)]
 pub struct SessionGetProofResponse {
-    pub proof: Proof,
+    pub proof: MerkleTreeProof,
 }
 
-impl From<cartesi_machine::Proof> for SessionGetProofResponse {
-    fn from(proof: cartesi_machine::Proof) -> Self {
+impl From<cartesi_machine::MerkleTreeProof> for SessionGetProofResponse {
+    fn from(proof: cartesi_machine::MerkleTreeProof) -> Self {
         SessionGetProofResponse {
             proof: proof.into(),
         }
     }
+}
+
+/// Representation of a request for session termination
+#[derive(Debug, Clone)]
+pub struct TerminateSessionRequest {
+    pub session_id: String,
+    pub ignore: bool,
 }
 
 impl From<Vec<u8>> for SessionRunResponse {
@@ -469,9 +454,7 @@ impl From<Vec<u8>> for SessionRunResponse {
 impl From<SessionRunResponse> for machine_manager::SessionRunResponse {
     fn from(response: SessionRunResponse) -> Self {
         let mut s = machine_manager::SessionRunResponse::new();
-        let a: machine_manager::SessionRunResponse_oneof_run_oneof = response
-                .one_of
-                .into();
+        let a: machine_manager::SessionRunResponse_oneof_run_oneof = response.one_of.into();
         s.run_oneof = a.into();
         return s;
     }
@@ -484,7 +467,6 @@ impl From<SessionRunResponse> for Vec<u8> {
         marshaller.write(&response.into()).unwrap()
     }
 }
-
 
 impl From<Vec<u8>> for SessionStepResponse {
     fn from(response: Vec<u8>) -> Self {
@@ -518,8 +500,9 @@ impl From<Vec<u8>> for NewSessionResponse {
 
 impl From<Vec<u8>> for SessionReadMemoryResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionReadMemoryResponse> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionReadMemoryResponse> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
             .unwrap()
@@ -529,7 +512,7 @@ impl From<Vec<u8>> for SessionReadMemoryResponse {
 
 impl From<Vec<u8>> for SessionGetProofResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<cartesi_machine::Proof> + Sync + Send> =
+        let marshaller: Box<dyn Marshaller<cartesi_machine::MerkleTreeProof> + Sync + Send> =
             Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -580,8 +563,9 @@ impl From<NewSessionRequest> for Vec<u8> {
 
 impl From<SessionReadMemoryRequest> for Vec<u8> {
     fn from(request: SessionReadMemoryRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionReadMemoryRequest> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionReadMemoryRequest> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionReadMemoryRequest::new();
         req.set_session_id(request.session_id);
@@ -594,8 +578,9 @@ impl From<SessionReadMemoryRequest> for Vec<u8> {
 
 impl From<SessionWriteMemoryRequest> for Vec<u8> {
     fn from(request: SessionWriteMemoryRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionWriteMemoryRequest> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionWriteMemoryRequest> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionWriteMemoryRequest::new();
         req.set_session_id(request.session_id);
@@ -615,6 +600,20 @@ impl From<SessionGetProofRequest> for Vec<u8> {
         req.set_session_id(request.session_id);
         req.set_cycle(request.time);
         req.set_target(request.target);
+
+        marshaller.write(&req).unwrap()
+    }
+}
+
+impl From<TerminateSessionRequest> for Vec<u8> {
+    fn from(request: TerminateSessionRequest) -> Self {
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::TerminateSessionRequest> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
+
+        let mut req = machine_manager::TerminateSessionRequest::new();
+        req.set_session_id(request.session_id);
+        req.set_ignore(request.ignore);
 
         marshaller.write(&req).unwrap()
     }
