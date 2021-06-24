@@ -1,6 +1,6 @@
 // Arbitration DLib is the combination of the on-chain protocol and off-chain
-// protocol that work together to resolve any disputes that might occur during the
-// execution of a Cartesi DApp.
+// protocol that work together to resolve any disputes that might occur during
+// the execution of a Cartesi DApp.
 
 // Copyright (C) 2019 Cartesi Pte. Ltd.
 
@@ -9,19 +9,21 @@
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
 
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-// PARTICULAR PURPOSE. See the GNU General Public License for more details.
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+// details.
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Note: This component currently has dependencies that are licensed under the GNU
-// GPL, version 3, and so you should treat this component as a whole as being under
-// the GPL version 3. But all Cartesi-written code in this component is licensed
-// under the Apache License, version 2, or a compatible permissive license, and can
-// be used independently under the Apache v2 license. After this component is
-// rewritten, the entire component will be released under the Apache v2 license.
+// Note: This component currently has dependencies that are licensed under the
+// GNU GPL, version 3, and so you should treat this component as a whole as
+// being under the GPL version 3. But all Cartesi-written code in this component
+// is licensed under the Apache License, version 2, or a compatible permissive
+// license, and can be used independently under the Apache v2 license. After
+// this component is rewritten, the entire component will be released under the
+// Apache v2 license.
 
 #![warn(unused_extern_crates)]
 pub mod compute;
@@ -44,15 +46,19 @@ extern crate ethabi;
 extern crate ethereum_types;
 extern crate transaction;
 
-pub use compute::{win_by_deadline_or_idle, Compute, ComputeCtx, ComputeCtxParsed};
+pub use compute::{
+    win_by_deadline_or_idle, Compute, ComputeCtx, ComputeCtxParsed,
+};
 pub use emulator::{cartesi_machine, machine_manager};
 pub use emulator_service::{
-    AccessType, NewSessionRequest, NewSessionResponse, SessionGetProofRequest,
-    SessionGetProofResponse, SessionReadMemoryRequest, SessionReadMemoryResponse,
-    SessionRunRequest, SessionRunResponse, SessionRunResponseOneOf, SessionRunResult,
-    SessionStepRequest, SessionStepResponse, SessionWriteMemoryRequest, TerminateSessionRequest,
-    EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN,
-    EMULATOR_METHOD_STEP, EMULATOR_METHOD_TERMINATE, EMULATOR_METHOD_WRITE, EMULATOR_SERVICE_NAME,
+    AccessType, EndSessionRequest, NewSessionRequest, NewSessionResponse,
+    SessionGetProofRequest, SessionGetProofResponse, SessionReadMemoryRequest,
+    SessionReadMemoryResponse, SessionRunRequest, SessionRunResponse,
+    SessionRunResponseOneOf, SessionRunResult, SessionStepRequest,
+    SessionStepResponse, SessionWriteMemoryRequest, EMULATOR_METHOD_END,
+    EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_READ,
+    EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP, EMULATOR_METHOD_WRITE,
+    EMULATOR_SERVICE_NAME,
 };
 pub use mm::MM;
 pub use partition::Partition;
@@ -79,15 +85,30 @@ pub fn build_session_step_key(id: String, divergence_time: String) -> String {
     return format!("{}_step_{}", id, divergence_time);
 }
 
-pub fn build_session_read_key(id: String, time: u64, address: u64, length: u64) -> String {
+pub fn build_session_read_key(
+    id: String,
+    time: u64,
+    address: u64,
+    length: u64,
+) -> String {
     return format!("{}_read_{}_{}_{}", id, time, address, length);
 }
 
-pub fn build_session_write_key(id: String, time: u64, address: u64, data: Vec<u8>) -> String {
+pub fn build_session_write_key(
+    id: String,
+    time: u64,
+    address: u64,
+    data: Vec<u8>,
+) -> String {
     return format!("{}_write_{}_{}_{:?}", id, time, address, data);
 }
 
-pub fn build_session_proof_key(id: String, time: u64, address: u64, log2_size: u64) -> String {
+pub fn build_session_proof_key(
+    id: String,
+    time: u64,
+    address: u64,
+    log2_size: u64,
+) -> String {
     return format!("{}_proof_{}_{}_{}", id, time, address, log2_size);
 }
 
@@ -131,13 +152,17 @@ pub mod tests {
 
     pub const MACHINEID: &str = "Machine000";
     pub const CLAIMERADDR: &str = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    pub const CHALLENGERADDR: &str = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    pub const CHALLENGERADDR: &str =
+        "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
     pub const CONTRACTADDR: &str = "0xcccccccccccccccccccccccccccccccccccccccc";
     pub const UNKNOWNADDR: &str = "0xdddddddddddddddddddddddddddddddddddddddd";
     pub const MACHINEADDR: &str = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-    pub const HASH1: &str = "0x0000000000000000000000000000000000000000000000000000000000000010";
-    pub const HASH2: &str = "0x0000000000000000000000000000000000000000000000000000000000000020";
-    pub const HASH3: &str = "0x0000000000000000000000000000000000000000000000000000000000000030";
+    pub const HASH1: &str =
+        "0x0000000000000000000000000000000000000000000000000000000000000010";
+    pub const HASH2: &str =
+        "0x0000000000000000000000000000000000000000000000000000000000000020";
+    pub const HASH3: &str =
+        "0x0000000000000000000000000000000000000000000000000000000000000030";
     pub const UNKNOWNSTATE: &str = "Unknown State";
     pub fn encode(state: &str) -> String {
         format!("0x{}", hex::encode(state))

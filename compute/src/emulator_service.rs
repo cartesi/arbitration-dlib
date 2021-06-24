@@ -8,19 +8,21 @@
 // Foundation, either version 3 of the License, or (at your option) any later
 // version.
 
-// This program is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-// PARTICULAR PURPOSE. See the GNU General Public License for more details.
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+// details.
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Note: This component currently has dependencies that are licensed under the GNU
-// GPL, version 3, and so you should treat this component as a whole as being under
-// the GPL version 3. But all Cartesi-written code in this component is licensed
-// under the Apache License, version 2, or a compatible permissive license, and can
-// be used independently under the Apache v2 license. After this component is
-// rewritten, the entire component will be released under the Apache v2 license.
+// Note: This component currently has dependencies that are licensed under the
+// GNU GPL, version 3, and so you should treat this component as a whole as
+// being under the GPL version 3. But all Cartesi-written code in this component
+// is licensed under the Apache License, version 2, or a compatible permissive
+// license, and can be used independently under the Apache v2 license. After
+// this component is rewritten, the entire component will be released under the
+// Apache v2 license.
 
 //! A collection of types that represent the manager grpc interface
 //! together with the conversion functions from the automatically
@@ -31,17 +33,20 @@ use super::grpc::marshall::Marshaller;
 use super::{cartesi_machine, machine_manager};
 
 pub const EMULATOR_SERVICE_NAME: &'static str = "emulator";
-pub const EMULATOR_METHOD_NEW: &'static str = "/CartesiMachineManager.MachineManager/NewSession";
-pub const EMULATOR_METHOD_RUN: &'static str = "/CartesiMachineManager.MachineManager/SessionRun";
-pub const EMULATOR_METHOD_STEP: &'static str = "/CartesiMachineManager.MachineManager/SessionStep";
+pub const EMULATOR_METHOD_NEW: &'static str =
+    "/CartesiMachineManager.MachineManager/NewSession";
+pub const EMULATOR_METHOD_RUN: &'static str =
+    "/CartesiMachineManager.MachineManager/SessionRun";
+pub const EMULATOR_METHOD_STEP: &'static str =
+    "/CartesiMachineManager.MachineManager/SessionStep";
 pub const EMULATOR_METHOD_READ: &'static str =
     "/CartesiMachineManager.MachineManager/SessionReadMemory";
 pub const EMULATOR_METHOD_WRITE: &'static str =
     "/CartesiMachineManager.MachineManager/SessionWriteMemory";
 pub const EMULATOR_METHOD_PROOF: &'static str =
     "/CartesiMachineManager.MachineManager/SessionGetProof";
-pub const EMULATOR_METHOD_TERMINATE: &'static str =
-    "/CartesiMachineManager.MachineManager/TerminateSession";
+pub const EMULATOR_METHOD_END: &'static str =
+    "/CartesiMachineManager.MachineManager/EndSession";
 
 /// Representation of a request for new session
 #[derive(Debug, Clone)]
@@ -83,26 +88,36 @@ pub struct SessionRunResult {
     pub hashes: Vec<H256>,
 }
 
-impl From<machine_manager::SessionRunResponse_oneof_run_oneof> for SessionRunResponseOneOf {
-    fn from(one_of: machine_manager::SessionRunResponse_oneof_run_oneof) -> Self {
+impl From<machine_manager::SessionRunResponse_oneof_run_oneof>
+    for SessionRunResponseOneOf
+{
+    fn from(
+        one_of: machine_manager::SessionRunResponse_oneof_run_oneof,
+    ) -> Self {
         match one_of {
-            machine_manager::SessionRunResponse_oneof_run_oneof::progress(s) => {
-                SessionRunResponseOneOf::RunProgress(s.into())
-            }
+            machine_manager::SessionRunResponse_oneof_run_oneof::progress(
+                s,
+            ) => SessionRunResponseOneOf::RunProgress(s.into()),
             machine_manager::SessionRunResponse_oneof_run_oneof::result(p) => {
                 SessionRunResponseOneOf::RunResult(p.into())
             }
         }
     }
 }
-impl From<SessionRunResponseOneOf> for machine_manager::SessionRunResponse_oneof_run_oneof {
+impl From<SessionRunResponseOneOf>
+    for machine_manager::SessionRunResponse_oneof_run_oneof
+{
     fn from(one_of: SessionRunResponseOneOf) -> Self {
         match one_of {
             SessionRunResponseOneOf::RunProgress(s) => {
-                machine_manager::SessionRunResponse_oneof_run_oneof::progress(s.into())
+                machine_manager::SessionRunResponse_oneof_run_oneof::progress(
+                    s.into(),
+                )
             }
             SessionRunResponseOneOf::RunResult(p) => {
-                machine_manager::SessionRunResponse_oneof_run_oneof::result(p.into())
+                machine_manager::SessionRunResponse_oneof_run_oneof::result(
+                    p.into(),
+                )
             }
         }
     }
@@ -289,25 +304,30 @@ fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
         None
     } else {
         Some([
-            input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],
+            input[0], input[1], input[2], input[3], input[4], input[5],
+            input[6], input[7],
         ])
     }
 }
 
 fn from_bytes(input: [u8; 8]) -> Vec<u8> {
     vec![
-        input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],
+        input[0], input[1], input[2], input[3], input[4], input[5], input[6],
+        input[7],
     ]
 }
 
 impl From<cartesi_machine::Access> for Access {
     fn from(access: cartesi_machine::Access) -> Self {
-        let proof: MerkleTreeProof = access.proof.into_option().expect("proof not found").into();
+        let proof: MerkleTreeProof =
+            access.proof.into_option().expect("proof not found").into();
         Access {
             field_type: access.field_type.into(),
             address: proof.address,
-            value_read: to_bytes(access.read).expect("read value has the wrong size"),
-            value_written: to_bytes(access.written).expect("write value has the wrong size"),
+            value_read: to_bytes(access.read)
+                .expect("read value has the wrong size"),
+            value_written: to_bytes(access.written)
+                .expect("write value has the wrong size"),
             proof: proof,
         }
     }
@@ -391,7 +411,9 @@ pub struct SessionReadMemoryResponse {
     pub read_content: ReadMemoryResponse,
 }
 
-impl From<machine_manager::SessionReadMemoryResponse> for SessionReadMemoryResponse {
+impl From<machine_manager::SessionReadMemoryResponse>
+    for SessionReadMemoryResponse
+{
     fn from(response: machine_manager::SessionReadMemoryResponse) -> Self {
         SessionReadMemoryResponse {
             read_content: response
@@ -433,17 +455,18 @@ impl From<cartesi_machine::MerkleTreeProof> for SessionGetProofResponse {
     }
 }
 
-/// Representation of a request for session termination
+/// Representation of a request for session end
 #[derive(Debug, Clone)]
-pub struct TerminateSessionRequest {
+pub struct EndSessionRequest {
     pub session_id: String,
-    pub ignore: bool,
+    pub silent: bool,
 }
 
 impl From<Vec<u8>> for SessionRunResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionRunResponse> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionRunResponse> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
             .unwrap()
@@ -454,7 +477,8 @@ impl From<Vec<u8>> for SessionRunResponse {
 impl From<SessionRunResponse> for machine_manager::SessionRunResponse {
     fn from(response: SessionRunResponse) -> Self {
         let mut s = machine_manager::SessionRunResponse::new();
-        let a: machine_manager::SessionRunResponse_oneof_run_oneof = response.one_of.into();
+        let a: machine_manager::SessionRunResponse_oneof_run_oneof =
+            response.one_of.into();
         s.run_oneof = a.into();
         return s;
     }
@@ -462,16 +486,18 @@ impl From<SessionRunResponse> for machine_manager::SessionRunResponse {
 
 impl From<SessionRunResponse> for Vec<u8> {
     fn from(response: SessionRunResponse) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionRunResponse> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionRunResponse> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller.write(&response.into()).unwrap()
     }
 }
 
 impl From<Vec<u8>> for SessionStepResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionStepResponse> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionStepResponse> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
             .unwrap()
@@ -481,16 +507,18 @@ impl From<Vec<u8>> for SessionStepResponse {
 
 impl From<SessionStepResponse> for Vec<u8> {
     fn from(response: SessionStepResponse) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionStepResponse> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionStepResponse> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller.write(&response.into()).unwrap()
     }
 }
 
 impl From<Vec<u8>> for NewSessionResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<cartesi_machine::Hash> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<cartesi_machine::Hash> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
             .unwrap()
@@ -501,7 +529,9 @@ impl From<Vec<u8>> for NewSessionResponse {
 impl From<Vec<u8>> for SessionReadMemoryResponse {
     fn from(response: Vec<u8>) -> Self {
         let marshaller: Box<
-            dyn Marshaller<machine_manager::SessionReadMemoryResponse> + Sync + Send,
+            dyn Marshaller<machine_manager::SessionReadMemoryResponse>
+                + Sync
+                + Send,
         > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
@@ -512,8 +542,9 @@ impl From<Vec<u8>> for SessionReadMemoryResponse {
 
 impl From<Vec<u8>> for SessionGetProofResponse {
     fn from(response: Vec<u8>) -> Self {
-        let marshaller: Box<dyn Marshaller<cartesi_machine::MerkleTreeProof> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<cartesi_machine::MerkleTreeProof> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
         marshaller
             .read(bytes::Bytes::from(response))
             .unwrap()
@@ -523,8 +554,9 @@ impl From<Vec<u8>> for SessionGetProofResponse {
 
 impl From<SessionRunRequest> for Vec<u8> {
     fn from(request: SessionRunRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionRunRequest> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionRunRequest> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionRunRequest::new();
         req.set_session_id(request.session_id);
@@ -536,8 +568,9 @@ impl From<SessionRunRequest> for Vec<u8> {
 
 impl From<SessionStepRequest> for Vec<u8> {
     fn from(request: SessionStepRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionStepRequest> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionStepRequest> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionStepRequest::new();
         req.set_session_id(request.session_id);
@@ -549,8 +582,9 @@ impl From<SessionStepRequest> for Vec<u8> {
 
 impl From<NewSessionRequest> for Vec<u8> {
     fn from(request: NewSessionRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::NewSessionRequest> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::NewSessionRequest> + Sync + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::NewSessionRequest::new();
         req.set_session_id(request.session_id);
@@ -564,7 +598,9 @@ impl From<NewSessionRequest> for Vec<u8> {
 impl From<SessionReadMemoryRequest> for Vec<u8> {
     fn from(request: SessionReadMemoryRequest) -> Self {
         let marshaller: Box<
-            dyn Marshaller<machine_manager::SessionReadMemoryRequest> + Sync + Send,
+            dyn Marshaller<machine_manager::SessionReadMemoryRequest>
+                + Sync
+                + Send,
         > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionReadMemoryRequest::new();
@@ -579,7 +615,9 @@ impl From<SessionReadMemoryRequest> for Vec<u8> {
 impl From<SessionWriteMemoryRequest> for Vec<u8> {
     fn from(request: SessionWriteMemoryRequest) -> Self {
         let marshaller: Box<
-            dyn Marshaller<machine_manager::SessionWriteMemoryRequest> + Sync + Send,
+            dyn Marshaller<machine_manager::SessionWriteMemoryRequest>
+                + Sync
+                + Send,
         > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionWriteMemoryRequest::new();
@@ -593,8 +631,11 @@ impl From<SessionWriteMemoryRequest> for Vec<u8> {
 
 impl From<SessionGetProofRequest> for Vec<u8> {
     fn from(request: SessionGetProofRequest) -> Self {
-        let marshaller: Box<dyn Marshaller<machine_manager::SessionGetProofRequest> + Sync + Send> =
-            Box::new(grpc::protobuf::MarshallerProtobuf);
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionGetProofRequest>
+                + Sync
+                + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
         let mut req = machine_manager::SessionGetProofRequest::new();
         req.set_session_id(request.session_id);
@@ -605,15 +646,15 @@ impl From<SessionGetProofRequest> for Vec<u8> {
     }
 }
 
-impl From<TerminateSessionRequest> for Vec<u8> {
-    fn from(request: TerminateSessionRequest) -> Self {
+impl From<EndSessionRequest> for Vec<u8> {
+    fn from(request: EndSessionRequest) -> Self {
         let marshaller: Box<
-            dyn Marshaller<machine_manager::TerminateSessionRequest> + Sync + Send,
+            dyn Marshaller<machine_manager::EndSessionRequest> + Sync + Send,
         > = Box::new(grpc::protobuf::MarshallerProtobuf);
 
-        let mut req = machine_manager::TerminateSessionRequest::new();
+        let mut req = machine_manager::EndSessionRequest::new();
         req.set_session_id(request.session_id);
-        req.set_ignore(request.ignore);
+        req.set_silent(request.silent);
 
         marshaller.write(&req).unwrap()
     }
