@@ -320,9 +320,10 @@ pub mod tests {
         let current_state = encode("WaitingProofs");
 
         let mut archive = Archive::new().unwrap();
-        let proof = emulator_service::Proof {
+        let proof = emulator_service::MerkleTreeProof {
             address: 100,
-            log2_size: 2,
+            log2_target_size: 2,
+            log2_root_size: 63,
             target_hash: H256::zero(),
             root_hash: H256::zero(),
             sibling_hashes: vec![H256::zero(), H256::zero(), H256::zero(), H256::zero()],
