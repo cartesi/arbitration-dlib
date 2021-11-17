@@ -85,6 +85,10 @@ pub fn build_session_step_key(id: String, divergence_time: String) -> String {
     return format!("{}_step_{}", id, divergence_time);
 }
 
+pub fn build_session_end_key(id: String) -> String {
+    return format!("{}_end", id);
+}
+
 pub fn build_session_read_key(
     id: String,
     time: u64,
