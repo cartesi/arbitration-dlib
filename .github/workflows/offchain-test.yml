@@ -2,11 +2,12 @@ name: Offchain tests
 on: [push]
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
           token: ${{ secrets.CI_TOKEN }}
-      - run: sudo apt update && sudo apt install protobuf-compiler
+      - run: sudo apt update && export ARCH=$(uname -m | sed 's/aarch64/aarch_64/') && curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protoc-3.20.1-linux-$ARCH.zip
+      - run: export ARCH=$(uname -m | sed 's/aarch64/aarch_64/') && sudo unzip protoc-3.20.1-linux-$ARCH.zip -d /usr/local 
       - run: cd ./compute && cargo test
