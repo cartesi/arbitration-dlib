@@ -55,9 +55,11 @@ pub use emulator_service::{
     SessionGetProofRequest, SessionGetProofResponse, SessionReadMemoryRequest,
     SessionReadMemoryResponse, SessionRunRequest, SessionRunResponse,
     SessionRunResponseOneOf, SessionRunResult, SessionStepRequest,
-    SessionStepResponse, SessionWriteMemoryRequest, EMULATOR_METHOD_END,
+    SessionStepResponse, SessionWriteMemoryRequest, SessionReplaceMemoryRangeRequest,
+    EMULATOR_METHOD_END,
     EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_READ,
     EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP, EMULATOR_METHOD_WRITE,
+    EMULATOR_METHOD_REPLACE,
     EMULATOR_SERVICE_NAME,
 };
 pub use mm::MM;
@@ -105,6 +107,15 @@ pub fn build_session_write_key(
     data: Vec<u8>,
 ) -> String {
     return format!("{}_write_{}_{}_{:?}", id, time, address, data);
+}
+
+pub fn build_session_replace_key(
+    id: String,
+    time: u64,
+    address: u64,
+    path: String,
+) -> String {
+    return format!("{}_write_{}_{}_{:?}", id, time, address, path);
 }
 
 pub fn build_session_proof_key(

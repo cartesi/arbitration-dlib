@@ -43,6 +43,8 @@ pub const EMULATOR_METHOD_READ: &'static str =
     "/CartesiMachineManager.MachineManager/SessionReadMemory";
 pub const EMULATOR_METHOD_WRITE: &'static str =
     "/CartesiMachineManager.MachineManager/SessionWriteMemory";
+pub const EMULATOR_METHOD_REPLACE: &'static str =
+    "/CartesiMachineManager.MachineManager/SessionReplaceMemoryRange";
 pub const EMULATOR_METHOD_PROOF: &'static str =
     "/CartesiMachineManager.MachineManager/SessionGetProof";
 pub const EMULATOR_METHOD_END: &'static str =
@@ -433,6 +435,14 @@ pub struct SessionWriteMemoryRequest {
     pub position: cartesi_machine::WriteMemoryRequest,
 }
 
+#[derive(Debug, Clone)]
+pub struct SessionReplaceMemoryRangeRequest {
+    pub session_id: String,
+    pub time: u64,
+    pub range: cartesi_machine::MemoryRangeConfig,
+}
+
+
 /// Representation of a request for get proof
 #[derive(Debug, Clone)]
 pub struct SessionGetProofRequest {
@@ -624,6 +634,23 @@ impl From<SessionWriteMemoryRequest> for Vec<u8> {
         req.set_session_id(request.session_id);
         req.set_cycle(request.time);
         req.set_position(request.position);
+
+        marshaller.write(&req).unwrap()
+    }
+}
+
+impl From<SessionReplaceMemoryRangeRequest> for Vec<u8> {
+    fn from(request: SessionReplaceMemoryRangeRequest) -> Self {
+        let marshaller: Box<
+            dyn Marshaller<machine_manager::SessionReplaceMemoryRangeRequest>
+                + Sync
+                + Send,
+        > = Box::new(grpc::protobuf::MarshallerProtobuf);
+
+        let mut req = machine_manager::SessionReplaceMemoryRangeRequest::new();
+        req.set_session_id(request.session_id);
+        req.set_cycle(request.time);
+        req.set_range(request.range);
 
         marshaller.write(&req).unwrap()
     }
