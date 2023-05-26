@@ -20,7 +20,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 import "../MMInstantiator.sol";
 
 contract MMInstantiatorTestAux is MMInstantiator {

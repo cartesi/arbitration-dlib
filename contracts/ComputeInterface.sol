@@ -21,11 +21,11 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 /// @title Interface for compute instantiator
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
-import "@cartesi/util/contracts/Instantiator.sol";
+import "@cartesi/util/contracts/InstantiatorV2.sol";
 
-interface ComputeInterface is Instantiator {
+interface ComputeInterface is InstantiatorV2 {
     enum state {
         WaitingClaim,
         WaitingConfirmation,

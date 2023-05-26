@@ -20,17 +20,19 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 /// @title An instantiator of compute
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
-import "@cartesi/util/contracts/InstantiatorImpl.sol";
-import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/util/contracts/InstantiatorImplV2.sol";
+import "@cartesi/util/contracts/DecoratedV2.sol";
 import "./ComputeInterface.sol";
 import "./VGInterface.sol";
 
-
-contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
+contract ComputeInstantiator is
+    InstantiatorImplV2,
+    ComputeInterface,
+    DecoratedV2
+{
     // after instantiation, the claimer will submit the final hash
     // then the challenger can either accept of challenge.
     // in the latter case a verification game will be instantiated
@@ -116,9 +118,12 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
-        uint256 _finalTime) public override returns (uint256)
-    {
-        require(_challenger != _claimer, "Challenger and Claimer need to differ");
+        uint256 _finalTime
+    ) public override returns (uint256) {
+        require(
+            _challenger != _claimer,
+            "Challenger and Claimer need to differ"
+        );
         ComputeCtx storage currentInstance = instance[currentIndex];
         currentInstance.challenger = _challenger;
         currentInstance.claimer = _claimer;
@@ -136,7 +141,8 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
             _roundDuration,
             _machineAddress,
             _initialHash,
-            _finalTime);
+            _finalTime
+        );
 
         active[currentIndex] = true;
         return currentIndex++;
@@ -145,12 +151,20 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
     /// @notice Claimer claims the hash of the result of a computation
     /// @param _index Index of instance that the claimer is interacting with
     /// @param _claimedFinalHash hash of the machine after computation is completed.
-    function submitClaim(uint256 _index, bytes32 _claimedFinalHash) public override
+    function submitClaim(
+        uint256 _index,
+        bytes32 _claimedFinalHash
+    )
+        public
+        override
         onlyInstantiated(_index)
         onlyBy(instance[_index].claimer)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.WaitingClaim, "State should be WaitingClaim");
+        require(
+            instance[_index].currentState == state.WaitingClaim,
+            "State should be WaitingClaim"
+        );
         instance[_index].claimedFinalHash = _claimedFinalHash;
         instance[_index].currentState = state.WaitingConfirmation;
 
@@ -159,12 +173,19 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
 
     /// @notice Challenger accepts claim.
     /// @param _index Index of compute instance that the challenger is confirming the claim.
-    function confirm(uint256 _index) public override
+    function confirm(
+        uint256 _index
+    )
+        public
+        override
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.WaitingConfirmation, "State should be WaitingConfirmation");
+        require(
+            instance[_index].currentState == state.WaitingConfirmation,
+            "State should be WaitingConfirmation"
+        );
         instance[_index].currentState = state.ConsensusResult;
         clearInstance(_index);
         emit ResultConfirmed(_index);
@@ -172,12 +193,19 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
 
     /// @notice Challenger disputes the claim, starting a verification game.
     /// @param _index Index of compute instance which challenger is starting the VG.
-    function challenge(uint256 _index) public override
+    function challenge(
+        uint256 _index
+    )
+        public
+        override
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.WaitingConfirmation, "State should be WaitingConfirmation");
+        require(
+            instance[_index].currentState == state.WaitingConfirmation,
+            "State should be WaitingConfirmation"
+        );
         instance[_index].vgInstance = vg.instantiate(
             instance[_index].challenger,
             instance[_index].claimer,
@@ -185,7 +213,8 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
             instance[_index].machine,
             instance[_index].initialHash,
             instance[_index].claimedFinalHash,
-            instance[_index].finalTime);
+            instance[_index].finalTime
+        );
         instance[_index].currentState = state.WaitingChallenge;
 
         emit ChallengeStarted(_index);
@@ -195,11 +224,13 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
     /// then he or she can call this function to claim victory in
     /// this contract as well.
     /// @param _index Index of compute instance which challenger is starting the VG.
-    function winByVG(uint256 _index) public override
-        onlyInstantiated(_index)
-        increasesNonce(_index)
-    {
-        require(instance[_index].currentState == state.WaitingChallenge, "State is not WaitingChallenge, cannot winByVG");
+    function winByVG(
+        uint256 _index
+    ) public override onlyInstantiated(_index) increasesNonce(_index) {
+        require(
+            instance[_index].currentState == state.WaitingChallenge,
+            "State is not WaitingChallenge, cannot winByVG"
+        );
         uint256 vgIndex = instance[_index].vgInstance;
 
         if (vg.stateIsFinishedChallengerWon(vgIndex)) {
@@ -215,30 +246,36 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
     }
 
     /// @notice Claim victory for opponent timeout.
-    function claimVictoryByTime(uint256 _index) public override
-        onlyInstantiated(_index)
-        increasesNonce(_index)
-    {
-       bool afterDeadline = (block.timestamp > instance[_index].timeOfLastMove + getMaxStateDuration(
-               instance[_index].currentState,
-               instance[_index].roundDuration,
-               40, // time to start machine
-               1, // vg is not instantiated, so it doesnt matter
-               instance[_index].finalTime,
-               500) // pico seconds to run instruction
-           );
-
+    function claimVictoryByTime(
+        uint256 _index
+    ) public override onlyInstantiated(_index) increasesNonce(_index) {
+        bool afterDeadline = (block.timestamp >
+            instance[_index].timeOfLastMove +
+                getMaxStateDuration(
+                    instance[_index].currentState,
+                    instance[_index].roundDuration,
+                    40, // time to start machine
+                    1, // vg is not instantiated, so it doesnt matter
+                    instance[_index].finalTime,
+                    500
+                )); // pico seconds to run instruction
 
         require(afterDeadline, "Deadline is not over for this specific state");
 
-        if ((msg.sender == instance[_index].challenger) && (instance[_index].currentState == state.WaitingClaim)) {
+        if (
+            (msg.sender == instance[_index].challenger) &&
+            (instance[_index].currentState == state.WaitingClaim)
+        ) {
             instance[_index].currentState = state.ClaimerMissedDeadline;
             deactivate(_index);
             emit ComputeFinished(_index, uint8(instance[_index].currentState));
             return;
         }
 
-        if ((msg.sender == instance[_index].claimer) && (instance[_index].currentState == state.WaitingConfirmation)) {
+        if (
+            (msg.sender == instance[_index].claimer) &&
+            (instance[_index].currentState == state.WaitingConfirmation)
+        ) {
             instance[_index].currentState = state.ConsensusResult;
             deactivate(_index);
             emit ComputeFinished(_index, uint8(instance[_index].currentState));
@@ -263,24 +300,41 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         uint256 _partitionSize,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn
-    ) private view returns (uint256)
-    {
+    ) private view returns (uint256) {
         if (_state == state.WaitingClaim) {
             // time to run entire machine + time to react
-            return _timeToStartMachine + ((_maxCycle * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+            return
+                _timeToStartMachine +
+                ((_maxCycle * _picoSecondsToRunInsn) / 1e12) +
+                _roundDuration;
         }
 
         if (_state == state.WaitingConfirmation) {
             // time to run entire machine + time to react
-            return _timeToStartMachine + ((_maxCycle * _picoSecondsToRunInsn) / 1e12) + _roundDuration;
+            return
+                _timeToStartMachine +
+                ((_maxCycle * _picoSecondsToRunInsn) / 1e12) +
+                _roundDuration;
         }
 
         if (_state == state.WaitingChallenge) {
             // time to run a verification game + time to react
-            return vg.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _maxCycle, _picoSecondsToRunInsn) + _roundDuration;
+            return
+                vg.getMaxInstanceDuration(
+                    _roundDuration,
+                    _timeToStartMachine,
+                    _partitionSize,
+                    _maxCycle,
+                    _picoSecondsToRunInsn
+                ) + _roundDuration;
         }
 
-        if (_state == state.ClaimerWon || _state == state.ChallengerWon || _state == state.ClaimerMissedDeadline || _state == state.ConsensusResult) {
+        if (
+            _state == state.ClaimerWon ||
+            _state == state.ChallengerWon ||
+            _state == state.ClaimerMissedDeadline ||
+            _state == state.ConsensusResult
+        ) {
             return 0; // final state
         }
     }
@@ -299,8 +353,7 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         uint256 _partitionSize,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn
-    ) public view returns (uint256)
-    {
+    ) public view returns (uint256) {
         uint256 waitingClaim = getMaxStateDuration(
             state.WaitingClaim,
             _roundDuration,
@@ -331,13 +384,22 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         return waitingClaim + waitingConfirmation + waitingChallenge;
     }
 
-    function isConcerned(uint256 _index, address _user) public override view returns (bool) {
-        return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
+    function isConcerned(
+        uint256 _index,
+        address _user
+    ) public view override returns (bool) {
+        return ((instance[_index].challenger == _user) ||
+            (instance[_index].claimer == _user));
     }
 
-    function getSubInstances(uint256 _index, address)
-        public override view returns (address[] memory _addresses,
-                            uint256[] memory _indices)
+    function getSubInstances(
+        uint256 _index,
+        address
+    )
+        public
+        view
+        override
+        returns (address[] memory _addresses, uint256[] memory _indices)
     {
         address[] memory a;
         uint256[] memory i;
@@ -353,15 +415,21 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         return (a, i);
     }
 
-    function getState(uint256 _index, address) public view returns
-        ( address _challenger,
-        address _claimer,
-        uint256 _deadline,
-        address _machine,
-        bytes32 _initialHash,
-        uint256 _finalTime,
-        bytes32 _claimedFinalHash,
-        bytes32 _currentState
+    function getState(
+        uint256 _index,
+        address
+    )
+        public
+        view
+        returns (
+            address _challenger,
+            address _claimer,
+            uint256 _deadline,
+            address _machine,
+            bytes32 _initialHash,
+            uint256 _finalTime,
+            bytes32 _claimedFinalHash,
+            bytes32 _currentState
         )
     {
         ComputeCtx memory i = instance[_index];
@@ -401,14 +469,15 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         return (
             i.challenger,
             i.claimer,
-            i.timeOfLastMove +  getMaxStateDuration(
-                i.currentState,
-                i.roundDuration,
-                40, // time to start machine
-                partitionSize,
-                i.finalTime,
-                500 // pico seconds to run insn
-            ),
+            i.timeOfLastMove +
+                getMaxStateDuration(
+                    i.currentState,
+                    i.roundDuration,
+                    40, // time to start machine
+                    partitionSize,
+                    i.finalTime,
+                    500 // pico seconds to run insn
+                ),
             i.machine,
             i.initialHash,
             i.finalTime,
@@ -417,10 +486,9 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         );
     }
 
-    function getCurrentState(uint256 _index) public override view
-        onlyInstantiated(_index)
-        returns (bytes32)
-    {
+    function getCurrentState(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bytes32) {
         if (instance[_index].currentState == state.WaitingClaim) {
             return "WaitingClaim";
         }
@@ -446,40 +514,47 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
     }
 
     // remove these functions and change tests accordingly
-    function stateIsWaitingClaim(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (bool)
-    { return instance[_index].currentState == state.WaitingClaim; }
+    function stateIsWaitingClaim(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bool) {
+        return instance[_index].currentState == state.WaitingClaim;
+    }
 
-    function stateIsWaitingConfirmation(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (bool)
-    { return instance[_index].currentState == state.WaitingConfirmation; }
+    function stateIsWaitingConfirmation(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bool) {
+        return instance[_index].currentState == state.WaitingConfirmation;
+    }
 
-    function stateIsClaimerMissedDeadline(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (bool)
-    { return instance[_index].currentState == state.ClaimerMissedDeadline; }
+    function stateIsClaimerMissedDeadline(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bool) {
+        return instance[_index].currentState == state.ClaimerMissedDeadline;
+    }
 
-    function stateIsWaitingChallange(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (bool)
-    { return instance[_index].currentState == state.WaitingChallenge; }
+    function stateIsWaitingChallange(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bool) {
+        return instance[_index].currentState == state.WaitingChallenge;
+    }
 
-    function stateIsChallengerWon(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (bool)
-    { return instance[_index].currentState == state.ChallengerWon; }
+    function stateIsChallengerWon(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bool) {
+        return instance[_index].currentState == state.ChallengerWon;
+    }
 
-    function stateIsClaimerWon(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (bool)
-    { return instance[_index].currentState == state.ClaimerWon; }
+    function stateIsClaimerWon(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bool) {
+        return instance[_index].currentState == state.ClaimerWon;
+    }
 
-    function stateIsConsensusResult(uint256 _index) public view
-        onlyInstantiated(_index)
-        returns (bool)
-    { return instance[_index].currentState == state.ConsensusResult; }
+    function stateIsConsensusResult(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bool) {
+        return instance[_index].currentState == state.ConsensusResult;
+    }
 
     function clearInstance(uint256 _index) internal {
         delete instance[_index].challenger;
@@ -494,17 +569,13 @@ contract ComputeInstantiator is InstantiatorImpl, ComputeInterface, Decorated {
         deactivate(_index);
     }
 
-    function challengerWins(uint256 _index) private
-        onlyInstantiated(_index)
-    {
+    function challengerWins(uint256 _index) private onlyInstantiated(_index) {
         clearInstance(_index);
         instance[_index].currentState = state.ChallengerWon;
         emit ComputeFinished(_index, uint8(instance[_index].currentState));
     }
 
-    function claimerWins(uint256 _index) private
-        onlyInstantiated(_index)
-    {
+    function claimerWins(uint256 _index) private onlyInstantiated(_index) {
         clearInstance(_index);
         instance[_index].currentState = state.ClaimerWon;
         emit ComputeFinished(_index, uint8(instance[_index].currentState));

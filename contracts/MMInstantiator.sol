@@ -21,14 +21,14 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 /// @title An instantiator of memory managers
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
-import "@cartesi/util/contracts/InstantiatorImpl.sol";
-import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/util/contracts/InstantiatorImplV2.sol";
+import "@cartesi/util/contracts/DecoratedV2.sol";
 import "./MMInterface.sol";
-import "@cartesi/util/contracts/Merkle.sol";
+import "./TempMerkle.sol";
 
-contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
+contract MMInstantiator is InstantiatorImplV2, MMInterface, DecoratedV2 {
     // the provider will fill the memory for the client to read and write
     // memory starts with hash and all values that are inserted are first verified
     // then client can read inserted values and write some more
@@ -160,19 +160,23 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
             "CurrentState is not WaitingProofs, cannot proveWrite"
         );
         // check proof of old value
+
         require(
             Merkle.getRoot(_position, _oldValue, proof) ==
                 instance[_index].newHash,
             "Merkle proof of write does not match"
         );
         // update root
+
         instance[_index].newHash = Merkle.getRoot(_position, _newValue, proof);
         instance[_index].history.push(ReadWrite(false, _position, _newValue));
         emit ValueProved(_index, false, _position, _newValue);
     }
 
     /// @notice Stop memory insertion and start read and write phase
-    function finishProofPhase(uint256 _index)
+    function finishProofPhase(
+        uint256 _index
+    )
         public
         override
         onlyInstantiated(_index)
@@ -188,14 +192,19 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
     }
 
     /// @notice Stop write (or read) phase
-    function finishReplayPhase(uint256 _index)
+    function finishReplayPhase(
+        uint256 _index
+    )
         public
         override
         onlyInstantiated(_index)
         onlyBy(instance[_index].owner)
         increasesNonce(_index)
     {
-        require(stateIsWaitingReplay(_index), "State of MM should be WaitingReplay");
+        require(
+            stateIsWaitingReplay(_index),
+            "State of MM should be WaitingReplay"
+        );
         delete (instance[_index].history);
         instance[_index].currentState = state.FinishedReplay;
 
@@ -204,15 +213,13 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
     }
 
     // getter methods
-    function getRWArrays(uint256 _index)
-    public
-    override
-    view
-    returns (
-        uint64[] memory,
-        bytes8[] memory,
-        bool[] memory
+    function getRWArrays(
+        uint256 _index
     )
+        public
+        view
+        override
+        returns (uint64[] memory, bytes8[] memory, bool[] memory)
     {
         ReadWrite[] storage his = instance[_index].history;
         uint256 length = his.length;
@@ -229,16 +236,17 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         return (positions, values, isRead);
     }
 
-    function isConcerned(uint256 _index, address _user)
-        public
-        override
-        view
-        returns (bool)
-    {
+    function isConcerned(
+        uint256 _index,
+        address _user
+    ) public view override returns (bool) {
         return instance[_index].provider == _user;
     }
 
-    function getState(uint256 _index, address)
+    function getState(
+        uint256 _index,
+        address
+    )
         public
         view
         onlyInstantiated(_index)
@@ -261,54 +269,38 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         );
     }
 
-    function getSubInstances(uint256, address)
-        public
-        override
-        pure
-        returns (address[] memory, uint256[] memory)
-    {
+    function getSubInstances(
+        uint256,
+        address
+    ) public pure override returns (address[] memory, uint256[] memory) {
         address[] memory a = new address[](0);
         uint256[] memory i = new uint256[](0);
         return (a, i);
     }
 
-    function provider(uint256 _index)
-        public
-        view
-        onlyInstantiated(_index)
-        returns (address)
-    {
+    function provider(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (address) {
         return instance[_index].provider;
     }
 
-    function initialHash(uint256 _index)
-        public
-        view
-        onlyInstantiated(_index)
-        returns (bytes32)
-    {
+    function initialHash(
+        uint256 _index
+    ) public view onlyInstantiated(_index) returns (bytes32) {
         return instance[_index].initialHash;
     }
 
-    function newHash(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bytes32)
-    {
+    function newHash(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bytes32) {
         return instance[_index].newHash;
     }
 
     // state getters
 
-    function getCurrentState(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bytes32)
-    {
+    function getCurrentState(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bytes32) {
         if (instance[_index].currentState == state.WaitingProofs) {
             return "WaitingProofs";
         }
@@ -353,17 +345,13 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
         uint256 _index,
         uint256 _roundDuration,
         uint256 _timeToStartMachine
-    )   public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (uint256)
-    {
-        return getMaxStateDuration(
-            instance[_index].currentState,
-            _roundDuration,
-            _timeToStartMachine
-        );
+    ) public view override onlyInstantiated(_index) returns (uint256) {
+        return
+            getMaxStateDuration(
+                instance[_index].currentState,
+                _roundDuration,
+                _timeToStartMachine
+            );
     }
 
     /// @notice Get the worst case scenario duration for an instance of this contract
@@ -373,7 +361,7 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
     function getMaxInstanceDuration(
         uint256 _roundDuration,
         uint256 _timeToStartMachine
-    ) public override pure returns (uint256) {
+    ) public pure override returns (uint256) {
         uint256 waitingProofsDuration = getMaxStateDuration(
             state.WaitingProofs,
             _roundDuration,
@@ -399,33 +387,21 @@ contract MMInstantiator is InstantiatorImpl, MMInterface, Decorated {
     }
 
     // remove these functions and change tests accordingly
-    function stateIsWaitingProofs(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsWaitingProofs(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.WaitingProofs;
     }
 
-    function stateIsWaitingReplay(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsWaitingReplay(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.WaitingReplay;
     }
 
-    function stateIsFinishedReplay(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsFinishedReplay(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.FinishedReplay;
     }
 }

@@ -21,11 +21,11 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 /// @title Abstract interface for partition instantiator
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
-import "@cartesi/util/contracts/Instantiator.sol";
+import "@cartesi/util/contracts/InstantiatorV2.sol";
 
-interface PartitionInterface is Instantiator {
+interface PartitionInterface is InstantiatorV2 {
     enum state {
         WaitingQuery,
         WaitingHashes,
@@ -46,10 +46,10 @@ interface PartitionInterface is Instantiator {
         uint256 _roundDuration
     ) external returns (uint256);
 
-    function timeHash(uint256 _index, uint256 key)
-        external
-        view
-        returns (bytes32);
+    function timeHash(
+        uint256 _index,
+        uint256 key
+    ) external view returns (bytes32);
 
     function divergenceTime(uint256 _index) external view returns (uint256);
 
@@ -61,19 +61,19 @@ interface PartitionInterface is Instantiator {
 
     function stateIsClaimerWon(uint256 _index) external view returns (bool);
 
-    function stateIsDivergenceFound(uint256 _index)
-        external
-        view
-        returns (bool);
+    function stateIsDivergenceFound(
+        uint256 _index
+    ) external view returns (bool);
 
-    function getPartitionGameIndex(uint256 _index)
-        external
-        view
-        returns (uint256);
+    function getPartitionGameIndex(
+        uint256 _index
+    ) external view returns (uint256);
 
     function getQuerySize(uint256 _index) external view returns (uint256);
 
-    function getCurrentStateDeadline(uint _index) external view returns (uint time);
+    function getCurrentStateDeadline(
+        uint _index
+    ) external view returns (uint time);
 
     function getMaxInstanceDuration(
         uint256 _roundDuration,
