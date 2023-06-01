@@ -2,7 +2,6 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import { HttpNetworkUserConfig } from "hardhat/types";
 
 import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-waffle";
 import "hardhat-typechain";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
