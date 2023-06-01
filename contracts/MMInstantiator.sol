@@ -27,6 +27,7 @@ import "@cartesi/util/contracts/InstantiatorImplV2.sol";
 import "@cartesi/util/contracts/DecoratedV2.sol";
 import "./MMInterface.sol";
 import "./TempMerkle.sol";
+import "./IMemoryAccessLog.sol";
 
 contract MMInstantiator is InstantiatorImplV2, MMInterface, DecoratedV2 {
     // the provider will fill the memory for the client to read and write
@@ -34,11 +35,6 @@ contract MMInstantiator is InstantiatorImplV2, MMInterface, DecoratedV2 {
     // then client can read inserted values and write some more
     // finally the provider has to update the hash to account for writes
 
-    struct ReadWrite {
-        bool wasRead;
-        uint64 position;
-        bytes8 value;
-    }
 
     // IMPLEMENT GARBAGE COLLECTOR AFTER AN INSTACE IS FINISHED!
     struct MMCtx {
@@ -46,7 +42,7 @@ contract MMInstantiator is InstantiatorImplV2, MMInterface, DecoratedV2 {
         address provider;
         bytes32 initialHash;
         bytes32 newHash; // hash after some write operations have been proved
-        ReadWrite[] history;
+        IMemoryAccessLog.Access[] history;
         state currentState;
     }
 
@@ -134,7 +130,7 @@ contract MMInstantiator is InstantiatorImplV2, MMInterface, DecoratedV2 {
                 instance[_index].newHash,
             "Merkle proof does not match"
         );
-        instance[_index].history.push(ReadWrite(true, _position, _value));
+        instance[_index].history.push(IMemoryAccessLog.Access(_position, _value, IMemoryAccessLog.AccessType.Read));
         emit ValueProved(_index, true, _position, _value);
     }
 
@@ -169,7 +165,7 @@ contract MMInstantiator is InstantiatorImplV2, MMInterface, DecoratedV2 {
         // update root
 
         instance[_index].newHash = Merkle.getRoot(_position, _newValue, proof);
-        instance[_index].history.push(ReadWrite(false, _position, _newValue));
+        instance[_index].history.push(IMemoryAccessLog.Access(_position, _newValue, IMemoryAccessLog.AccessType.Write));
         emit ValueProved(_index, false, _position, _newValue);
     }
 
@@ -213,27 +209,15 @@ contract MMInstantiator is InstantiatorImplV2, MMInterface, DecoratedV2 {
     }
 
     // getter methods
-    function getRWArrays(
+    function getAccesses(
         uint256 _index
     )
         public
         view
         override
-        returns (uint64[] memory, bytes8[] memory, bool[] memory)
+        returns (IMemoryAccessLog.Access[] memory)
     {
-        ReadWrite[] storage his = instance[_index].history;
-        uint256 length = his.length;
-        uint64[] memory positions = new uint64[](length);
-        bytes8[] memory values = new bytes8[](length);
-        bool[] memory isRead = new bool[](length);
-
-        for (uint256 i = 0; i < length; i++) {
-            positions[i] = his[i].position;
-            values[i] = his[i].value;
-            isRead[i] = his[i].wasRead;
-        }
-
-        return (positions, values, isRead);
+        return instance[_index].history;
     }
 
     function isConcerned(

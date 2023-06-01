@@ -43,6 +43,7 @@ interface ComputeInterface is InstantiatorV2 {
         address _claimer,
         uint256 _roundDuration,
         address _machineAddress,
+        address _machineStateHelper,
         bytes32 _initialHash,
         uint256 _finalTime
     ) external returns (uint256);

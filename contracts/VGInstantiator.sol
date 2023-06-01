@@ -28,7 +28,7 @@ import "@cartesi/util/contracts/InstantiatorImplV2.sol";
 import "./VGInterface.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
-import "./MachineInterface.sol";
+import "./IUArchStep.sol";
 
 contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
     //  using SafeMath for uint;
@@ -40,7 +40,8 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         address challenger; // the two parties involved in each instance
         address claimer;
         uint roundDuration; // time interval to interact with this contract
-        MachineInterface machine; // the machine which will run the challenge
+        IUArchStep machine; // the machine which will run the challenge
+        IUArchState machineStateHelper;
         bytes32 initialHash; // hash of machine memory that both aggree uppon
         bytes32 claimerFinalHash; // hash claimer commited for machine after running
         uint finalTime; // the time for which the machine should run
@@ -86,6 +87,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         address _claimer,
         uint _roundDuration,
         address _machineAddress,
+        address _machineStateHelper,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint _finalTime,
@@ -117,6 +119,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         address _claimer,
         uint _roundDuration,
         address _machineAddress,
+        address _machineStateHelper,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint _finalTime
@@ -128,7 +131,8 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             _roundDuration *
             log2OverTwo(_finalTime) +
             4;
-        instance[currentIndex].machine = MachineInterface(_machineAddress);
+        instance[currentIndex].machine = IUArchStep(_machineAddress);
+        instance[currentIndex].machineStateHelper = IUArchState(_machineStateHelper);
         instance[currentIndex].initialHash = _initialHash;
         instance[currentIndex].claimerFinalHash = _claimerFinalHash;
         instance[currentIndex].finalTime = _finalTime;
@@ -149,6 +153,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             _claimer,
             _roundDuration * log2OverTwo(_finalTime) + 4,
             _machineAddress,
+            _machineStateHelper,
             _initialHash,
             _claimerFinalHash,
             _finalTime,
@@ -247,26 +252,22 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             "State of MM should be WaitingReplay"
         );
 
-        (
-            uint64[] memory positions,
-            bytes8[] memory values,
-            bool[] memory wasRead
-        ) = mm.getRWArrays(mmIndex);
-
-        (uint8 exitCode, uint256 memoryAccesses) = instance[_index]
+        IMemoryAccessLog.AccessLogs memory accessLogs = IMemoryAccessLog.AccessLogs(mm.getAccesses(mmIndex), 0);
+        IUArchState.State memory s = IUArchState.State(instance[_index].machineStateHelper, accessLogs);
+        (uint64 cycle, bool machineHalt) = instance[_index]
             .machine
-            .step(positions, values, wasRead);
-
+            .step(s);
+    
         mm.finishReplayPhase(mmIndex);
 
         require(
             mm.stateIsFinishedReplay(mmIndex),
             "State of MM should be FinishedReplay"
         );
-
+        
         if (
-            exitCode == 0 && // Step exits correctly
-            memoryAccesses == positions.length && // Number of memory acceses matches
+            // old exitCode was always 0: exitCode == 0 && // Step exits correctly
+            // this is now done by the uarch: s.accessLogs.current == accesses.length && // Number of memory acceses matches
             mm.newHash(mmIndex) != instance[_index].hashAfterDivergence // proves challenger newHash diverge from claimer
         ) {
             challengerWins(_index);
@@ -336,7 +337,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         returns (
             address _challenger,
             address _claimer,
-            MachineInterface _machine,
+            IUArchStep _machine,
             bytes32 _initialHash,
             bytes32 _claimerFinalHash,
             bytes32 _hashBeforeDivergence,

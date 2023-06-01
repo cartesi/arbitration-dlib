@@ -24,6 +24,7 @@
 pragma solidity ^0.8.0;
 
 import "@cartesi/util/contracts/InstantiatorV2.sol";
+import "./IMemoryAccessLog.sol";
 
 interface MMInterface is InstantiatorV2 {
     enum state {
@@ -46,9 +47,9 @@ interface MMInterface is InstantiatorV2 {
 
     function finishReplayPhase(uint256 _index) external;
 
-    function getRWArrays(
+    function getAccesses(
         uint256 _index
-    ) external view returns (uint64[] memory, bytes8[] memory, bool[] memory);
+    ) external view returns (IMemoryAccessLog.Access[] memory);
 
     function stateIsWaitingProofs(uint256 _index) external view returns (bool);
 

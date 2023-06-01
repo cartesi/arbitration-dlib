@@ -47,6 +47,7 @@ contract ComputeInstantiator is
         uint256 roundDuration; // time interval to interact with this contract
         uint256 timeOfLastMove; // last time someone made a move with deadline
         address machine; // machine which will run the challenge
+        address machineStateHelper;
         bytes32 initialHash;
         uint256 finalTime;
         bytes32 claimedFinalHash;
@@ -92,6 +93,7 @@ contract ComputeInstantiator is
         address _claimer,
         uint256 _roundDuration,
         address _machineAddress,
+        address _machineStateHelperAddress,
         bytes32 _initialHash,
         uint256 _finalTime
     );
@@ -117,6 +119,7 @@ contract ComputeInstantiator is
         address _claimer,
         uint256 _roundDuration,
         address _machineAddress,
+        address _machineStateHelper,
         bytes32 _initialHash,
         uint256 _finalTime
     ) public override returns (uint256) {
@@ -129,6 +132,7 @@ contract ComputeInstantiator is
         currentInstance.claimer = _claimer;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.machine = _machineAddress;
+        currentInstance.machineStateHelper = _machineStateHelper;
         currentInstance.initialHash = _initialHash;
         currentInstance.finalTime = _finalTime;
         currentInstance.currentState = state.WaitingClaim;
@@ -140,6 +144,7 @@ contract ComputeInstantiator is
             _claimer,
             _roundDuration,
             _machineAddress,
+            _machineStateHelper,
             _initialHash,
             _finalTime
         );
@@ -211,6 +216,7 @@ contract ComputeInstantiator is
             instance[_index].claimer,
             instance[_index].roundDuration,
             instance[_index].machine,
+            instance[_index].machineStateHelper,
             instance[_index].initialHash,
             instance[_index].claimedFinalHash,
             instance[_index].finalTime
@@ -562,6 +568,7 @@ contract ComputeInstantiator is
         delete instance[_index].roundDuration;
         delete instance[_index].timeOfLastMove;
         delete instance[_index].machine;
+        delete instance[_index].machineStateHelper;
         delete instance[_index].initialHash;
         delete instance[_index].finalTime;
         // !!!!!!!!! should call clear in vgInstance !!!!!!!!!

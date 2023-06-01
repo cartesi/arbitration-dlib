@@ -27,7 +27,7 @@ import "@cartesi/util/contracts/DecoratedV2.sol";
 import "@cartesi/util/contracts/InstantiatorV2.sol";
 import "./PartitionInterface.sol";
 import "./MMInterface.sol";
-import "./MachineInterface.sol";
+import "./IUArchStep.sol";
 
 interface VGInterface is InstantiatorV2 {
     enum state {
@@ -42,6 +42,7 @@ interface VGInterface is InstantiatorV2 {
         address _claimer,
         uint256 _roundDuration,
         address _machineAddress,
+        address _machineStateHelper,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint256 _finalTime
