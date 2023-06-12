@@ -241,8 +241,9 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             machineState != instance[_index].hashAfterDivergence // proves challenger newHash diverge from claimer
         ) {
             challengerWins(_index);
+        } else {
+            claimerWins(_index);
         }
-        claimerWins(_index);
     }
 
     /// @notice Claimer can claim victory if challenger has lost the deadline
