@@ -26,13 +26,12 @@ pragma solidity ^0.8.0;
 import "@cartesi/util/contracts/DecoratedV2.sol";
 import "@cartesi/util/contracts/InstantiatorV2.sol";
 import "./PartitionInterface.sol";
-import "./MMInterface.sol";
-import "./IUArchStep.sol";
+import "./IMetaStep.sol";
 
 interface VGInterface is InstantiatorV2 {
     enum state {
         WaitPartition,
-        WaitMemoryProveValues,
+        WaitSettle,
         FinishedClaimerWon,
         FinishedChallengerWon
     }
@@ -42,7 +41,6 @@ interface VGInterface is InstantiatorV2 {
         address _claimer,
         uint256 _roundDuration,
         address _machineAddress,
-        address _machineStateHelper,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint256 _finalTime
@@ -62,7 +60,7 @@ interface VGInterface is InstantiatorV2 {
 
     function startMachineRunChallenge(uint256 _index) external;
 
-    function settleVerificationGame(uint256 _index) external;
+    function settleVerificationGame(uint256 _index, IAccessLogs.Context memory _accessLogs) external;
 
     function claimVictoryByTime(uint256 _index) external;
 

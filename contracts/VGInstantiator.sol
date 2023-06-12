@@ -27,26 +27,22 @@ import "@cartesi/util/contracts/DecoratedV2.sol";
 import "@cartesi/util/contracts/InstantiatorImplV2.sol";
 import "./VGInterface.sol";
 import "./PartitionInterface.sol";
-import "./MMInterface.sol";
-import "./IUArchStep.sol";
+import "./IMetaStep.sol";
 
 contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
     //  using SafeMath for uint;
 
     PartitionInterface private partition;
-    MMInterface private mm;
 
     struct VGCtx {
         address challenger; // the two parties involved in each instance
         address claimer;
         uint roundDuration; // time interval to interact with this contract
-        IUArchStep machine; // the machine which will run the challenge
-        IUArchState machineStateHelper;
+        IMetaStep machine; // the machine which will run the challenge
         bytes32 initialHash; // hash of machine memory that both aggree uppon
         bytes32 claimerFinalHash; // hash claimer commited for machine after running
         uint finalTime; // the time for which the machine should run
         uint timeOfLastMove; // last time someone made a move with deadline
-        uint256 mmInstance; // the instance of the memory that was given to this game
         uint256 partitionInstance; // the partition instance given to this game
         uint divergenceTime; // the time in which the divergence happened
         bytes32 hashBeforeDivergence; // hash aggreed right before divergence
@@ -71,7 +67,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
     //   | winByPartitionTimeout   | startMachineRunChallenge  |
     //   |                         v                           |
     //   |           +-----------------------+                 |
-    //   | +---------| WaitMemoryProveValues |---------------+ |
+    //   | +---------|      WaitSettle       |---------------+ |
     //   | |         +-----------------------+               | |
     //   | |                                                 | |
     //   | |claimVictoryByDeadline   settleVerificationGame  | |
@@ -87,22 +83,19 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         address _claimer,
         uint _roundDuration,
         address _machineAddress,
-        address _machineStateHelper,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint _finalTime,
         uint256 _partitionInstance
     );
-    event PartitionDivergenceFound(uint256 _index, uint256 _mmInstance);
+    event PartitionDivergenceFound(uint256 _index);
     event MemoryWriten(uint256 _index);
     event VGFinished(state _finalState);
 
     constructor(
-        address _partitionInstantiatorAddress,
-        address _mmInstantiatorAddress
+        address _partitionInstantiatorAddress
     ) {
         partition = PartitionInterface(_partitionInstantiatorAddress);
-        mm = MMInterface(_mmInstantiatorAddress);
     }
 
     /// @notice Instantiate a vg instance.
@@ -119,7 +112,6 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         address _claimer,
         uint _roundDuration,
         address _machineAddress,
-        address _machineStateHelper,
         bytes32 _initialHash,
         bytes32 _claimerFinalHash,
         uint _finalTime
@@ -131,8 +123,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             _roundDuration *
             log2OverTwo(_finalTime) +
             4;
-        instance[currentIndex].machine = IUArchStep(_machineAddress);
-        instance[currentIndex].machineStateHelper = IUArchState(_machineStateHelper);
+        instance[currentIndex].machine = IMetaStep(_machineAddress);
         instance[currentIndex].initialHash = _initialHash;
         instance[currentIndex].claimerFinalHash = _claimerFinalHash;
         instance[currentIndex].finalTime = _finalTime;
@@ -153,7 +144,6 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             _claimer,
             _roundDuration * log2OverTwo(_finalTime) + 4,
             _machineAddress,
-            _machineStateHelper,
             _initialHash,
             _claimerFinalHash,
             _finalTime,
@@ -218,24 +208,19 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             partitionIndex,
             divergenceTime + 1
         );
-        instance[_index].mmInstance = mm.instantiate(
-            address(this),
-            instance[_index].challenger,
-            instance[_index].hashBeforeDivergence
-        );
         // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!
         delete instance[_index].partitionInstance;
         instance[_index].timeOfLastMove = block.timestamp;
-        instance[_index].currentState = state.WaitMemoryProveValues;
-        emit PartitionDivergenceFound(_index, instance[_index].mmInstance);
+        instance[_index].currentState = state.WaitSettle;
+        emit PartitionDivergenceFound(_index);
     }
 
-    /// @notice After having filled the memory manager with the necessary data,
-    /// the provider calls this function to instantiate the machine and perform
+    /// @notice provider calls this function to instantiate the machine and perform
     /// one step on it. The machine will write to memory now. Later, the
     /// provider will be expected to update the memory hash accordingly.
     function settleVerificationGame(
-        uint256 _index
+        uint256 _index,
+	IAccessLogs.Context memory _accessLogs
     )
         public
         override
@@ -243,32 +228,17 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         onlyBy(instance[_index].challenger)
     {
         require(
-            instance[_index].currentState == state.WaitMemoryProveValues,
-            "State should be WaitMemoryProveValues"
-        );
-        uint256 mmIndex = instance[_index].mmInstance;
-        require(
-            mm.stateIsWaitingReplay(mmIndex),
-            "State of MM should be WaitingReplay"
+            instance[_index].currentState == state.WaitSettle,
+            "State should be WaitSettle"
         );
 
-        IMemoryAccessLog.AccessLogs memory accessLogs = IMemoryAccessLog.AccessLogs(mm.getAccesses(mmIndex), 0);
-        IUArchState.State memory s = IUArchState.State(instance[_index].machineStateHelper, accessLogs);
-        (uint64 cycle, bool machineHalt) = instance[_index]
-            .machine
-            .step(s);
-    
-        mm.finishReplayPhase(mmIndex);
-
-        require(
-            mm.stateIsFinishedReplay(mmIndex),
-            "State of MM should be FinishedReplay"
-        );
+	require (instance[_index].hashBeforeDivergence == _accessLogs.currentRootHash,
+	    "Access log should begin with hashBeforeDivergence");
+	
+	(uint64 cycle, bool halt, bytes32 machineState) = instance[_index].machine.step(_accessLogs);
         
         if (
-            // old exitCode was always 0: exitCode == 0 && // Step exits correctly
-            // this is now done by the uarch: s.accessLogs.current == accesses.length && // Number of memory acceses matches
-            mm.newHash(mmIndex) != instance[_index].hashAfterDivergence // proves challenger newHash diverge from claimer
+            machineState != instance[_index].hashAfterDivergence // proves challenger newHash diverge from claimer
         ) {
             challengerWins(_index);
         }
@@ -302,12 +272,12 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
                         instance[_index].finalTime, //maxCycle
                         500 // pico seconds to run insn
                     ),
-            "Duration of WaitMemoryProveValues must be over"
+            "Duration of WaitSettle must be over"
         );
 
         require(
-            instance[_index].currentState == state.WaitMemoryProveValues,
-            "State should be WaitMemoryProveValues"
+            instance[_index].currentState == state.WaitSettle,
+            "State should be WaitSettle"
         );
         claimerWins(_index);
     }
@@ -337,7 +307,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         returns (
             address _challenger,
             address _claimer,
-            IUArchStep _machine,
+            IMetaStep _machine,
             bytes32 _initialHash,
             bytes32 _claimerFinalHash,
             bytes32 _hashBeforeDivergence,
@@ -348,7 +318,7 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
     {
         VGCtx memory i = instance[_index];
 
-        uint[] memory uintValues = new uint[](5);
+        uint[] memory uintValues = new uint[](4);
         uintValues[0] = i.finalTime;
         uintValues[1] =
             i.timeOfLastMove +
@@ -360,9 +330,8 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
                 i.finalTime, //maxCycle
                 500 // pico seconds to run insn
             ); //deadline
-        uintValues[2] = i.mmInstance;
-        uintValues[3] = i.partitionInstance;
-        uintValues[4] = i.divergenceTime;
+        uintValues[2] = i.partitionInstance;
+        uintValues[3] = i.divergenceTime;
 
         // we have to duplicate the code for getCurrentState because of
         // "stack too deep"
@@ -370,8 +339,8 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         if (i.currentState == state.WaitPartition) {
             currentState = "WaitPartition";
         }
-        if (i.currentState == state.WaitMemoryProveValues) {
-            currentState = "WaitMemoryProveValues";
+        if (i.currentState == state.WaitSettle) {
+            currentState = "WaitSettle";
         }
         if (i.currentState == state.FinishedClaimerWon) {
             currentState = "FinishedClaimerWon";
@@ -413,13 +382,8 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
                 partition.getCurrentStateDeadline(i.partitionInstance) -
                 i.timeOfLastMove;
         }
-        if (instance[_index].currentState == state.WaitMemoryProveValues) {
-            return
-                mm.getCurrentStateDeadline(
-                    i.mmInstance,
-                    _roundDuration,
-                    _timeToStartMachine
-                );
+        if (instance[_index].currentState == state.WaitSettle) {
+	    return 60; // XXX FIXME
         }
 
         if (
@@ -459,9 +423,8 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
                     _picoSecondsToRunInsn
                 );
         }
-        if (_state == state.WaitMemoryProveValues) {
-            return
-                mm.getMaxInstanceDuration(_roundDuration, _timeToStartMachine);
+        if (_state == state.WaitSettle) {
+            return 60; // XXX FIXME
         }
 
         if (
@@ -494,16 +457,16 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             _picoSecondsToRunInsn
         );
 
-        uint256 waitMemoryProveValues = getMaxStateDuration(
+        /* uint256 waitMemoryProveValues = getMaxStateDuration(
             state.WaitMemoryProveValues,
             _roundDuration,
             _timeToStartMachine,
             _partitionSize,
             _maxCycle,
             _picoSecondsToRunInsn
-        );
+        ); */
 
-        return waitPartitionDuration + waitMemoryProveValues;
+        return waitPartitionDuration + 60; // XXX FIXME
     }
 
     function getSubInstances(
@@ -524,11 +487,10 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
             i[0] = instance[_index].partitionInstance;
             return (a, i);
         }
-        if (instance[_index].currentState == state.WaitMemoryProveValues) {
-            a = new address[](1);
-            i = new uint256[](1);
-            a[0] = address(mm);
-            i[0] = instance[_index].mmInstance;
+        if (instance[_index].currentState == state.WaitSettle) {
+	    require(false, "getSubInstances in WaitSettle"); // XXX fixme
+            a = new address[](0);
+            i = new uint256[](0);
             return (a, i);
         }
         a = new address[](0);
@@ -542,8 +504,8 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         if (instance[_index].currentState == state.WaitPartition) {
             return "WaitPartition";
         }
-        if (instance[_index].currentState == state.WaitMemoryProveValues) {
-            return "WaitMemoryProveValues";
+        if (instance[_index].currentState == state.WaitSettle) {
+            return "WaitSettle";
         }
         if (instance[_index].currentState == state.FinishedClaimerWon) {
             return "FinishedClaimerWon";
@@ -587,7 +549,6 @@ contract VGInstantiator is InstantiatorImplV2, DecoratedV2, VGInterface {
         delete instance[_index].finalTime;
         delete instance[_index].timeOfLastMove;
         // !!!!!!!!! should call clear in mmInstance !!!!!!!!!
-        delete instance[_index].mmInstance;
         delete instance[_index].divergenceTime;
         delete instance[_index].hashBeforeDivergence;
         delete instance[_index].hashAfterDivergence;

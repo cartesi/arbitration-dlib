@@ -10,14 +10,14 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-/// @title IUArchStep
+/// @title IMetaStep
 
 pragma solidity >=0.8.0;
 
-import "./IUArchState.sol";
+import "./IAccessLogs.sol";
 
-interface IUArchStep {
+interface IMetaStep {
     function step(
-        IUArchState.State memory state
-    ) external returns (uint64, bool);
+        IAccessLogs.Context memory accessLogs
+    ) external returns (uint64, bool, bytes32);
 }
