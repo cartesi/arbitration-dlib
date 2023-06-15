@@ -29,14 +29,6 @@ const func: DeployFunction = async (bre: HardhatRuntimeEnvironment) => {
     const { deployer } = await getNamedAccounts();
     const Merkle = await get('Merkle');
 
-
-    const MMInstantiatorTestAux = await deploy("MMInstantiatorTestAux", {
-        from: deployer,
-        libraries: {
-            Merkle: Merkle.address
-        },
-        log: true
-    });
     await deploy("PartitionTestAux", { from: deployer, log: true });
 };
 
