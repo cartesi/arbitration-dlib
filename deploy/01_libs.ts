@@ -35,17 +35,10 @@ const func: DeployFunction = async (bre: HardhatRuntimeEnvironment) => {
         from: deployer,
         log: true
     });
-    const MMInstantiator = await deploy("MMInstantiator", {
-        from: deployer,
-        libraries: {
-            Merkle: Merkle.address
-        },
-        log: true
-    });
     const VGInstantiator = await deploy("VGInstantiator", {
         from: deployer,
         log: true,
-        args: [PartitionInstantiator.address, MMInstantiator.address]
+        args: [PartitionInstantiator.address]
     });
     await deploy("ComputeInstantiator", {
         from: deployer,
