@@ -40,11 +40,6 @@ const func: DeployFunction = async (bre: HardhatRuntimeEnvironment) => {
         log: true,
         args: [PartitionInstantiator.address]
     });
-    await deploy("ComputeInstantiator", {
-        from: deployer,
-        log: true,
-        args: [VGInstantiator.address]
-    });
 };
 
 export default func;
