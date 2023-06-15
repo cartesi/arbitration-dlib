@@ -31,7 +31,7 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction::TransactionRequest;
 use super::{Partition, Role, MM};
-use compute::win_by_deadline_or_idle;
+use super::win_by_deadline_or_idle;
 use mm::{MMCtx, MMCtxParsed, MMParams};
 use partition::{PartitionCtx, PartitionCtxParsed};
 

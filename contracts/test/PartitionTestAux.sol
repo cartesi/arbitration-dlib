@@ -20,7 +20,7 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 import "../PartitionInstantiator.sol";
 
@@ -29,9 +29,10 @@ contract PartitionTestAux is PartitionInstantiator {
         instance[partitionIndex].currentState = toState;
     }
 
-    function setFinalTimeAtIndex(uint256 partitionIndex, uint256 finalTime)
-        public
-    {
+    function setFinalTimeAtIndex(
+        uint256 partitionIndex,
+        uint256 finalTime
+    ) public {
         instance[partitionIndex].finalTime = finalTime;
     }
 
@@ -56,9 +57,10 @@ contract PartitionTestAux is PartitionInstantiator {
         instance[partitionIndex].divergenceTime = divergenceTime;
     }
 
-    function setTimeSubmittedAtIndex(uint256 partitionIndex, uint256 timeIndex)
-        public
-    {
+    function setTimeSubmittedAtIndex(
+        uint256 partitionIndex,
+        uint256 timeIndex
+    ) public {
         instance[partitionIndex].timeSubmitted[timeIndex] = true;
     }
 
@@ -78,81 +80,67 @@ contract PartitionTestAux is PartitionInstantiator {
         instance[partitionIndex].queryArray[queryIndex] = query;
     }
 
-    function setQuerySizeAtIndex(uint256 partitionIndex, uint256 querySize)
-        public
-    {
+    function setQuerySizeAtIndex(
+        uint256 partitionIndex,
+        uint256 querySize
+    ) public {
         instance[partitionIndex].querySize = querySize;
     }
 
-    function getQueryArrayAtIndex(uint256 partitionIndex, uint256 queryIndex)
-        public
-        view
-        returns (uint256)
-    {
+    function getQueryArrayAtIndex(
+        uint256 partitionIndex,
+        uint256 queryIndex
+    ) public view returns (uint256) {
         return instance[partitionIndex].queryArray[queryIndex];
     }
 
-    function getTimeSubmittedAtIndex(uint256 partitionIndex, uint256 timeIndex)
-        public
-        view
-        returns (bool)
-    {
+    function getTimeSubmittedAtIndex(
+        uint256 partitionIndex,
+        uint256 timeIndex
+    ) public view returns (bool) {
         return instance[partitionIndex].timeSubmitted[timeIndex];
     }
 
-    function getChallengerAtIndex(uint256 partitionIndex)
-        public
-        view
-        returns (address)
-    {
+    function getChallengerAtIndex(
+        uint256 partitionIndex
+    ) public view returns (address) {
         return instance[partitionIndex].challenger;
     }
 
-    function getClaimerAtIndex(uint256 partitionIndex)
-        public
-        view
-        returns (address)
-    {
+    function getClaimerAtIndex(
+        uint256 partitionIndex
+    ) public view returns (address) {
         return instance[partitionIndex].claimer;
     }
 
-    function getFinalTimeAtIndex(uint256 partitionIndex)
-        public
-        view
-        returns (uint256)
-    {
+    function getFinalTimeAtIndex(
+        uint256 partitionIndex
+    ) public view returns (uint256) {
         return instance[partitionIndex].finalTime;
     }
 
-    function getQuerySizeAtIndex(uint256 partitionIndex)
-        public
-        view
-        returns (uint256)
-    {
+    function getQuerySizeAtIndex(
+        uint256 partitionIndex
+    ) public view returns (uint256) {
         return instance[partitionIndex].querySize;
     }
 
-    function getTimeOfLastMoveAtIndex(uint256 partitionIndex)
-        public
-        view
-        returns (uint256)
-    {
+    function getTimeOfLastMoveAtIndex(
+        uint256 partitionIndex
+    ) public view returns (uint256) {
         return instance[partitionIndex].timeOfLastMove;
     }
 
-    function getRoundDurationAtIndex(uint256 partitionIndex)
-        public
-        view
-        returns (uint256)
-    {
+    function getRoundDurationAtIndex(
+        uint256 partitionIndex
+    ) public view returns (uint256) {
         return instance[partitionIndex].roundDuration;
     }
 
-    function getTimeHashAtIndex(uint256 partitionIndex, uint256 timeIndex)
-        public
-        view
-        returns (bytes32)
-    {
+    function getTimeHashAtIndex(
+        uint256 partitionIndex,
+        uint256 timeIndex
+    ) public view returns (bytes32) {
         return instance[partitionIndex].timeHash[timeIndex];
     }
 

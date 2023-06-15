@@ -26,7 +26,6 @@
 // Apache v2 license.
 
 #![warn(unused_extern_crates)]
-pub mod compute;
 pub mod emulator_service;
 pub mod mm;
 pub mod partition;
@@ -46,9 +45,6 @@ extern crate ethabi;
 extern crate ethereum_types;
 extern crate transaction;
 
-pub use compute::{
-    win_by_deadline_or_idle, Compute, ComputeCtx, ComputeCtxParsed,
-};
 pub use emulator::{cartesi_machine, machine_manager};
 pub use emulator_service::{
     AccessType, EndSessionRequest, NewSessionRequest, NewSessionResponse,
@@ -62,6 +58,14 @@ pub use emulator_service::{
     EMULATOR_METHOD_REPLACE,
     EMULATOR_SERVICE_NAME,
 };
+
+use ethabi::Token;
+use ethereum_types::{Address, H256, U256};
+use dispatcher::{Reaction};
+use std::time::{SystemTime, UNIX_EPOCH};
+use error::*;
+use transaction::TransactionRequest;
+use error::Result;
 pub use mm::MM;
 pub use partition::Partition;
 pub use vg::{VGCtx, VGCtxParsed, VG};
@@ -215,5 +219,34 @@ pub mod tests {
             json_data: _json_data,
             sub_instances: vec![],
         }
+    }
+}
+
+pub fn win_by_deadline_or_idle(
+    concern: &configuration::Concern,
+    index: U256,
+    deadline: u64,
+) -> Result<Reaction> {
+    let current_time = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .chain_err(|| "System time before UNIX_EPOCH")?
+        .as_secs();
+
+    // if other party missed the deadline
+    if current_time > deadline {
+        info!("Claiming victory by time (index: {})", index);
+        let request = TransactionRequest {
+            contract_name: None, // Name not needed, is concern
+            concern: concern.clone(),
+            value: U256::from(0),
+            function: "claimVictoryByTime".into(),
+            data: vec![Token::Uint(index)],
+            gas: None,
+            strategy: transaction::Strategy::Simplest,
+        };
+        return Ok(Reaction::Transaction(request));
+    } else {
+        // if not, then wait
+        return Ok(Reaction::Idle);
     }
 }

@@ -21,18 +21,17 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 // @title Verification game instantiator
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
-import "@cartesi/util/contracts/Decorated.sol";
-import "@cartesi/util/contracts/Instantiator.sol";
+import "@cartesi/util/contracts/DecoratedV2.sol";
+import "@cartesi/util/contracts/InstantiatorV2.sol";
 import "./PartitionInterface.sol";
-import "./MMInterface.sol";
-import "./MachineInterface.sol";
+import "./IMetaStep.sol";
 
-interface VGInterface is Instantiator {
+interface VGInterface is InstantiatorV2 {
     enum state {
         WaitPartition,
-        WaitMemoryProveValues,
+        WaitSettle,
         FinishedClaimerWon,
         FinishedChallengerWon
     }
@@ -49,21 +48,19 @@ interface VGInterface is Instantiator {
 
     function getCurrentState(uint256 _index) external view returns (bytes32);
 
-    function stateIsFinishedClaimerWon(uint256 _index)
-        external
-        view
-        returns (bool);
+    function stateIsFinishedClaimerWon(
+        uint256 _index
+    ) external view returns (bool);
 
-    function stateIsFinishedChallengerWon(uint256 _index)
-        external
-        view
-        returns (bool);
+    function stateIsFinishedChallengerWon(
+        uint256 _index
+    ) external view returns (bool);
 
     function winByPartitionTimeout(uint256 _index) external;
 
     function startMachineRunChallenge(uint256 _index) external;
 
-    function settleVerificationGame(uint256 _index) external;
+    function settleVerificationGame(uint256 _index, IAccessLogs.Context memory _accessLogs) external;
 
     function claimVictoryByTime(uint256 _index) external;
 
@@ -74,15 +71,13 @@ interface VGInterface is Instantiator {
     //function challengerWins(uint256 _index) private;
     //function claimerWins(uint256 _index) private;
 
-    function getPartitionQuerySize(uint256 _index)
-        external
-        view
-        returns (uint256);
+    function getPartitionQuerySize(
+        uint256 _index
+    ) external view returns (uint256);
 
-    function getPartitionGameIndex(uint256 _index)
-        external
-        view
-        returns (uint256);
+    function getPartitionGameIndex(
+        uint256 _index
+    ) external view returns (uint256);
 
     function getMaxInstanceDuration(
         uint256 _roundDuration,

@@ -21,15 +21,15 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 /// @title Partition instantiator
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
-import "@cartesi/util/contracts/InstantiatorImpl.sol";
-import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/util/contracts/InstantiatorImplV2.sol";
+import "@cartesi/util/contracts/DecoratedV2.sol";
 import "./PartitionInterface.sol";
 
 contract PartitionInstantiator is
-    InstantiatorImpl,
-    Decorated,
+    InstantiatorImplV2,
+    DecoratedV2,
     PartitionInterface
 {
     uint256 constant MAX_QUERY_SIZE = 20;
@@ -235,11 +235,9 @@ contract PartitionInstantiator is
     }
 
     /// @notice Claim victory for opponent timeout.
-    function claimVictoryByTime(uint256 _index)
-        public
-        onlyInstantiated(_index)
-        increasesNonce(_index)
-    {
+    function claimVictoryByTime(
+        uint256 _index
+    ) public onlyInstantiated(_index) increasesNonce(_index) {
         bool afterDeadline = (block.timestamp >
             instance[_index].timeOfLastMove +
                 getMaxStateDuration(
@@ -280,7 +278,10 @@ contract PartitionInstantiator is
     /// @param _divergenceTime The time when the divergence happended. It
     /// should be a point of aggreement, while _divergenceTime + 1 should be a
     /// point of disagreement (both queried).
-    function presentDivergence(uint256 _index, uint256 _divergenceTime)
+    function presentDivergence(
+        uint256 _index,
+        uint256 _divergenceTime
+    )
         public
         onlyInstantiated(_index)
         onlyBy(instance[_index].challenger)
@@ -332,7 +333,7 @@ contract PartitionInstantiator is
     ) private pure returns (uint256) {
         // TO-DO: when we have DUMP then we can remove the partitionSize - 1 multiplier
         uint256 currentPartitionSize = _maxCycle /
-            (_partitionSize**_partitionGameIndex);
+            (_partitionSize ** _partitionGameIndex);
 
         if (_partitionGameIndex != 0) {
             currentPartitionSize = currentPartitionSize * (_partitionSize - 1);
@@ -374,7 +375,7 @@ contract PartitionInstantiator is
         uint256 _partitionSize,
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn
-    ) public override pure returns (uint256) {
+    ) public pure override returns (uint256) {
         uint256 waitingQueryDuration = getMaxStateDuration(
             state.WaitingQuery,
             _roundDuration,
@@ -405,12 +406,12 @@ contract PartitionInstantiator is
 
     // Getters methods
 
-    function getCurrentStateDeadline(uint _index) public override view
-        onlyInstantiated(_index)
-        returns (uint time)
-    {
+    function getCurrentStateDeadline(
+        uint _index
+    ) public view override onlyInstantiated(_index) returns (uint time) {
         PartitionCtx storage i = instance[_index];
-        time = i.timeOfLastMove +
+        time =
+            i.timeOfLastMove +
             getMaxStateDuration(
                 i.currentState,
                 i.roundDuration,
@@ -419,10 +420,13 @@ contract PartitionInstantiator is
                 i.partitionGameIndex,
                 i.finalTime,
                 500
-        ); //deadline (40 seconds to build machine, 500 pico seconds per insn
+            ); //deadline (40 seconds to build machine, 500 pico seconds per insn
     }
 
-    function getState(uint256 _index, address)
+    function getState(
+        uint256 _index,
+        address
+    )
         public
         view
         returns (
@@ -517,94 +521,67 @@ contract PartitionInstantiator is
         return instance[_index].roundDuration;
     }
     */
-    function divergenceTime(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (uint256)
-    {
+    function divergenceTime(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (uint256) {
         return instance[_index].divergenceTime;
     }
 
-    function timeSubmitted(uint256 _index, uint256 key)
-        public
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function timeSubmitted(
+        uint256 _index,
+        uint256 key
+    ) public view onlyInstantiated(_index) returns (bool) {
         return instance[_index].timeSubmitted[key];
     }
 
-    function timeHash(uint256 _index, uint256 key)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bytes32)
-    {
+    function timeHash(
+        uint256 _index,
+        uint256 key
+    ) public view override onlyInstantiated(_index) returns (bytes32) {
         return instance[_index].timeHash[key];
     }
 
-    function queryArray(uint256 _index, uint256 i)
-        public
-        view
-        onlyInstantiated(_index)
-        returns (uint256)
-    {
+    function queryArray(
+        uint256 _index,
+        uint256 i
+    ) public view onlyInstantiated(_index) returns (uint256) {
         return instance[_index].queryArray[i];
     }
 
-    function getPartitionGameIndex(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (uint256)
-    {
+    function getPartitionGameIndex(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (uint256) {
         return instance[_index].partitionGameIndex;
     }
 
-    function getQuerySize(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (uint256)
-    {
+    function getQuerySize(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (uint256) {
         return instance[_index].querySize;
     }
 
     // state getters
 
-    function isConcerned(uint256 _index, address _user)
-        public
-        override
-        view
-        returns (bool)
-    {
+    function isConcerned(
+        uint256 _index,
+        address _user
+    ) public view override returns (bool) {
         return ((instance[_index].challenger == _user) ||
             (instance[_index].claimer == _user));
     }
 
-    function getSubInstances(uint256, address)
-        public
-        override
-        pure
-        returns (address[] memory, uint256[] memory)
-    {
+    function getSubInstances(
+        uint256,
+        address
+    ) public pure override returns (address[] memory, uint256[] memory) {
         address[] memory a = new address[](0);
         uint256[] memory i = new uint256[](0);
         return (a, i);
     }
 
-    function getCurrentState(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bytes32)
-    {
+    function getCurrentState(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bytes32) {
         if (instance[_index].currentState == state.WaitingQuery) {
             return "WaitingQuery";
         }
@@ -624,53 +601,33 @@ contract PartitionInstantiator is
     }
 
     // remove these functions and change tests accordingly
-    function stateIsWaitingQuery(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsWaitingQuery(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.WaitingQuery;
     }
 
-    function stateIsWaitingHashes(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsWaitingHashes(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.WaitingHashes;
     }
 
-    function stateIsChallengerWon(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsChallengerWon(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.ChallengerWon;
     }
 
-    function stateIsClaimerWon(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsClaimerWon(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.ClaimerWon;
     }
 
-    function stateIsDivergenceFound(uint256 _index)
-        public
-        override
-        view
-        onlyInstantiated(_index)
-        returns (bool)
-    {
+    function stateIsDivergenceFound(
+        uint256 _index
+    ) public view override onlyInstantiated(_index) returns (bool) {
         return instance[_index].currentState == state.DivergenceFound;
     }
 

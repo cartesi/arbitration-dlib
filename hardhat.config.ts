@@ -2,7 +2,6 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import { HttpNetworkUserConfig } from "hardhat/types";
 
 import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-waffle";
 import "hardhat-typechain";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
@@ -54,7 +53,7 @@ const config: HardhatUserConfig = {
         },
     },
     solidity: {
-        version: "0.7.4",
+        version: "0.8.19",
         settings: {
             optimizer: {
                 enabled: true,
