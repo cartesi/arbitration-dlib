@@ -1,5 +1,3 @@
-> :warning: The Cartesi team keeps working internally on the next version of this repository, following its regular development roadmap. Whenever there's a new version ready or important fix, these are published to the public source tree as new releases.
-
 # Arbitration D-Lib
 
 ArbitrationLib is the combination of the on-chain protocol and off-chain protocol that work together to resolve any disputes that might occur during the execution of a Cartesi Dapp. The behavior of the off-chain and on-chain code are very similar. The on-chain code is written in Solidity and the off-chain in Rust.
